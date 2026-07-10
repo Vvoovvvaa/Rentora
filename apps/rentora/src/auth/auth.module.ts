@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from '@app/common-rentora/database/entity';
+import { User, Usersecurity } from '@app/common-rentora/database/entity';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
 
@@ -11,7 +11,7 @@ import { ConfigModule } from '@nestjs/config';
     providers: [AuthService],
     imports: [
         ConfigModule,
-        TypeOrmModule.forFeature([User]),
+        TypeOrmModule.forFeature([User,Usersecurity]),
 
         JwtModule.register({
             global:true,

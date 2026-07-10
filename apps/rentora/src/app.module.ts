@@ -8,7 +8,7 @@ import { validationSchema } from '@app/common-rentora/validation';
 import { dbconfig, jwtconfig } from '@app/common-rentora/configs';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { IDbcongif } from '@app/common-rentora/models';
-import { User } from '@app/common-rentora/database/entity';
+import { User, Usersecurity } from '@app/common-rentora/database/entity';
 
 @Module({
   imports: [
@@ -33,9 +33,10 @@ import { User } from '@app/common-rentora/database/entity';
           username: dbconfig.POSTGRES_USER,
           password: dbconfig.POSTGRES_PASSWORD,
           database: dbconfig.POSTGRES_DB,
-          entities: [User],
+          entities: [User,Usersecurity],
           autoLoadEntities: true,
           synchronize: true,
+          // dropSchema: true,
         };
       },
     }),
