@@ -5,19 +5,21 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { validationSchema } from '@app/common-rentora/validation';
-import { dbconfig, jwtconfig } from '@app/common-rentora/configs';
+import { dbconfig, jwtconfig, smtpconfig } from '@app/common-rentora/configs';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { IDbcongif } from '@app/common-rentora/models';
 import { User, Usersecurity } from '@app/common-rentora/database/entity';
+import { EmailModule } from '@app/common-rentora/smtp';
 
 @Module({
   imports: [
     AuthModule,
+    EmailModule,
 
     ConfigModule.forRoot({
       isGlobal: true,
       validationSchema,
-      load: [jwtconfig,dbconfig],
+      load: [jwtconfig,dbconfig,smtpconfig],
     }),
 
     TypeOrmModule.forRootAsync({

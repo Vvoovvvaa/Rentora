@@ -10,6 +10,7 @@ import { CreateAuthDto } from './dto/auth.dto';
 import { IJwtconfig } from '@app/common-rentora/models/jwt.config';
 import { User, Usersecurity } from '@app/common-rentora/database/entity';
 import { accauntSatus } from '@app/common-rentora/database/enums/accaunt-status';
+import { SenderService } from '@app/common-rentora/smtp';
 
 @Injectable()
 export class AuthService {
@@ -24,6 +25,7 @@ export class AuthService {
 
         private readonly jwtservice: JwtService,
         private readonly configService: ConfigService,
+        private readonly senderservice: SenderService
     ) {
         this.jwtconfig = this.configService.get("JWTCONFIG") as IJwtconfig;
     }
@@ -46,7 +48,7 @@ export class AuthService {
     }
 
     async register(dto: CreateAuthDto) {
-        let exists = await this.userRepo.findOne({ where: { gmail: dto.gmail } });
+        const exists = await this.userRepo.findOne({ where: { gmail: dto.gmail } });
 
         if (exists) {
             throw new ConflictException("user already exists");
@@ -60,17 +62,48 @@ export class AuthService {
             password: hashPassword,
             age: dto.age,
             phone: dto.phone,
-            accauntStatus: accauntSatus.ACTIVE 
+            accauntStatus: accauntSatus.ACTIVE
         });
 
         await this.userRepo.save(user);
-        return this.generateToken(user);
+
+        const security = this.usersecurityRepo.create({
+            user,
+            temporaryBlock: 0,
+            permanetlyBlock: false,
+            totalAttemps: 0,
+            temporaryBlockUntil: null
+        });
+        await this.usersecurityRepo.save(security);
+
+        if (user.gmail) {
+            try {
+                await this.senderservice.sendEmail({
+                    to: user.gmail,
+                    from: process.env.SMTP_FROM || "no-reply@example.com",
+                    subject: "welcome message!",
+                    template: "welcome-message",
+                    context: {
+                        name: user.name || user.gmail || "USER"
+                    }
+                });
+            } catch (error) {
+                console.error("Email sending failed:", error);
+            }
+        }
+
+        const token = await this.generateToken(user);
+
+        return {
+            ...token,
+            message: `User ${user.name || user.gmail} successfully registered`,
+        };
     }
 
     async login(dto: LoginDto) {
-        let user = await this.userRepo.findOne({ 
+        const user = await this.userRepo.findOne({
             where: { gmail: dto.gmail },
-            relations: {security: true} 
+            relations: { security: true }
         });
 
         if (!user) {
@@ -145,6 +178,27 @@ export class AuthService {
         await this.usersecurityRepo.save(security);
         await this.userRepo.save(user);
 
-        return this.generateToken(user);
+        if (user.gmail) {
+            try {
+                await this.senderservice.sendEmail({
+                    to: user.gmail,
+                    from: process.env.SMTP_FROM || "no-reply@example.com",
+                    subject: 'Login Message',
+                    template: 'login-message',
+                    context: {
+                        name: user.name || user.gmail || 'USER'
+                    }
+                });
+            } catch (error) {
+                console.error("Email sending failed:", error);
+            }
+        }
+
+        const token = await this.generateToken(user);
+        
+        return {
+            ...token,
+            message: `User ${user.name || user.gmail} successfully logged in`,
+        };
     }
 }

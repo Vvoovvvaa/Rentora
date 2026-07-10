@@ -1,2 +1,4 @@
 export * from './db.config'
 export * from './jwt.config'
+export * from './smtp.confg'
+export * from './email.payload'
