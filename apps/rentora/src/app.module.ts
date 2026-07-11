@@ -8,7 +8,7 @@ import { validationSchema } from '@app/common-rentora/validation';
 import { dbconfig, jwtconfig, smtpconfig } from '@app/common-rentora/configs';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { IDbcongif } from '@app/common-rentora/models';
-import { User, Usersecurity } from '@app/common-rentora/database/entity';
+import { SecretCode, User, Usersecurity } from '@app/common-rentora/database/entity';
 import { EmailModule } from '@app/common-rentora/smtp';
 
 @Module({
@@ -35,7 +35,7 @@ import { EmailModule } from '@app/common-rentora/smtp';
           username: dbconfig.POSTGRES_USER,
           password: dbconfig.POSTGRES_PASSWORD,
           database: dbconfig.POSTGRES_DB,
-          entities: [User,Usersecurity],
+          entities: [User,Usersecurity,SecretCode],
           autoLoadEntities: true,
           synchronize: true,
           // dropSchema: true,

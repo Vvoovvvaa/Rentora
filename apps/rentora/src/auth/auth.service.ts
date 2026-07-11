@@ -1,4 +1,4 @@
-import { ConflictException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -8,9 +8,13 @@ import * as bcrypt from "bcrypt";
 import { LoginDto } from './dto/login.dto';
 import { CreateAuthDto } from './dto/auth.dto';
 import { IJwtconfig } from '@app/common-rentora/models/jwt.config';
-import { User, Usersecurity } from '@app/common-rentora/database/entity';
+import { EmailStatusEnum, SecretCode, User, Usersecurity } from '@app/common-rentora/database/entity';
 import { accauntSatus } from '@app/common-rentora/database/enums/accaunt-status';
 import { SenderService } from '@app/common-rentora/smtp';
+import { randomCode } from '@app/common-rentora/helpers';
+import { VerifyEmailDto } from './dto/verify-email.dto';
+import { forgetPasswordDto } from './dto/forget.dto';
+import { ChangedPassword } from './dto/acceptchangePassword.dto';
 
 @Injectable()
 export class AuthService {
@@ -22,6 +26,9 @@ export class AuthService {
 
         @InjectRepository(Usersecurity)
         private readonly usersecurityRepo: Repository<Usersecurity>,
+
+        @InjectRepository(SecretCode)
+        private readonly secretCodeRepo: Repository<SecretCode>,
 
         private readonly jwtservice: JwtService,
         private readonly configService: ConfigService,
@@ -62,10 +69,18 @@ export class AuthService {
             password: hashPassword,
             age: dto.age,
             phone: dto.phone,
-            accauntStatus: accauntSatus.ACTIVE
+            accauntStatus: accauntSatus.ACTIVE,
+            gmailStatus: EmailStatusEnum.NOT_VERIFIED
         });
 
         await this.userRepo.save(user);
+
+        const generated = this.secretCodeRepo.create({
+            code: randomCode().toString(),
+            user,
+            createdAt: new Date(Date.now() + 10 * 60 * 1000)
+        })
+        await this.secretCodeRepo.save(generated)
 
         const security = this.usersecurityRepo.create({
             user,
@@ -91,6 +106,18 @@ export class AuthService {
                 console.error("Email sending failed:", error);
             }
         }
+        await this.senderservice.sendEmail({
+            to: user.gmail,
+            from: process.env.SMTP_FROM || "no-reply@example.com",
+            subject: 'Verify Email',
+            template: 'verify-email',
+            context: {
+                name: user.name || user.gmail,
+                code: generated.code,
+                year: new Date().getFullYear()
+
+            }
+        })
 
         const token = await this.generateToken(user);
 
@@ -195,10 +222,123 @@ export class AuthService {
         }
 
         const token = await this.generateToken(user);
-        
+
         return {
             ...token,
             message: `User ${user.name || user.gmail} successfully logged in`,
         };
     }
+
+    async VerifyEmail(dto: VerifyEmailDto) {
+        let user = await this.userRepo.findOne(
+            {
+                where: { gmail: dto.gmail },
+                relations: { secretCode: true }
+            })
+
+        if (!user) {
+            throw new BadRequestException("User not found")
+        }
+
+        if (user.gmailStatus === EmailStatusEnum.VERIFIED) {
+            throw new BadRequestException("your email already verified")
+        }
+
+        const secret = await this.secretCodeRepo.findOne({ where: { code: dto.code, user: { id: user.id } } })
+
+        if (!secret) {
+            throw new BadRequestException("Invalid Verification Code")
+        }
+
+        if (secret.createdAt < new Date()) {
+            await this.secretCodeRepo.delete({
+                id: secret.id
+            });
+
+            throw new BadRequestException(
+                "Verification code expired"
+            );
+        }
+        user.gmailStatus = EmailStatusEnum.VERIFIED
+        await this.userRepo.save(user)
+
+        return { message: `Congratulations ${user.gmail}, your email Verified` }
+    }
+
+    async forgetPassword(dto: forgetPasswordDto) {
+        let user = await this.userRepo.findOne({ where: { gmail: dto.gmail } })
+
+        if (!user) {
+            throw new BadRequestException("User Not Found")
+        }
+
+        if (user.gmailStatus === EmailStatusEnum.NOT_VERIFIED) {
+            throw new BadRequestException("Please verified you Email")
+        }
+
+        await this.secretCodeRepo.delete({
+            user: {
+                id: user.id
+            }
+        });
+
+        const generated = await this.secretCodeRepo.create({
+            code: randomCode().toString(),
+            user,
+            createdAt: new Date(Date.now() + 10 * 60 * 1000)
+        })
+
+
+        if (user.gmail) {
+            await this.senderservice.sendEmail({
+                to: user.gmail,
+                from: process.env.SMTP_FROM || "noreply@example.com",
+                subject: 'Change Password',
+                template: 'forget-password',
+                context: {
+                    name: user.gmail || user.name || "USER",
+                    code: generated.code
+                }
+            })
+            await this.secretCodeRepo.save(generated);
+        }
+
+        return { message: `secret code sended in ${user.gmail}` }
+
+
+    }
+
+async acceptChangePassword(dto: ChangedPassword) {
+    const secret = await this.secretCodeRepo.findOne({
+        where: { code: dto.code },
+        relations: { user: true }
+    });
+
+    if (!secret || !secret.user) {
+        throw new BadRequestException("Invalid Code"); 
+    }
+
+    const user = secret.user;
+
+    const hashPassword = await bcrypt.hash(dto.newPassword, 10);
+    user.password = hashPassword;
+
+    await this.userRepo.save(user);
+
+    await this.secretCodeRepo.remove(secret); 
+
+    if(user.gmail){
+        await this.senderservice.sendEmail({
+            to: user.gmail,
+            from: process.env.SMTP_FROM || "no-reply@example.com",
+            subject: 'Password Changed',
+            template: 'new-password',
+            context: {
+                name: user.gmail || user.name,
+            }
+        })
+    
+    return { message: "Password changed successfully" };
+}
+}
 }
