@@ -3,40 +3,44 @@ import { Base } from "./base";
 import { userRoles } from "../enums";
 import { Usersecurity } from "./user-security";
 import { accauntSatus } from "../enums/accaunt-status";
-import { EmailStatusEnum } from "./email-status";
+import { EmailStatusEnum } from "../enums/email-status";
 import { SecretCode } from "./secretCode";
+import { Property } from "./property";
 
 @Entity("users")
-export class User extends Base{
+export class User extends Base {
     @Column()
-    name:string
+    name: string
 
-    @Column({unique:true})
+    @Column({ unique: true })
     phone: string
 
     @Column()
-    age:number
+    age: number
 
     @Column()
     gmail: string
 
-    @Column({type: 'enum',enum: EmailStatusEnum,default: EmailStatusEnum.NOT_VERIFIED})
+    @Column({ type: 'enum', enum: EmailStatusEnum, default: EmailStatusEnum.NOT_VERIFIED })
     gmailStatus: EmailStatusEnum
 
     @Column()
-    password:string
+    password: string
 
-    @Column({type: "enum",enum: userRoles,name: "user_role",default: userRoles.customer})
+    @Column({ type: "enum", enum: userRoles, name: "user_role", default: userRoles.USER })
     userRole: userRoles
-    
-    @Column({type: 'enum', enum: accauntSatus, default: accauntSatus.ACTIVE})
+
+    @Column({ type: 'enum', enum: accauntSatus, default: accauntSatus.ACTIVE })
     accauntStatus: accauntSatus
-    
+
     @OneToOne(() => Usersecurity, security => security.user)
     security: Usersecurity
 
     @OneToOne(() => SecretCode, secretCode => secretCode.user)
     secretCode: SecretCode
+
+    @OneToMany(() => Property, property => property.owner)
+    properties: Property[];
 
 }
 

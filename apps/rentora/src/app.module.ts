@@ -8,25 +8,28 @@ import { validationSchema } from '@app/common-rentora/validation';
 import { dbconfig, jwtconfig, smtpconfig } from '@app/common-rentora/configs';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { IDbcongif } from '@app/common-rentora/models';
-import { SecretCode, User, Usersecurity } from '@app/common-rentora/database/entity';
+import { Property, SecretCode, User, Usersecurity } from '@app/common-rentora/database/entity';
 import { EmailModule } from '@app/common-rentora/smtp';
+import { PropertiesModule } from './properties/properties.module';
 
 @Module({
   imports: [
     AuthModule,
     EmailModule,
+    PropertiesModule,
+
 
     ConfigModule.forRoot({
       isGlobal: true,
       validationSchema,
-      load: [jwtconfig,dbconfig,smtpconfig],
+      load: [jwtconfig, dbconfig, smtpconfig],
     }),
 
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
-        const dbconfig: IDbcongif =  configService.get("DBCONFIG") as IDbcongif;
+        const dbconfig: IDbcongif = configService.get("DBCONFIG") as IDbcongif;
 
         return {
           type: 'postgres',
@@ -35,7 +38,7 @@ import { EmailModule } from '@app/common-rentora/smtp';
           username: dbconfig.POSTGRES_USER,
           password: dbconfig.POSTGRES_PASSWORD,
           database: dbconfig.POSTGRES_DB,
-          entities: [User,Usersecurity,SecretCode],
+          entities: [User, Usersecurity, SecretCode, Property],
           autoLoadEntities: true,
           synchronize: true,
           // dropSchema: true,
@@ -47,4 +50,4 @@ import { EmailModule } from '@app/common-rentora/smtp';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }

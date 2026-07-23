@@ -3,9 +3,9 @@ import { AuthService } from './auth.service';
 import { CreateAuthDto } from './dto/auth.dto';
 import { LoginDto } from './dto/login.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
-import { dot } from 'node:test/reporters';
 import { forgetPasswordDto } from './dto/forget.dto';
 import { ChangedPassword } from './dto/acceptchangePassword.dto';
+import { sendVerifyCodeDto } from './dto/sendverifyCode.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -21,10 +21,16 @@ export class AuthController {
         return this.authservice.login(body)
     }
 
+    @Post("sendCode")
+    async sendCode(@Body() body: sendVerifyCodeDto){
+        return this.authservice.sendVerifyCode(body)
+    }
+
     @Post("Verify")
     async verifyEMail(@Body() body: VerifyEmailDto){
         return this.authservice.VerifyEmail(body)
     }
+
 
     @Post("forget")
     async forget(@Body() body: forgetPasswordDto){
