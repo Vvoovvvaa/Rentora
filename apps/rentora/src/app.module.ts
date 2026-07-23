@@ -1,14 +1,15 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+
 
 import { AuthModule } from './auth/auth.module';
-import { ConfigModule, ConfigService } from '@nestjs/config';
 import { validationSchema } from '@app/common-rentora/validation';
-import { dbconfig, jwtconfig, smtpconfig } from '@app/common-rentora/configs';
+import { cloudinaryConfig, dbconfig, jwtconfig, smtpconfig } from '@app/common-rentora/configs';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { IDbcongif } from '@app/common-rentora/models';
-import { Property, SecretCode, User, Usersecurity } from '@app/common-rentora/database/entity';
+import { Property, PropertyImage, SecretCode, User, Usersecurity } from '@app/common-rentora/database/entity';
 import { EmailModule } from '@app/common-rentora/smtp';
 import { PropertiesModule } from './properties/properties.module';
 
@@ -22,7 +23,7 @@ import { PropertiesModule } from './properties/properties.module';
     ConfigModule.forRoot({
       isGlobal: true,
       validationSchema,
-      load: [jwtconfig, dbconfig, smtpconfig],
+      load: [jwtconfig, dbconfig, smtpconfig, cloudinaryConfig],
     }),
 
     TypeOrmModule.forRootAsync({
@@ -38,7 +39,7 @@ import { PropertiesModule } from './properties/properties.module';
           username: dbconfig.POSTGRES_USER,
           password: dbconfig.POSTGRES_PASSWORD,
           database: dbconfig.POSTGRES_DB,
-          entities: [User, Usersecurity, SecretCode, Property],
+          entities: [User, Usersecurity, SecretCode, Property,PropertyImage],
           autoLoadEntities: true,
           synchronize: true,
           // dropSchema: true,

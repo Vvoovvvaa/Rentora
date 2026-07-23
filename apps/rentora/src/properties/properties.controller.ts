@@ -1,10 +1,11 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 
 import { PropertiesService } from './properties.service';
 import { CreatePropertyDto } from './dto/create-property.dto';
 import { AuthGuard, OwnerCheckGuard } from '@app/common-rentora/guard';
 import { AuthUser } from '@app/common-rentora/decorators';
 import { changePropertyDto } from './dto/change-property.dto';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 
 
 @UseGuards(AuthGuard)
@@ -13,8 +14,9 @@ export class PropertiesController {
     constructor(private readonly propertyservice: PropertiesService) { }
 
     @Post('create')
-    createProperty(@Body() body: CreatePropertyDto, @AuthUser('id') userid: number) {
-        return this.propertyservice.createProperty(userid, body)
+    @UseInterceptors(FilesInterceptor('photos',10))
+    createProperty(@Body() body: CreatePropertyDto, @AuthUser('id') userid: number,@UploadedFiles() files: Express.Multer.File[]) {
+        return this.propertyservice.createProperty(userid, body, files)
     }
 
     @Patch(':id')

@@ -1,8 +1,9 @@
-import { Column, Entity, ManyToOne, OneToOne } from "typeorm";
+import { Column, Entity, ManyToOne, OneToMany, OneToOne } from "typeorm";
 import { Base } from "./base";
 import { PropertyCategory, PropertyStatus } from "../enums";
 import { PropertyCurrency } from "../enums/property-currency";
 import { User } from "./user";
+import { PropertyImage } from "./property-image";
 
 @Entity('Property')
 export class Property extends Base {
@@ -33,5 +34,7 @@ export class Property extends Base {
     })
     owner: User;
 
+    @OneToMany(() => PropertyImage,images => images.property, {cascade:true})
+    images: PropertyImage[]
 
 }

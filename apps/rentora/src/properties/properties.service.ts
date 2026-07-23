@@ -1,10 +1,13 @@
-import { EmailStatusEnum, Property, User } from '@app/common-rentora/database/entity';
+import { EmailStatusEnum, Property, PropertyImage, User } from '@app/common-rentora/database/entity';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreatePropertyDto } from './dto/create-property.dto';
 import { PropertyStatus } from '@app/common-rentora/database/enums';
 import { changePropertyDto } from './dto/change-property.dto';
+import { PhotoValidator } from '@app/common-rentora/helpers';
+import { UploadService } from '../upload/upload.service';
+import { SenderService } from '@app/common-rentora/smtp';
 
 @Injectable()
 export class PropertiesService {
@@ -13,34 +16,74 @@ export class PropertiesService {
         private readonly userRepo: Repository<User>,
 
         @InjectRepository(Property)
-        private readonly propertyRepo: Repository<Property>
+        private readonly propertyRepo: Repository<Property>,
+
+        @InjectRepository(PropertyImage)
+        private readonly propertImageRepo: Repository<PropertyImage>,
+
+        private readonly uploadservice: UploadService,
+        private readonly senderservice: SenderService
     ) { }
 
-    async createProperty(userId: number, dto: CreatePropertyDto) {
-
+    async createProperty(userId: number, dto: CreatePropertyDto, files?: Express.Multer.File[]) {
         const user = await this.userRepo.findOne({
-            where: {
-                id: userId
-            }
+            where: { id: userId }
         });
 
         if (!user) {
-            throw new BadRequestException('User not found')
+            throw new BadRequestException('User not found');
         }
 
-        if(user.gmailStatus !== EmailStatusEnum.VERIFIED){
-            throw new BadRequestException(`Please Verify your Email`)
+        if (user.gmailStatus !== EmailStatusEnum.VERIFIED) {
+            throw new BadRequestException('Please Verify your Email');
         }
 
         const property = this.propertyRepo.create({
             ...dto,
             owner: user,
             status: PropertyStatus.ACTIVE
-        })
+        });
 
-        return await this.propertyRepo.save(property)
+        const savedProperty = await this.propertyRepo.save(property);
+
+        if (files?.length) {
+            const images: PropertyImage[] = [];
+
+            for (const file of files) {
+                PhotoValidator.validator(file);
+
+                const uploaded: any = await this.uploadservice.uploadImage(file);
+
+                const image = this.propertImageRepo.create({
+                    url: uploaded.secure_url,
+                    publicId: uploaded.public_id,
+                    size: file.size,
+                    property: savedProperty
+                });
+
+                images.push(image);
+            }
+
+            await this.propertImageRepo.save(images);
+        }
+
+        if (user.gmail) {
+            await this.senderservice.sendEmail({
+                to: user.gmail,
+                from: process.env.SMTP_FROM || "no-replyexample.com",
+                subject: 'Property Created',
+                template: 'created-property',
+                context: {
+                    name: user.name || user.gmail
+                }
+            })
+        }
+
+        return this.propertyRepo.findOne({
+            where: { id: savedProperty.id },
+            relations: { images: true }
+        });
     }
-
 
     async changeProperty(userId: number, propId: number, dto: changePropertyDto) {
         const property = await this.propertyRepo.findOne({ where: { id: propId, owner: { id: userId } } })
