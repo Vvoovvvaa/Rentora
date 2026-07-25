@@ -1,11 +1,11 @@
 import { Column, Entity, ManyToOne, OneToMany, OneToOne } from "typeorm";
 import { Base } from "./base";
-import { PropertyCategory, PropertyStatus } from "../enums";
+import { ArmeniaCity, PropertyCategory, PropertyStatus } from "../enums";
 import { PropertyCurrency } from "../enums/property-currency";
 import { User } from "./user";
 import { PropertyImage } from "./property-image";
 
-@Entity('Property')
+@Entity('property')
 export class Property extends Base {
     @Column()
     title: string
@@ -28,6 +28,12 @@ export class Property extends Base {
 
     @Column({ type: 'enum', enum: PropertyCurrency })
     currency: PropertyCurrency
+
+    @Column({default: 0})
+    views: number
+
+    @Column({type: "enum", enum: ArmeniaCity})
+    city: ArmeniaCity
 
     @ManyToOne(() => User, user => user.properties, {
         onDelete: 'CASCADE',

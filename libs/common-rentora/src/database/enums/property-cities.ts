@@ -1,0 +1,62 @@
+export enum ArmeniaCity {
+  YEREVAN = 'YEREVAN',
+
+  // Shirak
+  GYUMRI = 'GYUMRI',
+  ARTIK = 'ARTIK',
+  MARALIK = 'MARALIK',
+
+  // Lori
+  VANADZOR = 'VANADZOR',
+  SPITAK = 'SPITAK',
+  ALAVERDI = 'ALAVERDI',
+  STEPANAVAN = 'STEPANAVAN',
+  TASHIR = 'TASHIR',
+
+  // Kotayk
+  HRAZDAN = 'HRAZDAN',
+  ABOVYAN = 'ABOVYAN',
+  CHARRENTSAVAN = 'CHARRENTSAVAN',
+  TSAGHKADZOR = 'TSAGHKADZOR',
+  BYUREGHAVAN = 'BYUREGHAVAN',
+
+  // Ararat
+  ARTASHAT = 'ARTASHAT',
+  MASIS = 'MASIS',
+  VEDI = 'VEDI',
+
+  // Armavir
+  ARMAVIR = 'ARMAVIR',
+  VAGHARSHAPAT = 'VAGHARSHAPAT',
+  METSAMOR = 'METSAMOR',
+
+  // Gegharkunik
+  GAVAR = 'GAVAR',
+  SEVAN = 'SEVAN',
+  MARTUNI = 'MARTUNI',
+  VARDENIS = 'VARDENIS',
+  CHAMBRAK = 'CHAMBRAK',
+
+  // Tavush
+  IJEVAN = 'IJEVAN',
+  DILIJAN = 'DILIJAN',
+  Noyemberyan = 'NOYEMBERYAN',
+  BERD = 'BERD',
+
+  // Syunik
+  KAPAN = 'KAPAN',
+  GORIS = 'GORIS',
+  SISIAN = 'SISIAN',
+  MEGHRI = 'MEGHRI',
+  AGARAK = 'AGARAK',
+
+  // Vayots Dzor
+  YEGHEGNADZOR = 'YEGHEGNADZOR',
+  JERMUK = 'JERMUK',
+  VAYK = 'VAYK',
+
+  // Aragatsotn
+  ASHTARAK = 'ASHTARAK',
+  APARAN = 'APARAN',
+  TALIN = 'TALIN',
+}

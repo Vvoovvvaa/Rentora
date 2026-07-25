@@ -1,4 +1,4 @@
-import { PropertyStatus, PropertyCategory } from "@app/common-rentora/database/enums"
+import { PropertyCategory, ArmeniaCity } from "@app/common-rentora/database/enums"
 import { PropertyCurrency } from "@app/common-rentora/database/enums/property-currency"
 import { IsEnum, IsNotEmpty, IsNumber, IsString, Min, MinLength } from "class-validator"
 
@@ -11,6 +11,10 @@ export class CreatePropertyDto {
     @IsNotEmpty()
     @MinLength(30)
     description: string
+
+    @IsEnum(ArmeniaCity)
+    @IsNotEmpty()
+    city: ArmeniaCity
 
     @IsNotEmpty()
     @IsEnum(PropertyCategory)

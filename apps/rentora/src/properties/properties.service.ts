@@ -2,6 +2,7 @@ import { EmailStatusEnum, Property, PropertyImage, User } from '@app/common-rent
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+
 import { CreatePropertyDto } from './dto/create-property.dto';
 import { PropertyStatus } from '@app/common-rentora/database/enums';
 import { changePropertyDto } from './dto/change-property.dto';
@@ -22,10 +23,11 @@ export class PropertiesService {
         private readonly propertImageRepo: Repository<PropertyImage>,
 
         private readonly uploadservice: UploadService,
+
         private readonly senderservice: SenderService
     ) { }
 
-    async createProperty(userId: number, dto: CreatePropertyDto, files?: Express.Multer.File[]) {
+    async createProperty(userId: number, dto: CreatePropertyDto, files: Express.Multer.File[]) {
         const user = await this.userRepo.findOne({
             where: { id: userId }
         });
@@ -46,7 +48,7 @@ export class PropertiesService {
 
         const savedProperty = await this.propertyRepo.save(property);
 
-        if (files?.length) {
+        if (files.length) {
             const images: PropertyImage[] = [];
 
             for (const file of files) {
@@ -119,6 +121,27 @@ export class PropertiesService {
             message: `${property.title} property was successfully deleted`,
         };
 
+    }
+
+    async findProperty(propId:number){
+        const property = await this.propertyRepo.findOne({where:{id: propId, status: PropertyStatus.ACTIVE},relations: {owner: true, images: true}})
+
+        if(!property){
+            throw new NotFoundException("Property Not found,Please try again")
+        }
+
+        property.views++
+
+        await this.propertyRepo.save(property)
+
+
+        return property
+    }
+
+
+    async allProperties(){
+        const property = await this.propertyRepo.find({where:{ status: PropertyStatus.ACTIVE},relations:{owner: true, images:true}})
+        return property
     }
 
 }

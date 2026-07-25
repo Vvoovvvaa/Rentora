@@ -43,4 +43,14 @@ export class PropertiesController {
     deleteProperty(@Param('id') propId:number,@AuthUser('id') userId:number){
         return this.propertyservice.deleteProperty(propId,userId)
     }
+
+    @Post('find/:id')
+    findeProperty(@Param('id') propId:number){
+        return this.propertyservice.findProperty(propId)
+    }
+
+    @Get()
+    allProperties(){
+        return this.propertyservice.allProperties()
+    }
 }

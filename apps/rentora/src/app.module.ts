@@ -12,6 +12,9 @@ import { IDbcongif } from '@app/common-rentora/models';
 import { Property, PropertyImage, SecretCode, User, Usersecurity } from '@app/common-rentora/database/entity';
 import { EmailModule } from '@app/common-rentora/smtp';
 import { PropertiesModule } from './properties/properties.module';
+import { SearchService } from './search/search.service';
+import { SearchController } from './search/search.controller';
+import { SearchModule } from './search/search.module';
 
 @Module({
   imports: [
@@ -46,9 +49,11 @@ import { PropertiesModule } from './properties/properties.module';
         };
       },
     }),
+
+    SearchModule,
   ],
 
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [AppController, SearchController],
+  providers: [AppService, SearchService],
 })
 export class AppModule { }
