@@ -26,6 +26,16 @@ export class CreatePropertyDto {
     price: number
 
     @IsNotEmpty()
+    @IsNumber()
+    @Min(1)
+    rooms: number
+
+    @IsNotEmpty()
+    @IsNumber()
+    @Min(5)
+    area: number
+
+    @IsNotEmpty()
     @IsEnum(PropertyCurrency)
     currency: PropertyCurrency
 

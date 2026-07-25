@@ -35,6 +35,12 @@ export class Property extends Base {
     @Column({type: "enum", enum: ArmeniaCity})
     city: ArmeniaCity
 
+    @Column({default: 1})
+    rooms: number
+
+    @Column()
+    area: number
+
     @ManyToOne(() => User, user => user.properties, {
         onDelete: 'CASCADE',
     })

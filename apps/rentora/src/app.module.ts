@@ -2,18 +2,16 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 
 import { AuthModule } from './auth/auth.module';
 import { validationSchema } from '@app/common-rentora/validation';
 import { cloudinaryConfig, dbconfig, jwtconfig, smtpconfig } from '@app/common-rentora/configs';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { IDbcongif } from '@app/common-rentora/models';
 import { Property, PropertyImage, SecretCode, User, Usersecurity } from '@app/common-rentora/database/entity';
 import { EmailModule } from '@app/common-rentora/smtp';
 import { PropertiesModule } from './properties/properties.module';
-import { SearchService } from './search/search.service';
-import { SearchController } from './search/search.controller';
 import { SearchModule } from './search/search.module';
 
 @Module({
@@ -21,6 +19,7 @@ import { SearchModule } from './search/search.module';
     AuthModule,
     EmailModule,
     PropertiesModule,
+    SearchModule,
 
 
     ConfigModule.forRoot({
@@ -50,10 +49,9 @@ import { SearchModule } from './search/search.module';
       },
     }),
 
-    SearchModule,
   ],
 
-  controllers: [AppController, SearchController],
-  providers: [AppService, SearchService],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule { }
