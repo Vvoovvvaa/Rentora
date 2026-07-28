@@ -5,7 +5,7 @@ import { CreatePropertyDto } from './dto/create-property.dto';
 import { AuthGuard, OwnerCheckGuard } from '@app/common-rentora/guard';
 import { AuthUser } from '@app/common-rentora/decorators';
 import { changePropertyDto } from './dto/change-property.dto';
-import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { FilesInterceptor } from '@nestjs/platform-express';
 
 
 @UseGuards(AuthGuard)

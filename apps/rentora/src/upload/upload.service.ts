@@ -14,7 +14,7 @@ export class UploadService {
     return new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         {
-          folder: 'rentora/properties',
+          folder: 'rentora',
         },
         (error, result) => {
           if (error) return reject(error);

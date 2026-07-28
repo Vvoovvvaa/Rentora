@@ -6,6 +6,7 @@ import { accauntSatus } from "../enums/accaunt-status";
 import { EmailStatusEnum } from "../enums/email-status";
 import { SecretCode } from "./secretCode";
 import { Property } from "./property";
+import { UserImage } from "./user-images";
 
 @Entity("users")
 export class User extends Base {
@@ -41,6 +42,10 @@ export class User extends Base {
 
     @OneToMany(() => Property, property => property.owner)
     properties: Property[];
+
+    @OneToOne(() => UserImage,image => image.user,{onDelete: 'CASCADE', nullable:true, cascade: true})
+    @JoinColumn()
+    image: UserImage
 
 }
 

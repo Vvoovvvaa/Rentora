@@ -9,10 +9,11 @@ import { AuthModule } from './auth/auth.module';
 import { validationSchema } from '@app/common-rentora/validation';
 import { cloudinaryConfig, dbconfig, jwtconfig, smtpconfig } from '@app/common-rentora/configs';
 import { IDbcongif } from '@app/common-rentora/models';
-import { Property, PropertyImage, SecretCode, User, Usersecurity } from '@app/common-rentora/database/entity';
+import { Property, PropertyImage, SecretCode, User, UserImage, Usersecurity } from '@app/common-rentora/database/entity';
 import { EmailModule } from '@app/common-rentora/smtp';
 import { PropertiesModule } from './properties/properties.module';
 import { SearchModule } from './search/search.module';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { SearchModule } from './search/search.module';
     EmailModule,
     PropertiesModule,
     SearchModule,
+    UserModule,
 
 
     ConfigModule.forRoot({
@@ -41,7 +43,7 @@ import { SearchModule } from './search/search.module';
           username: dbconfig.POSTGRES_USER,
           password: dbconfig.POSTGRES_PASSWORD,
           database: dbconfig.POSTGRES_DB,
-          entities: [User, Usersecurity, SecretCode, Property,PropertyImage],
+          entities: [User, Usersecurity, SecretCode, Property,PropertyImage,UserImage],
           autoLoadEntities: true,
           synchronize: true,
           // dropSchema: true,
@@ -49,9 +51,11 @@ import { SearchModule } from './search/search.module';
       },
     }),
 
+    
+
   ],
 
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService,],
 })
 export class AppModule { }
