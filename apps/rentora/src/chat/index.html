@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Socket.IO Test</title>
+</head>
+<body>
+
+<h2>Socket.IO Test</h2>
+
+<button id="join">Join Room</button>
+<button id="send">Send Message</button>
+
+<pre id="logs"></pre>
+
+<script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+
+<script>
+
+const log = (text) => {
+    document.getElementById("logs").textContent += text + "\n";
+}
+
+const socket = io("http://localhost:2000", {
+    auth: {
+        token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsImdtYWlsIjoidm92YW1hcmtvc3lhbjA3NEBnbWFpbC5jb20iLCJyb2xlIjoidXNlciIsImlhdCI6MTc4NTc4NzcwNiwiZXhwIjoxNzg1ODc0MTA2fQ.DNiruW7v7CmQSNw0hf9WOOSMkxCItP3xp7hd18by8Zk"
+    }
+});
+
+socket.on("connect", () => {
+    log("✅ Connected");
+});
+
+socket.on("disconnect", () => {
+    log("❌ Disconnected");
+});
+
+socket.on("connect_error", (err) => {
+    log("❌ " + err.message);
+});
+
+socket.on("newMessage", (msg) => {
+    log("📩 " + JSON.stringify(msg));
+});
+
+document.getElementById("join").onclick = () => {
+
+    socket.emit("joinRoom", 1, (res) => {
+        log("joinRoom:");
+        log(JSON.stringify(res));
+    });
+
+}
+
+document.getElementById("send").onclick = () => {
+
+    socket.emit("sendMessage", {
+        roomId: 1,
+        text: "Привет!"
+    }, (res) => {
+
+        log("sendMessage:");
+        log(JSON.stringify(res));
+
+    });
+
+}
+
+</script>
+
+</body>
+</html>

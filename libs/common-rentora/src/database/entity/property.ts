@@ -4,6 +4,7 @@ import { ArmeniaCity, PropertyCategory, PropertyStatus } from "../enums";
 import { PropertyCurrency } from "../enums/property-currency";
 import { User } from "./user";
 import { PropertyImage } from "./property-image";
+import { Favorites } from "./favorites";
 
 @Entity('property')
 export class Property extends Base {
@@ -48,5 +49,8 @@ export class Property extends Base {
 
     @OneToMany(() => PropertyImage,images => images.property, {cascade:true})
     images: PropertyImage[]
+
+    @OneToMany(() => Favorites,fav => fav.property)
+    favorites: Favorites
 
 }

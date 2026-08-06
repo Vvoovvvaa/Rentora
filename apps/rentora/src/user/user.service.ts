@@ -1,16 +1,15 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from "bcrypt";
 
-import { EmailStatusEnum, User, UserImage } from '@app/common-rentora/database/entity';
+import { EmailStatusEnum, Favorites, Property, User, UserImage, UserSecurity } from '@app/common-rentora/database/entity';
 import { changeUserdataDto } from './dto/changeData.dto';
 import { PhotoValidator } from '@app/common-rentora/helpers';
 import { UploadService } from '../upload/upload.service';
 import { changePasswordDto } from './dto/change-password.dto';
 import { SenderService } from '@app/common-rentora/smtp';
 import { ChangeGmailDto } from './dto/change-gmail.dto';
-import { number } from 'joi';
 
 
 @Injectable()
@@ -21,6 +20,15 @@ export class UserService {
 
         @InjectRepository(UserImage)
         private readonly userImageRepo: Repository<UserImage>,
+
+        @InjectRepository(UserSecurity)
+        private readonly userSecurityRepo: Repository<UserSecurity>,
+
+        @InjectRepository(Favorites)
+        private readonly favoritesRepo: Repository<Favorites>,
+
+        @InjectRepository(Property)
+        private readonly propertyRepo: Repository<Property>,
 
         private readonly uploadservice: UploadService,
         private readonly senderservice: SenderService
@@ -77,6 +85,7 @@ export class UserService {
         }
 
         user.password === await bcrypt.hash(dto.NewPassword, 10)
+        await this.userRepo.save(user)
 
         if (user.gmail) {
             await this.senderservice.sendEmail({
@@ -132,5 +141,98 @@ export class UserService {
 
 
         return profile
+    }
+
+    async deleteAccount(userId: number) {
+        const user = await this.userRepo.findOne({
+            where: { id: userId },
+            relations: {
+                security: true,
+                image: true,
+            },
+        });
+
+        if (!user) {
+            throw new BadRequestException("Please try again")
+        }
+
+        if (user.security) {
+            await this.userSecurityRepo.remove(user.security)
+        }
+
+        if (user.image) {
+            await this.userImageRepo.remove(user.image)
+        }
+
+        await this.userRepo.remove(user);
+
+        return {
+            message: `User ${user.name} successfully deleted`,
+        };
+    }
+
+    async addFavorites(userId: number, propertyId: number) {
+
+        const favorite = await this.favoritesRepo.findOne({
+            where: {
+                user: {
+                    id: userId
+                },
+                property: {
+                    id: propertyId
+                }
+            }
+        });
+
+
+        if (favorite) {
+            await this.favoritesRepo.remove(favorite);
+
+            return {
+                status: "removed"
+            };
+        }
+
+
+        const user = await this.userRepo.findOne({
+            where: {
+                id: userId
+            }
+        });
+
+        const property = await this.propertyRepo.findOne({
+            where: {
+                id: propertyId
+            }
+        });
+
+
+        const newFavorite = this.favoritesRepo.create({
+            user: user,
+            property: property
+        });
+
+
+        await this.favoritesRepo.save(newFavorite);
+
+
+        return {
+            status: "added"
+        };
+    }
+
+    async viewFavorites(userId: number) {
+        const user = await this.userRepo.find({ where: { id: userId } })
+        const favroties = await this.favoritesRepo.findOne({ where: { user: { id: userId } }, relations: { property: true } })
+
+        if (!user) {
+            throw new BadRequestException('Please try again later')
+        }
+
+        if (!favroties) {
+            throw new NotFoundException(`User Dont have a favorites, please add favorites`)
+        }
+
+        return favroties
     }
 }

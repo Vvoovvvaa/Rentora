@@ -123,10 +123,10 @@ export class PropertiesService {
 
     }
 
-    async findProperty(propId:number){
-        const property = await this.propertyRepo.findOne({where:{id: propId, status: PropertyStatus.ACTIVE},relations: {owner: true, images: true}})
+    async findProperty(propId: number) {
+        const property = await this.propertyRepo.findOne({ where: { id: propId, status: PropertyStatus.ACTIVE }, relations: { owner: true, images: true } })
 
-        if(!property){
+        if (!property) {
             throw new NotFoundException("Property Not found,Please try again")
         }
 
@@ -139,9 +139,34 @@ export class PropertiesService {
     }
 
 
-    async allProperties(){
-        const property = await this.propertyRepo.find({where:{ status: PropertyStatus.ACTIVE},relations:{owner: true, images:true}})
+    async allProperties() {
+        const property = await this.propertyRepo.find({ where: { status: PropertyStatus.ACTIVE }, relations: { owner: true, images: true } })
         return property
+    }
+
+    async achiveProperty(propid: number, userId: number) {
+        const property = await this.propertyRepo.findOne({ where: { id: propid, owner: {id: userId} },relations: {owner: true}})
+        const user = await this.userRepo.findOne({ where:{id: userId}})
+
+        if (!property) {
+            throw new BadRequestException('Please,try again later')
+        }
+
+        if(!user){
+            throw new BadRequestException('please,try again later')
+        }
+
+        if (property.status === PropertyStatus.ARCHIVED) {
+            throw new BadRequestException(`property already achived`)
+        }
+
+        property.status = PropertyStatus.ARCHIVED
+
+        return {
+            message: " Property status was succefuly chanaged"
+        }
+
+
     }
 
 }

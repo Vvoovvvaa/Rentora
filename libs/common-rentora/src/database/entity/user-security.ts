@@ -3,7 +3,7 @@ import { Base } from "./base";
 import { User } from "./user";
 
 @Entity('user_security')
-export class Usersecurity extends Base {
+export class UserSecurity extends Base {
     @Column({name: "temporary_block", default: 0})
     temporaryBlock: number
 

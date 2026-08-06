@@ -1,12 +1,12 @@
-import { Body, Controller, Get, Post, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { AuthUser } from '@app/common-rentora/decorators';
+import { FileInterceptor } from '@nestjs/platform-express';
+
 import { UserService } from './user.service';
 import { changeUserdataDto } from './dto/changeData.dto';
-import { AuthUser } from '@app/common-rentora/decorators';
 import { AuthGuard } from '@app/common-rentora/guard';
-import { FileInterceptor } from '@nestjs/platform-express';
 import { changePasswordDto } from './dto/change-password.dto';
 import { ChangeGmailDto } from './dto/change-gmail.dto';
-import { number } from 'joi';
 
 @UseGuards(AuthGuard)
 @Controller('user')
@@ -33,4 +33,21 @@ export class UserController {
     viewMyProfile(@AuthUser('id') userId: number){
         return this.userservice.viewMyProfile(userId)
     }
+
+    @Delete('del')
+    deleteProfile(@AuthUser('id') userId:number){
+        return this.userservice.deleteAccount(userId)
+    }
+
+    @Post('fav/:id')
+    addFavorites(@AuthUser('id') userId:number, @Param('id') propertyId:number){
+        return this.userservice.addFavorites(userId,propertyId)
+    }
+    
+    @Get('fav')
+    myFavorites(@AuthUser('id') userId:number){
+        return this.userservice.viewFavorites(userId)
+    }
+
 }
+    

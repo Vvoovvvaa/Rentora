@@ -14,8 +14,8 @@ export class PropertiesController {
     constructor(private readonly propertyservice: PropertiesService) { }
 
     @Post('create')
-    @UseInterceptors(FilesInterceptor('photos',10))
-    createProperty(@Body() body: CreatePropertyDto, @AuthUser('id') userid: number,@UploadedFiles() files: Express.Multer.File[]) {
+    @UseInterceptors(FilesInterceptor('photos', 10))
+    createProperty(@Body() body: CreatePropertyDto, @AuthUser('id') userid: number, @UploadedFiles() files: Express.Multer.File[]) {
         return this.propertyservice.createProperty(userid, body, files)
     }
 
@@ -40,17 +40,22 @@ export class PropertiesController {
 
     @Delete(':id')
     @UseGuards(OwnerCheckGuard)
-    deleteProperty(@Param('id') propId:number,@AuthUser('id') userId:number){
-        return this.propertyservice.deleteProperty(propId,userId)
+    deleteProperty(@Param('id') propId: number, @AuthUser('id') userId: number) {
+        return this.propertyservice.deleteProperty(propId, userId)
     }
 
     @Post('find/:id')
-    findeProperty(@Param('id') propId:number){
+    findeProperty(@Param('id') propId: number) {
         return this.propertyservice.findProperty(propId)
     }
 
     @Get()
-    allProperties(){
+    allProperties() {
         return this.propertyservice.allProperties()
+    }
+
+    @Post('archive/:id')
+    archiveProperty(@AuthUser('id') userId: number, @Param('id') propId: number) {
+        return this.propertyservice.achiveProperty(propId, userId)
     }
 }

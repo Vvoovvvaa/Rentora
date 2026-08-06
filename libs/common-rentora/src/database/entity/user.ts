@@ -1,12 +1,13 @@
 import { Column, Entity, JoinColumn, OneToMany, OneToOne } from "typeorm";
 import { Base } from "./base";
 import { userRoles } from "../enums";
-import { Usersecurity } from "./user-security";
+import { UserSecurity } from "./user-security";
 import { accauntSatus } from "../enums/accaunt-status";
 import { EmailStatusEnum } from "../enums/email-status";
 import { SecretCode } from "./secretCode";
 import { Property } from "./property";
 import { UserImage } from "./user-images";
+import { Favorites } from "./favorites";
 
 @Entity("users")
 export class User extends Base {
@@ -34,8 +35,8 @@ export class User extends Base {
     @Column({ type: 'enum', enum: accauntSatus, default: accauntSatus.ACTIVE })
     accauntStatus: accauntSatus
 
-    @OneToOne(() => Usersecurity, security => security.user)
-    security: Usersecurity
+    @OneToOne(() => UserSecurity, security => security.user)
+    security: UserSecurity
 
     @OneToOne(() => SecretCode, secretCode => secretCode.user)
     secretCode: SecretCode
@@ -46,6 +47,9 @@ export class User extends Base {
     @OneToOne(() => UserImage,image => image.user,{onDelete: 'CASCADE', nullable:true, cascade: true})
     @JoinColumn()
     image: UserImage
+
+    @OneToMany(() => Favorites, fav => fav.user)
+    favorites: Favorites[]
 
 }
 

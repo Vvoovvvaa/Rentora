@@ -8,7 +8,7 @@ import * as bcrypt from "bcrypt";
 import { LoginDto } from './dto/login.dto';
 import { CreateAuthDto } from './dto/auth.dto';
 import { IJwtconfig } from '@app/common-rentora/models/jwt.config';
-import { EmailStatusEnum, SecretCode, User, Usersecurity } from '@app/common-rentora/database/entity';
+import { EmailStatusEnum, SecretCode, User, UserSecurity } from '@app/common-rentora/database/entity';
 import { accauntSatus } from '@app/common-rentora/database/enums/accaunt-status';
 import { SenderService } from '@app/common-rentora/smtp';
 import { randomCode } from '@app/common-rentora/helpers';
@@ -25,8 +25,8 @@ export class AuthService {
         @InjectRepository(User)
         private readonly userRepo: Repository<User>,
 
-        @InjectRepository(Usersecurity)
-        private readonly usersecurityRepo: Repository<Usersecurity>,
+        @InjectRepository(UserSecurity)
+        private readonly usersecurityRepo: Repository<UserSecurity>,
 
         @InjectRepository(SecretCode)
         private readonly secretCodeRepo: Repository<SecretCode>,
