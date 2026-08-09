@@ -1,0 +1,12 @@
+"use client";
+import { usePathname } from "next/navigation";
+import { AuthProvider } from "@/context/auth-context";
+import { AppShell } from "./site-chrome";
+import { HomeView } from "./home-view";
+import { AuthView, CreatePropertyView, DetailView, EditPropertyView, ListingsView, MessagesView, ProfileView } from "./views";
+import { CompareProvider } from "@/context/compare-context";
+import { CompareBar } from "./compare-bar";
+import { CompareView } from "./compare-view";
+import { SearchView } from "./search-view";
+
+export function RentoraClient() { const path = usePathname(); const segments = path.split("/"); return <AuthProvider><CompareProvider><AppShell>{path === "/" ? <HomeView/> : path === "/login" || path === "/register" || path === "/verify-email" || path === "/forgot-password" ? <AuthView mode={path.slice(1)}/> : path === "/search" ? <SearchView/> : path === "/compare" ? <CompareView/> : path === "/properties" || path === "/favorites" || path === "/my-properties" ? <ListingsView kind={path.slice(1)}/> : path === "/properties/create" ? <CreatePropertyView/> : path === "/messages" ? <MessagesView/> : path === "/profile" ? <ProfileView/> : segments[1] === "properties" && segments[3] === "edit" ? <EditPropertyView id={segments[2]}/> : path.startsWith("/properties/") ? <DetailView id={segments[2]}/> : <div className="shell py-24"><h1 className="text-4xl font-black">Page not found</h1></div>}<CompareBar/></AppShell></CompareProvider></AuthProvider>; }

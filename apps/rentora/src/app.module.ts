@@ -9,12 +9,11 @@ import { AuthModule } from './auth/auth.module';
 import { validationSchema } from '@app/common-rentora/validation';
 import { cloudinaryConfig, dbconfig, jwtconfig, smtpconfig } from '@app/common-rentora/configs';
 import { IDbcongif } from '@app/common-rentora/models';
-import { Favorites, Property, PropertyImage, SecretCode, User, UserImage, UserSecurity } from '@app/common-rentora/database/entity';
+import { Favorites, Property, PropertyImage, Report, SecretCode, User, UserImage, UserSecurity } from '@app/common-rentora/database/entity';
 import { EmailModule } from '@app/common-rentora/smtp';
 import { PropertiesModule } from './properties/properties.module';
 import { SearchModule } from './search/search.module';
 import { UserModule } from './user/user.module';
-import { ChatService } from './chat/chat.service';
 import { ChatModule } from './chat/chat.module';
 
 @Module({
@@ -25,7 +24,7 @@ import { ChatModule } from './chat/chat.module';
     SearchModule,
     UserModule,
     ChatModule,
-    
+
 
     ConfigModule.forRoot({
       isGlobal: true,
@@ -46,7 +45,7 @@ import { ChatModule } from './chat/chat.module';
           username: dbconfig.POSTGRES_USER,
           password: dbconfig.POSTGRES_PASSWORD,
           database: dbconfig.POSTGRES_DB,
-          entities: [User, UserSecurity, SecretCode, Property,PropertyImage,UserImage, Favorites],
+          entities: [User, UserSecurity, SecretCode, Property, PropertyImage, UserImage, Favorites, Report],
           autoLoadEntities: true,
           synchronize: true,
           // dropSchema: true,
@@ -55,7 +54,7 @@ import { ChatModule } from './chat/chat.module';
     }),
 
 
-    
+
 
   ],
 

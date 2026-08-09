@@ -1,42 +1,110 @@
-import { PropertyCategory, ArmeniaCity } from "@app/common-rentora/database/enums"
-import { PropertyCurrency } from "@app/common-rentora/database/enums/property-currency"
-import { IsEnum, IsNotEmpty, IsNumber, IsString, Min, MinLength } from "class-validator"
+import {
+    PropertyCategory,
+    ArmeniaCity,
+    PropertyFeature,
+    PropertyCondition,
+    BuildingType,
+    propertyListing,
+} from "@app/common-rentora/database/enums";
+
+import { PropertyCurrency } from "@app/common-rentora/database/enums/property-currency";
+
+import {
+    IsArray,
+    IsEnum,
+    IsInt,
+    IsNotEmpty,
+    IsNumber,
+    IsOptional,
+    IsString,
+    Max,
+    Min,
+    MinLength
+} from "class-validator";
 
 export class CreatePropertyDto {
     @IsString()
     @IsNotEmpty()
-    title: string
+    title: string;
 
     @IsString()
     @IsNotEmpty()
     @MinLength(30)
-    description: string
+    description: string;
 
     @IsEnum(ArmeniaCity)
     @IsNotEmpty()
-    city: ArmeniaCity
+    city: ArmeniaCity;
 
     @IsNotEmpty()
     @IsEnum(PropertyCategory)
-    category: PropertyCategory
+    category: PropertyCategory;
+
+    @IsNotEmpty()
+    @IsEnum(propertyListing)
+    listing: propertyListing;
 
     @IsNotEmpty()
     @IsNumber()
     @Min(1)
-    price: number
+    price: number;
 
     @IsNotEmpty()
-    @IsNumber()
+    @IsInt()
     @Min(1)
-    rooms: number
+    rooms: number;
 
     @IsNotEmpty()
     @IsNumber()
     @Min(5)
-    area: number
+    area: number;
 
     @IsNotEmpty()
     @IsEnum(PropertyCurrency)
-    currency: PropertyCurrency
+    currency: PropertyCurrency;
 
+    @IsOptional()
+    @IsInt()
+    @Min(0)
+    bedrooms?: number;
+
+    @IsOptional()
+    @IsInt()
+    @Min(1)
+    bathrooms?: number;
+
+    @IsOptional()
+    @IsInt()
+    @Min(0)
+    floor?: number;
+
+    @IsOptional()
+    @IsInt()
+    @Min(1)
+    totalFloors?: number;
+
+    @IsOptional()
+    @IsNumber()
+    @Min(1.5)
+    @Max(10)
+    ceilingHeight?: number;
+
+    @IsOptional()
+    @IsInt()
+    @Min(1800)
+    @Max(new Date().getFullYear() + 10)
+    constructionYear?: number;
+
+    @IsOptional()
+    @IsEnum(PropertyCondition)
+    condition?: PropertyCondition;
+
+    @IsOptional()
+    @IsEnum(BuildingType)
+    buildingType?: BuildingType;
+
+    @IsOptional()
+    @IsArray()
+    @IsEnum(PropertyFeature, { each: true })
+    features?: PropertyFeature[];
 }

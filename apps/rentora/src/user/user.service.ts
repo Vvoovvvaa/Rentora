@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from "bcrypt";
@@ -84,7 +84,7 @@ export class UserService {
             throw new BadRequestException('Invalid password, try again later')
         }
 
-        user.password === await bcrypt.hash(dto.NewPassword, 10)
+        user.password = await bcrypt.hash(dto.NewPassword, 10)
         await this.userRepo.save(user)
 
         if (user.gmail) {
@@ -206,6 +206,9 @@ export class UserService {
             }
         });
 
+        if (!user || !property) {
+            throw new BadRequestException('User or property not found');
+        }
 
         const newFavorite = this.favoritesRepo.create({
             user: user,
@@ -222,17 +225,16 @@ export class UserService {
     }
 
     async viewFavorites(userId: number) {
-        const user = await this.userRepo.find({ where: { id: userId } })
-        const favroties = await this.favoritesRepo.findOne({ where: { user: { id: userId } }, relations: { property: true } })
+        const user = await this.userRepo.findOne({ where: { id: userId } })
+        const favorites = await this.favoritesRepo.find({
+            where: { user: { id: userId } },
+            relations: { property: { images: true, owner: true } },
+        })
 
         if (!user) {
             throw new BadRequestException('Please try again later')
         }
 
-        if (!favroties) {
-            throw new NotFoundException(`User Dont have a favorites, please add favorites`)
-        }
-
-        return favroties
+        return favorites
     }
 }

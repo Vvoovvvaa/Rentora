@@ -8,6 +8,7 @@ import { SecretCode } from "./secretCode";
 import { Property } from "./property";
 import { UserImage } from "./user-images";
 import { Favorites } from "./favorites";
+import { Report } from "./report";
 
 @Entity("users")
 export class User extends Base {
@@ -50,6 +51,9 @@ export class User extends Base {
 
     @OneToMany(() => Favorites, fav => fav.user)
     favorites: Favorites[]
+
+    @OneToMany(() => Report, report => report.user)
+    report: Report
 
 }
 

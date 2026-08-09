@@ -14,7 +14,7 @@ export class SearchService {
     ) { }
 
     async searchProperties(dto: SearchDto) {
-        const { city, minPrice, maxPrice, category, area, rooms, sort } = dto
+        const { city, minPrice, maxPrice, category, area, rooms, sort, bedrooms, floor, constructionYear, features, currency, listing } = dto
 
         const query = this.propertyRepo
             .createQueryBuilder('property')
@@ -37,7 +37,7 @@ export class SearchService {
 
         if (maxPrice) {
             query.andWhere(
-                'property.price >= :maxPrice', { maxPrice }
+                'property.price <= :maxPrice', { maxPrice }
             )
         }
 
@@ -105,8 +105,48 @@ export class SearchService {
 
         }
 
+        if (bedrooms) {
+            query.andWhere(
+                'property.bedrooms = :bedrooms', { bedrooms }
+            )
+        }
+
+        if (floor) {
+            query.andWhere(
+                'property.floor = :floor', { floor }
+            )
+        }
+
+        if (constructionYear) {
+            query.andWhere(
+                "property.constructionYear = :constructionYear", { constructionYear }
+            )
+        }
+
+        if (features?.length) {
+            query.andWhere(
+                'property.features @> :features',
+                { features }
+            )
+        }
+
+        if(currency){
+            query.andWhere(
+                'property.currecny = :currency', {currency}
+            )
+        }
+
+        if (listing) {
+            query.andWhere(
+                'property.listing = :listing', { listing }
+            )
+        }
+
         return query.getMany()
     }
 
 
 }
+
+
+// features

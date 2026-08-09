@@ -1,14 +1,15 @@
-import { EmailStatusEnum, Property, PropertyImage, User } from '@app/common-rentora/database/entity';
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { EmailStatusEnum, Property, PropertyImage, Report, User } from '@app/common-rentora/database/entity';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { CreatePropertyDto } from './dto/create-property.dto';
-import { PropertyStatus } from '@app/common-rentora/database/enums';
+import { PropertyStatus, ReportStatusEnum } from '@app/common-rentora/database/enums';
 import { changePropertyDto } from './dto/change-property.dto';
 import { PhotoValidator } from '@app/common-rentora/helpers';
 import { UploadService } from '../upload/upload.service';
 import { SenderService } from '@app/common-rentora/smtp';
+import { CreateReportDto } from './dto/create-report.dto';
 
 @Injectable()
 export class PropertiesService {
@@ -21,6 +22,9 @@ export class PropertiesService {
 
         @InjectRepository(PropertyImage)
         private readonly propertImageRepo: Repository<PropertyImage>,
+
+        @InjectRepository(Report)
+        private readonly reportRepo: Repository<Report>,
 
         private readonly uploadservice: UploadService,
 
@@ -102,8 +106,10 @@ export class PropertiesService {
 
 
     async myProperties(userId: number) {
-
-        return await this.propertyRepo.find({ where: { owner: { id: userId } } })
+        return await this.propertyRepo.find({
+            where: { owner: { id: userId } },
+            relations: { images: true, owner: true },
+        })
 
     }
 
@@ -145,14 +151,14 @@ export class PropertiesService {
     }
 
     async achiveProperty(propid: number, userId: number) {
-        const property = await this.propertyRepo.findOne({ where: { id: propid, owner: {id: userId} },relations: {owner: true}})
-        const user = await this.userRepo.findOne({ where:{id: userId}})
+        const property = await this.propertyRepo.findOne({ where: { id: propid, owner: { id: userId } }, relations: { owner: true } })
+        const user = await this.userRepo.findOne({ where: { id: userId } })
 
         if (!property) {
             throw new BadRequestException('Please,try again later')
         }
 
-        if(!user){
+        if (!user) {
             throw new BadRequestException('please,try again later')
         }
 
@@ -160,12 +166,109 @@ export class PropertiesService {
             throw new BadRequestException(`property already achived`)
         }
 
+        if (property.owner.id !== userId) {
+            throw new ForbiddenException("You cannot archive this property")
+        }
+
         property.status = PropertyStatus.ARCHIVED
+        await this.propertyRepo.save(property)
 
         return {
             message: " Property status was succefuly chanaged"
         }
 
+    }
+
+    async compareProperties(userId: number, propId1: number, propId2: number) {
+        const user = await this.userRepo.findOne({ where: { id: userId } })
+
+        if (!user) {
+            throw new BadRequestException('please try again later')
+        }
+
+        if (propId1 === propId2) {
+            throw new BadRequestException(`You cannot compare same property`)
+        }
+
+
+        const [prop1, prop2] = await Promise.all([
+            this.propertyRepo.findOne({
+                where: { id: propId1 },
+                relations: {
+                    images: true,
+                    owner: true
+                }
+            }),
+
+            this.propertyRepo.findOne({
+                where: { id: propId2 },
+                relations: {
+                    images: true,
+                    owner: true
+                }
+            })
+        ])
+
+        if (!prop1 || !prop2) {
+            throw new BadRequestException(
+                'One or more properties not found'
+            )
+        }
+
+
+        return {
+            firstProperty: {
+                ...prop1,
+                pricePerSquareMeter:
+                    Number(prop1.price) / prop1.area
+            },
+
+            secondProperty: {
+                ...prop2,
+                pricePerSquareMeter:
+                    Number(prop2.price) / prop2.area
+            }
+        }
+
+    }
+
+    async createPropertyReport(dto: CreateReportDto, userId: number, propId: number) {
+        const user = await this.userRepo.findOne({ where: { id: userId } })
+
+        if (!user) {
+            throw new BadRequestException('Please try again later')
+        }
+
+        const prop = await this.propertyRepo.findOne({ where: { id: propId } })
+
+
+        const oldReport = await this.reportRepo.findOne({
+            where: {
+                user: { id: userId },
+                property: { id: propId }
+            }
+        })
+
+        if (oldReport) {
+            throw new BadRequestException(
+                'You already reported this property'
+            )
+        }
+
+        if (!prop) {
+            throw new BadRequestException("please try again later")
+        }
+
+        const report = this.reportRepo.create({
+            user: user,
+            property: prop,
+            reason: dto.report,
+            description: dto.description
+        })
+
+        await this.reportRepo.save(report)
+
+        return { message:  'Report successfully sent. Our admins will review it.' }
 
     }
 

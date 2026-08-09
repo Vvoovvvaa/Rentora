@@ -1,21 +1,21 @@
-import { ArmeniaCity, PropertyCategory, PropertySort } from "@app/common-rentora/database/enums";
+import { ArmeniaCity, PropertyCategory, PropertyCurrency, PropertyFeature, propertyListing, PropertySort } from "@app/common-rentora/database/enums";
 import { Type } from "class-transformer";
 import { IsEnum, isNumber, IsNumber, IsOptional, Min } from "class-validator";
 
-export class SearchDto{
+export class SearchDto {
     @IsEnum(ArmeniaCity)
     @IsOptional()
     city?: ArmeniaCity
 
     @IsEnum(PropertyCategory)
     @IsOptional()
-    category?: PropertyCategory 
+    category?: PropertyCategory
 
     @Type(() => Number)
     @IsOptional()
     @IsNumber()
     @Min(1)
-    minPrice?:number
+    minPrice?: number
 
     @Type(() => Number)
     @IsOptional()
@@ -36,4 +36,30 @@ export class SearchDto{
     @IsOptional()
     sort: PropertySort
 
+    @IsOptional()
+    @IsNumber()
+    bedrooms: number
+
+    @IsOptional()
+    @IsNumber()
+    floor: number
+
+    @IsOptional()
+    @IsNumber()
+    constructionYear: number
+
+    @IsEnum(PropertyFeature)
+    @IsOptional()
+    features: PropertyFeature
+
+    @IsEnum(PropertyCurrency)
+    @IsOptional()
+    currency: PropertyCurrency
+
+    @IsEnum(propertyListing)
+    @IsOptional()
+    listing?: propertyListing
+
 }
+
+
