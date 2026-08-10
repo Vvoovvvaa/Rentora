@@ -268,8 +268,24 @@ export class PropertiesService {
 
         await this.reportRepo.save(report)
 
-        return { message:  'Report successfully sent. Our admins will review it.' }
+        return { message: 'Report successfully sent. Our admins will review it.' }
 
+    }
+
+    async viewMyreports(userid: number) {
+        const user = await this.userRepo.findOne({ where: { id: userid } })
+
+        if (!user) {
+            throw new BadRequestException(`Please try again later`)
+        }
+
+        const report = await this.reportRepo.find({ where: { user: { id: userid } }, relations: {property: true} })
+
+        if (!report) {
+            throw new BadRequestException('please try again later')
+        }
+
+        return report
     }
 
 }

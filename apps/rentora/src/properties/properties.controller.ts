@@ -73,4 +73,10 @@ export class PropertiesController {
     reportProperty(@Body() body: CreateReportDto,@AuthUser('id') userId:number, @Param('id') propId:number,  ){
         return this.propertyservice.createPropertyReport(body,userId,propId)
     }
+
+    @Get("my-reports")
+    @UseGuards(AuthGuard)
+    viewMyReports(@AuthUser('id') userId: number){
+        return this.propertyservice.viewMyreports(userId)
+    }
 }

@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 import { UserController } from './user.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { userInfo } from 'os';
-import { Favorites, Property, User, UserImage, UserSecurity } from '@app/common-rentora/database/entity';
+import { AdminSecretcode, Favorites, Property, User, UserImage, UserSecurity } from '@app/common-rentora/database/entity';
 import { UserService } from './user.service';
 import { UploadService } from '../upload/upload.service';
-import { EmailModule, SenderService } from '@app/common-rentora/smtp';
+import { EmailModule } from '@app/common-rentora/smtp';
+import { Admin } from 'typeorm/driver/mongodb/typings.js';
 
 @Module({
     imports: [TypeOrmModule.forFeature([User,UserImage,UserSecurity,Favorites,Property]), EmailModule],
