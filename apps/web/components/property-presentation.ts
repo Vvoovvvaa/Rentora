@@ -1,4 +1,4 @@
-import type { BuildingType, Currency, Property, PropertyCondition, PropertyFeature, PropertyListing, PropertySort } from "@/types/models";
+import type { BuildingType, Currency, Property, PropertyCondition, PropertyFeature, PropertyListing, PropertyPublishing, PropertySort } from "@/types/models";
 
 export const categoryLabels: Record<string, string> = {
   apartament: "Apartment", house: "House", villa: "Villa", land: "Land", office: "Office", commercial: "Commercial", garage: "Garage", warehouse: "Warehouse",
@@ -23,6 +23,9 @@ export const readableEnum = (value?: string) => value ? value.toLowerCase().repl
 export const getFeatureLabel = (value: PropertyFeature) => explicitFeatureLabels[value] || readableEnum(value);
 export const getCategoryLabel = (value: string) => categoryLabels[value] || readableEnum(value);
 export const getListingLabel = (value?: PropertyListing) => value ? listingLabels[value] : "";
+export const publishingLabels: Record<PropertyPublishing, string> = { PENDING: "Pending review", ACTIVE: "Active", REJECTED: "Rejected" };
+export const getPublishingLabel = (value?: PropertyPublishing) => value ? publishingLabels[value] : "";
+export const isPublicProperty = (property: Property) => property.publishing === "ACTIVE";
 export const getCurrencySymbol = (value: Currency) => currencySymbols[value] || "";
 export const formatMoney = (value: string | number, currency: Currency) => `${getCurrencySymbol(currency)}${Number(value).toLocaleString()}`;
 export const priceOf = (property: Property) => formatMoney(property.price, property.currency);

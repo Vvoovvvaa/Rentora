@@ -15,6 +15,7 @@ import {
 import { IDbcongif } from '@app/common-rentora/models';
 import { EmailModule } from '@app/common-rentora/smtp';
 import { AdminsModule } from './admins-users/admins.module';
+import { AdminsPropertiesModule } from './admins-properties/admins-properties.module';
 
 @Module({
   imports: [
@@ -60,7 +61,8 @@ import { AdminsModule } from './admins-users/admins.module';
 
     AdminAuthModule,
     EmailModule,
-    AdminsModule
+    AdminsModule,
+    AdminsPropertiesModule
   ],
 
   controllers: [AdminController],

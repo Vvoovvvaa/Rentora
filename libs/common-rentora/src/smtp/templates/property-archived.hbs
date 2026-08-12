@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Property Archived - Rentora</title>
+</head>
+
+<body style="
+  margin:0;
+  padding:0;
+  background:#0a0f1a;
+  font-family:Arial, Helvetica, sans-serif;
+">
+
+<table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 0;">
+  <tr>
+    <td align="center">
+
+      <table width="560" cellpadding="0" cellspacing="0" style="
+        background:#111827;
+        border-radius:18px;
+        overflow:hidden;
+        border:1px solid #1f2937;
+      ">
+
+        <tr>
+          <td style="
+            height:5px;
+            background:#f59e0b;
+          "></td>
+        </tr>
+
+        <tr>
+          <td align="center" style="padding:35px 30px 15px;">
+
+            <h1 style="
+              margin:0;
+              font-size:31px;
+              font-weight:800;
+              color:#ffffff;
+            ">
+              🏠 Rentora
+            </h1>
+
+            <p style="
+              margin:10px 0 0;
+              font-size:13px;
+              color:#94a3b8;
+            ">
+              Property status notification
+            </p>
+
+          </td>
+        </tr>
+
+        <tr>
+          <td align="center" style="padding:20px;">
+
+            <div style="
+              width:90px;
+              height:90px;
+              background:#451a03;
+              border:1px solid #92400e;
+              border-radius:50%;
+              line-height:90px;
+              font-size:38px;
+              color:#f59e0b;
+            ">
+              ⏸
+            </div>
+
+          </td>
+        </tr>
+
+        <tr>
+          <td align="center" style="
+            padding:15px 45px 25px;
+          ">
+
+            <h2 style="
+              margin:0;
+              font-size:24px;
+              color:#ffffff;
+            ">
+              Your property has been archived
+            </h2>
+
+            <p style="
+              margin-top:20px;
+              font-size:15px;
+              line-height:24px;
+              color:#9ca3af;
+            ">
+              Hello, {{name}}.
+            </p>
+
+            <p style="
+              margin-top:10px;
+              font-size:15px;
+              line-height:24px;
+              color:#9ca3af;
+            ">
+              Your property listing has been moved to the archive
+              by the Rentora administration.
+            </p>
+
+            <p style="
+              margin-top:10px;
+              font-size:14px;
+              line-height:22px;
+              color:#6b7280;
+            ">
+              The listing is no longer visible in public property search
+              while it remains archived.
+            </p>
+
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:10px 40px 20px;">
+
+            <table width="100%" cellpadding="0" cellspacing="0" style="
+              background:#1f2937;
+              border-radius:12px;
+              border:1px solid #374151;
+            ">
+
+              <tr>
+                <td style="padding:22px;">
+
+                  <p style="
+                    margin:0;
+                    font-size:12px;
+                    color:#64748b;
+                    letter-spacing:1px;
+                  ">
+                    PROPERTY DETAILS
+                  </p>
+
+                  <p style="
+                    margin:14px 0 0;
+                    font-size:18px;
+                    font-weight:700;
+                    color:#ffffff;
+                  ">
+                    {{propertyTitle}}
+                  </p>
+
+                  <p style="
+                    margin:10px 0 0;
+                    font-size:13px;
+                    color:#9ca3af;
+                  ">
+                    Property ID: #{{propertyId}}
+                  </p>
+
+                  <p style="
+                    margin:8px 0 0;
+                    font-size:13px;
+                    color:#9ca3af;
+                  ">
+                    Status:
+                    <span style="
+                      color:#f59e0b;
+                      font-weight:700;
+                    ">
+                      ARCHIVED
+                    </span>
+                  </p>
+
+                  <p style="
+                    margin:8px 0 0;
+                    font-size:13px;
+                    color:#9ca3af;
+                  ">
+                    Archived at: {{archivedAt}}
+                  </p>
+
+                </td>
+              </tr>
+
+            </table>
+
+          </td>
+        </tr>
+
+        {{#if reason}}
+        <tr>
+          <td style="padding:10px 40px 20px;">
+
+            <table width="100%" cellpadding="0" cellspacing="0" style="
+              background:#422006;
+              border:1px solid #92400e;
+              border-radius:12px;
+            ">
+
+              <tr>
+                <td style="padding:20px;">
+
+                  <p style="
+                    margin:0;
+                    font-size:14px;
+                    font-weight:700;
+                    color:#fde68a;
+                  ">
+                    Archive reason
+                  </p>
+
+                  <p style="
+                    margin:10px 0 0;
+                    font-size:13px;
+                    line-height:20px;
+                    color:#fcd34d;
+                  ">
+                    {{reason}}
+                  </p>
+
+                </td>
+              </tr>
+
+            </table>
+
+          </td>
+        </tr>
+        {{/if}}
+
+        <tr>
+          <td style="padding:10px 40px 25px;">
+
+            <table width="100%" cellpadding="0" cellspacing="0" style="
+              background:#172033;
+              border-radius:12px;
+            ">
+
+              <tr>
+                <td align="center" style="padding:20px;">
+
+                  <p style="
+                    margin:0;
+                    font-size:14px;
+                    font-weight:700;
+                    color:#e5e7eb;
+                  ">
+                    What does this mean?
+                  </p>
+
+                  <p style="
+                    margin:10px 0 0;
+                    font-size:13px;
+                    line-height:20px;
+                    color:#9ca3af;
+                  ">
+                    Your property has not been permanently deleted.
+                    It is currently hidden from public listings and may be
+                    restored later if appropriate.
+                  </p>
+
+                </td>
+              </tr>
+
+            </table>
+
+          </td>
+        </tr>
+
+        <tr>
+          <td align="center" style="
+            padding:25px;
+            border-top:1px solid #1f2937;
+          ">
+
+            <p style="
+              margin:0;
+              font-size:12px;
+              color:#64748b;
+            ">
+              If you believe your property was archived by mistake,
+              please contact Rentora support.
+            </p>
+
+          </td>
+        </tr>
+
+        <tr>
+          <td align="center" style="
+            padding:20px;
+            background:#0f172a;
+          ">
+
+            <p style="
+              margin:0;
+              font-size:12px;
+              color:#64748b;
+            ">
+              © {{year}} Rentora
+            </p>
+
+            <p style="
+              margin:8px 0 0;
+              font-size:11px;
+              color:#475569;
+            ">
+              Find • Buy • Rent Real Estate
+            </p>
+
+          </td>
+        </tr>
+
+      </table>
+
+    </td>
+  </tr>
+</table>
+
+</body>
+</html>

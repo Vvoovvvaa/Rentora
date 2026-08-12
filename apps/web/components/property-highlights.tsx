@@ -2,7 +2,7 @@ import { Bath, BedDouble, Building2, CalendarDays, CarFront, ChefHat, Flame, Lay
 import type { LucideIcon } from "lucide-react";
 import type { Property, PropertyFeature } from "@/types/models";
 import { featureGroups } from "./property-form-options";
-import { buildingLabels, conditionLabels, getFeatureLabel, heatingLabels, readableEnum } from "./property-presentation";
+import { buildingLabels, conditionLabels, getFeatureLabel, readableEnum } from "./property-presentation";
 
 export const featureGroupLabels: Record<string, string> = {
   "Парковка и здание": "Parking & building",
@@ -36,7 +36,6 @@ const detailItems = (property: Property) => [
   { icon: CalendarDays, label: "Year built", value: property.constructionYear },
   { icon: Building2, label: "Building type", value: property.buildingType ? buildingLabels[property.buildingType] || readableEnum(property.buildingType) : undefined },
   { icon: Sparkles, label: "Condition", value: property.condition ? conditionLabels[property.condition] || readableEnum(property.condition) : undefined },
-  { icon: Flame, label: "Heating", value: property.heatingType ? heatingLabels[property.heatingType] || readableEnum(property.heatingType) : undefined },
 ];
 
 export function PropertyCharacteristics({ property }: { property: Property }) {

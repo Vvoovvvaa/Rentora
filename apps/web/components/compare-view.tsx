@@ -11,7 +11,7 @@ import type { ComparedProperty, PropertyFeature } from "@/types/models";
 import { ErrorBlock } from "./home-view";
 import { featureGroups } from "./property-form-options";
 import { featureGroupLabels } from "./property-highlights";
-import { buildingLabels, cityOf, conditionLabels, formatMoney, getCategoryLabel, getFeatureLabel, heatingLabels, priceOf, readableEnum } from "./property-presentation";
+import { buildingLabels, cityOf, conditionLabels, formatMoney, getCategoryLabel, getFeatureLabel, priceOf, readableEnum } from "./property-presentation";
 
 const parseId = (value: string | null) => value && /^\d+$/.test(value) && Number(value) > 0 ? Number(value) : undefined;
 const isPair = (first?: number, second?: number): first is number => Boolean(first && second && first !== second);
@@ -23,7 +23,7 @@ function pricePerSquareMeter(property: ComparedProperty) {
   return price === undefined ? dash : `${formatMoney(Math.round(price), property.currency)} / m²`;
 }
 
-function propertyValue(property: ComparedProperty, key: "area" | "rooms" | "bedrooms" | "bathrooms" | "floor" | "ceilingHeight" | "constructionYear" | "buildingType" | "condition" | "heatingType") {
+function propertyValue(property: ComparedProperty, key: "area" | "rooms" | "bedrooms" | "bathrooms" | "floor" | "ceilingHeight" | "constructionYear" | "buildingType" | "condition") {
   const raw = property[key];
   if (key === "floor") {
     const floor = property.floor;
@@ -36,7 +36,6 @@ function propertyValue(property: ComparedProperty, key: "area" | "rooms" | "bedr
   if (key === "ceilingHeight") return `${raw} m`;
   if (key === "buildingType") return buildingLabels[String(raw) as keyof typeof buildingLabels] || readableEnum(String(raw));
   if (key === "condition") return conditionLabels[String(raw) as keyof typeof conditionLabels] || readableEnum(String(raw));
-  if (key === "heatingType") return heatingLabels[String(raw)] || readableEnum(String(raw));
   return String(raw);
 }
 
@@ -120,8 +119,8 @@ export function CompareView() {
   }
 
   const properties = result ? [result.firstProperty, result.secondProperty] : [];
-  const detailRows: Array<{ label: string; key: "area" | "rooms" | "bedrooms" | "bathrooms" | "floor" | "ceilingHeight" | "constructionYear" | "buildingType" | "condition" | "heatingType" }> = [
-    { label: "Area", key: "area" }, { label: "Rooms", key: "rooms" }, { label: "Bedrooms", key: "bedrooms" }, { label: "Bathrooms", key: "bathrooms" }, { label: "Floor", key: "floor" }, { label: "Ceiling height", key: "ceilingHeight" }, { label: "Year built", key: "constructionYear" }, { label: "Building type", key: "buildingType" }, { label: "Condition", key: "condition" }, { label: "Heating", key: "heatingType" },
+  const detailRows: Array<{ label: string; key: "area" | "rooms" | "bedrooms" | "bathrooms" | "floor" | "ceilingHeight" | "constructionYear" | "buildingType" | "condition" }> = [
+    { label: "Area", key: "area" }, { label: "Rooms", key: "rooms" }, { label: "Bedrooms", key: "bedrooms" }, { label: "Bathrooms", key: "bathrooms" }, { label: "Floor", key: "floor" }, { label: "Ceiling height", key: "ceilingHeight" }, { label: "Year built", key: "constructionYear" }, { label: "Building type", key: "buildingType" }, { label: "Condition", key: "condition" },
   ];
 
   const sameCurrency = result?.firstProperty.currency === result?.secondProperty.currency;

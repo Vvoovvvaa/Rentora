@@ -8,13 +8,14 @@ import type { Property } from "@/types/models";
 import { PropertyCard, PropertySkeleton } from "./property-card";
 import { SearchForm } from "./search-form";
 import { useAuth } from "@/context/auth-context";
+import { isPublicProperty } from "./property-presentation";
 
 export function HomeView() {
   const { user, loading: authLoading } = useAuth();
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const load = () => { setLoading(true); propertiesApi.all().then(setProperties).catch((reason) => setError(apiMessage(reason))).finally(() => setLoading(false)); };
+  const load = () => { setLoading(true); propertiesApi.all().then((items) => setProperties(items.filter(isPublicProperty))).catch((reason) => setError(apiMessage(reason))).finally(() => setLoading(false)); };
   useEffect(() => { if (authLoading) return; void Promise.resolve().then(user ? load : () => setLoading(false)); }, [authLoading, user]);
   const benefits = [[Building2, "A clearer search", "Browse real listings and use only filters backed by Rentora’s API."], [ShieldCheck, "Built around trust", "Email verification protects the property-creation flow."], [MessageCircle, "Talk directly", "Start a conversation with a property owner when a place feels right."]];
   return <>

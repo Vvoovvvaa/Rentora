@@ -14,6 +14,7 @@ import {
     PropertyCondition,
     BuildingType,
     propertyListing,
+    PropertyPublishing,
 } from "../enums";
 
 import { PropertyCurrency } from "../enums/property-currency";
@@ -55,6 +56,9 @@ export class Property extends Base {
         enum: PropertyCurrency
     })
     currency: PropertyCurrency;
+
+    @Column({type: 'enum', enum: PropertyPublishing, default: PropertyPublishing.PENDING})
+    publishing: PropertyPublishing
 
     @Column({ default: 0 })
     views: number;

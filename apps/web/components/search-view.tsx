@@ -4,7 +4,7 @@ import { Filter, Search, SlidersHorizontal, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { apiMessage, propertiesApi } from "@/lib/api";
-import type { Property, PropertyFeature, PropertyListing, PropertySort, SearchParams } from "@/types/models";
+import type { ArmeniaCity, Property, PropertyFeature, PropertyListing, PropertySort, SearchParams } from "@/types/models";
 import { Empty, ErrorBlock } from "./home-view";
 import { PropertyCard, PropertySkeleton } from "./property-card";
 import { CustomSelect } from "./custom-select";
@@ -22,7 +22,7 @@ function stateFromParams(params: URLSearchParams): SearchFormState {
 
 function requestFromState(state: SearchFormState): SearchParams {
   const request: SearchParams = {};
-  if (state.city) request.city = state.city;
+  if (state.city) request.city = state.city as ArmeniaCity;
   if (state.category) request.category = state.category as SearchParams["category"];
   if (state.listing) request.listing = state.listing;
   (["rooms", "minPrice", "maxPrice", "bedrooms", "floor", "constructionYear", "area"] as const).forEach((key) => { if (state[key]) request[key] = Number(state[key]); });

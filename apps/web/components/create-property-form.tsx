@@ -69,8 +69,8 @@ export function CreatePropertyForm() {
       scalarFields.forEach((key) => { const value = form[key]; if (value !== "") data.append(key, value); });
       form.features.forEach((feature) => data.append("features", feature));
       photos.forEach((photo) => data.append("photos", photo));
-      const property = await propertiesApi.create(data);
-      router.push(`/properties/${property.id}`);
+      await propertiesApi.create(data);
+      router.push("/my-properties");
     } catch (reason) {
       setErrors((current) => ({ ...current, photos: apiMessage(reason) }));
     } finally {

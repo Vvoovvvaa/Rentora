@@ -7,6 +7,16 @@ api.interceptors.request.use((config) => {
   if (typeof window !== "undefined") { const token = localStorage.getItem("rentora_token"); if (token) config.headers.Authorization = `Bearer ${token}`; }
   return config;
 });
+// Admin API has its own server and accepts only tokens with payload.type === "ADMIN".
+// The default path is proxied by next.config.ts to avoid browser CORS assumptions.
+export const adminApiClient = axios.create({ baseURL: process.env.NEXT_PUBLIC_ADMIN_API_URL || "/admin-api" });
+adminApiClient.interceptors.request.use((config) => {
+  if (typeof window !== "undefined") {
+    const token = localStorage.getItem("rentora_admin_token");
+    if (token) config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 export function apiMessage(error: unknown) {
   const payload = (error as AxiosError<{ message?: string | string[] }>).response?.data;
   const message = payload?.message;
@@ -44,4 +54,24 @@ export const chatApi = {
   rooms: () => api.get<ChatRoom[]>("/chat/rooms").then(r => r.data),
   createRoom: (propertyId: number) => api.post<ChatRoom>("/chat/room", { propertyId }).then(r => r.data),
   messages: (roomId: number) => api.get<ChatMessage[]>(`/chat/${roomId}/messages`).then(r => r.data),
+};
+export const adminAuthApi = {
+  login: (data: { gmail: string; password: string }) => adminApiClient.post<{ accessToken: string }>("/admin-auth/login", data).then(r => r.data),
+};
+export const adminUsersApi = {
+  all: () => adminApiClient.get<User[]>("/admins/users").then(r => r.data),
+  one: (id: number) => adminApiClient.post<User>(`/admins/find/${id}`).then(r => r.data),
+  search: (data: { name?: string; gmail?: string; phone?: string }) => adminApiClient.post<User[]>("/admins/search", data).then(r => r.data),
+  block: (id: number) => adminApiClient.post<{ message: string }>(`/admins/block/${id}`).then(r => r.data),
+  unblock: (id: number) => adminApiClient.post<{ message: string }>(`/admins/unBlock/${id}`).then(r => r.data),
+};
+export const adminPropertiesApi = {
+  all: () => adminApiClient.get<Property[]>("/admins-properties").then(r => r.data),
+  one: (id: number) => adminApiClient.post<Property>(`/admins-properties/${id}`).then(r => r.data),
+  pending: () => adminApiClient.get<Property[]>("/admins-properties/pending").then(r => r.data),
+  accept: (id: number) => adminApiClient.post<{ message: string }>(`/admins-properties/accept/${id}`).then(r => r.data),
+  reject: (id: number) => adminApiClient.post<{ message: string }>(`/admins-properties/reject/${id}`).then(r => r.data),
+  archive: (id: number) => adminApiClient.post<{ message: string }>(`/admins-properties/archive/${id}`).then(r => r.data),
+  restore: (id: number) => adminApiClient.post<{ message: string }>(`/admins-properties/resotre/${id}`).then(r => r.data),
+  delete: (id: number) => adminApiClient.delete<{ message: string }>(`/admins-properties/delete/${id}`).then(r => r.data),
 };
