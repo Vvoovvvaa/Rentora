@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 
 import { PropertiesService } from './properties.service';
 import { CreatePropertyDto } from './dto/create-property.dto';
@@ -7,6 +7,7 @@ import { AuthUser } from '@app/common-rentora/decorators';
 import { changePropertyDto } from './dto/change-property.dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { CreateReportDto } from './dto/create-report.dto';
+import { PropertyMapDto } from './dto/property-map.dto';
 
 
 @Controller('properties')
@@ -51,6 +52,11 @@ export class PropertiesController {
         return this.propertyservice.findProperty(propId)
     }
 
+    @Get('map')
+    viewPropertiesOnMap(@Query() dto: PropertyMapDto) {
+        return this.propertyservice.viewPropertiesOnMap(dto);
+    }
+
     @Get()
     allProperties() {
         return this.propertyservice.allProperties()
@@ -62,21 +68,33 @@ export class PropertiesController {
         return this.propertyservice.achiveProperty(propId, userId)
     }
 
+    @Post('restore/:id')
+    @UseGuards(AuthGuard)
+    restoreProperty(@AuthUser('id') userId: number, @Param('id') propId: number) {
+        return this.propertyservice.restoreProperty(propId, userId)
+    }
+
     @Post('comapre/:id1/:id2')
     @UseGuards(AuthGuard)
-    propertyCompare(@AuthUser('id') userId: number, @Param('id1') propId1: number, @Param('id2') propId2: number){
-        return this.propertyservice.compareProperties(userId,propId1,propId2)
+    propertyCompare(@AuthUser('id') userId: number, @Param('id1') propId1: number, @Param('id2') propId2: number) {
+        return this.propertyservice.compareProperties(userId, propId1, propId2)
     }
 
     @Post('report/:id')
     @UseGuards(AuthGuard)
-    reportProperty(@Body() body: CreateReportDto,@AuthUser('id') userId:number, @Param('id') propId:number,  ){
-        return this.propertyservice.createPropertyReport(body,userId,propId)
+    reportProperty(@Body() body: CreateReportDto, @AuthUser('id') userId: number, @Param('id') propId: number,) {
+        return this.propertyservice.createPropertyReport(body, userId, propId)
     }
 
     @Get("my-reports")
     @UseGuards(AuthGuard)
-    viewMyReports(@AuthUser('id') userId: number){
+    viewMyReports(@AuthUser('id') userId: number) {
         return this.propertyservice.viewMyreports(userId)
+    }
+
+    @Get('my/map')
+    @UseGuards(AuthGuard)
+    async viewMyPropertiesOnMap(@AuthUser('id') userId: number, @Query() dto: PropertyMapDto) {
+        return this.propertyservice.viewMyPropertiesOnMap(userId, dto);
     }
 }

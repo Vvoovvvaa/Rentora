@@ -9,12 +9,13 @@ import { AuthModule } from './auth/auth.module';
 import { validationSchema } from '@app/common-rentora/validation';
 import { cloudinaryConfig, dbconfig, jwtconfig, smtpconfig } from '@app/common-rentora/configs';
 import { IDbcongif } from '@app/common-rentora/models';
-import { Admin, AdminSecretcode, Favorites, Property, PropertyImage, Report, SecretCode, User, UserImage, UserSecurity } from '@app/common-rentora/database/entity';
+import { Admin, AdminSecretcode, Favorites, Property, PropertyImage, Report, SecretCode, Support, User, UserImage, UserSecurity } from '@app/common-rentora/database/entity';
 import { EmailModule } from '@app/common-rentora/smtp';
 import { PropertiesModule } from './properties/properties.module';
 import { SearchModule } from './search/search.module';
 import { UserModule } from './user/user.module';
 import { ChatModule } from './chat/chat.module';
+import { SupportModule } from './support/support.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { ChatModule } from './chat/chat.module';
     SearchModule,
     UserModule,
     ChatModule,
+    SupportModule,
 
 
     ConfigModule.forRoot({
@@ -45,7 +47,7 @@ import { ChatModule } from './chat/chat.module';
           username: dbconfig.POSTGRES_USER,
           password: dbconfig.POSTGRES_PASSWORD,
           database: dbconfig.POSTGRES_DB,
-          entities: [User, UserSecurity, SecretCode, Property, PropertyImage, UserImage, Favorites, Report, Admin, AdminSecretcode],
+          entities: [User, UserSecurity, SecretCode, Property, PropertyImage, UserImage, Favorites, Report, Admin, AdminSecretcode,Support],
           autoLoadEntities: true,
           synchronize: true,
           // dropSchema: true,

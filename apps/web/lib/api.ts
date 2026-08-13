@@ -1,5 +1,5 @@
 import axios, { AxiosError } from "axios";
-import type { AuthResponse, ChatMessage, ChatRoom, CompareResponse, Property, ReportReason, SearchParams, User } from "@/types/models";
+import type { Admin, AuthResponse, ChatMessage, ChatRoom, CompareResponse, Property, PropertyMapBounds, ReportReason, SearchParams, User } from "@/types/models";
 
 export const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 export const api = axios.create({ baseURL: API_URL });
@@ -35,12 +35,15 @@ export const authApi = {
 };
 export const propertiesApi = {
   all: () => api.get<Property[]>("/properties").then(r => r.data),
+  map: (bounds: PropertyMapBounds, filters: SearchParams = {}) => api.get<Property[]>("/properties/map", { params: { ...bounds, ...filters } }).then(r => r.data),
+  myMap: (bounds: PropertyMapBounds, filters: SearchParams = {}) => api.get<Property[]>("/properties/my/map", { params: { ...bounds, ...filters } }).then(r => r.data),
   one: (id: string | number) => api.post<Property>(`/properties/find/${id}`).then(r => r.data),
   search: (params: SearchParams) => api.get<Property[]>("/search", { params }).then(r => r.data),
   mine: () => api.get<Property[]>("/properties/my").then(r => r.data),
   create: (data: FormData) => api.post<Property>("/properties/create", data).then(r => r.data),
   update: (id: number, data: Partial<Property>) => api.patch<Property>(`/properties/${id}`, data).then(r => r.data),
   archive: (id: number) => api.post(`/properties/archive/${id}`).then(r => r.data),
+  restore: (id: number) => api.post<{ message: string }>(`/properties/restore/${id}`).then(r => r.data),
   compare: (firstId: number, secondId: number) => api.post<CompareResponse>(`/properties/comapre/${firstId}/${secondId}`).then(r => r.data),
   report: (propertyId: number, data: { report: ReportReason; description: string }) => api.post<{ message: string }>(`/properties/report/${propertyId}`, data).then(r => r.data),
 };
@@ -64,6 +67,10 @@ export const adminUsersApi = {
   search: (data: { name?: string; gmail?: string; phone?: string }) => adminApiClient.post<User[]>("/admins/search", data).then(r => r.data),
   block: (id: number) => adminApiClient.post<{ message: string }>(`/admins/block/${id}`).then(r => r.data),
   unblock: (id: number) => adminApiClient.post<{ message: string }>(`/admins/unBlock/${id}`).then(r => r.data),
+  me: () => adminApiClient.get<Admin>("/admins/me").then(r => r.data),
+  admins: () => adminApiClient.get<Admin[]>("/admins/all-admins").then(r => r.data),
+  oneAdmin: (id: number) => adminApiClient.post<Admin>(`/admins/admin/${id}`).then(r => r.data),
+  deleteAdmin: (id: number) => adminApiClient.post<{ message: string }>(`/admins/delete-admin/${id}`).then(r => r.data),
 };
 export const adminPropertiesApi = {
   all: () => adminApiClient.get<Property[]>("/admins-properties").then(r => r.data),

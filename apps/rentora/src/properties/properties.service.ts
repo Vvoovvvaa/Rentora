@@ -4,12 +4,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { CreatePropertyDto } from './dto/create-property.dto';
-import { PropertyStatus, ReportStatusEnum } from '@app/common-rentora/database/enums';
+import { PropertyPublishing, PropertyStatus, ReportStatusEnum } from '@app/common-rentora/database/enums';
 import { changePropertyDto } from './dto/change-property.dto';
 import { PhotoValidator } from '@app/common-rentora/helpers';
 import { UploadService } from '../upload/upload.service';
 import { SenderService } from '@app/common-rentora/smtp';
 import { CreateReportDto } from './dto/create-report.dto';
+import { PropertyMapDto } from './dto/property-map.dto';
+import { applyPropertyFilters } from '../search/property-filter.helper';
 
 @Injectable()
 export class PropertiesService {
@@ -130,7 +132,15 @@ export class PropertiesService {
     }
 
     async findProperty(propId: number) {
-        const property = await this.propertyRepo.findOne({ where: { id: propId, status: PropertyStatus.ACTIVE }, relations: { owner: true, images: true } })
+        const property = await this.propertyRepo
+            .createQueryBuilder('property')
+            .leftJoinAndSelect('property.images', 'images')
+            .leftJoin('property.owner', 'owner')
+            .leftJoinAndSelect('owner.image', 'ownerImage')
+            .addSelect(['owner.id', 'owner.name', 'owner.phone', 'owner.gmailStatus'])
+            .where('property.id = :propId', { propId })
+            .andWhere('property.status = :status', { status: PropertyStatus.ACTIVE })
+            .getOne()
 
         if (!property) {
             throw new NotFoundException("Property Not found,Please try again")
@@ -177,6 +187,32 @@ export class PropertiesService {
             message: " Property status was succefuly chanaged"
         }
 
+    }
+
+    async restoreProperty(propid: number, userId: number) {
+        const property = await this.propertyRepo.findOne({
+            where: { id: propid, owner: { id: userId } },
+            relations: { owner: true },
+        })
+
+        if (!property) {
+            throw new BadRequestException('Please,try again later')
+        }
+
+        if (property.owner.id !== userId) {
+            throw new ForbiddenException("You cannot restore this property")
+        }
+
+        if (property.status !== PropertyStatus.ARCHIVED) {
+            throw new BadRequestException('property is not archived')
+        }
+
+        // Keep the moderation decision intact: restoring only changes visibility
+        // from archived back to the listing's previous active lifecycle.
+        property.status = PropertyStatus.ACTIVE
+        await this.propertyRepo.save(property)
+
+        return { message: "Property status was successfully restored" }
     }
 
     async compareProperties(userId: number, propId1: number, propId2: number) {
@@ -279,13 +315,96 @@ export class PropertiesService {
             throw new BadRequestException(`Please try again later`)
         }
 
-        const report = await this.reportRepo.find({ where: { user: { id: userid } }, relations: {property: true} })
+        const report = await this.reportRepo.find({ where: { user: { id: userid } }, relations: { property: true } })
 
         if (!report) {
             throw new BadRequestException('please try again later')
         }
 
         return report
+    }
+
+    async viewPropertiesOnMap(dto: PropertyMapDto) {
+        if (dto.south > dto.north) {
+            throw new BadRequestException('Invalid map latitude bounds');
+        }
+
+        if (dto.west > dto.east) {
+            throw new BadRequestException('Invalid map longitude bounds');
+        }
+
+        const query = this.propertyRepo
+            .createQueryBuilder('property')
+            .leftJoinAndSelect('property.images', 'images')
+            .where('property.status = :status', { status: PropertyStatus.ACTIVE })
+            .andWhere('property.publishing = :publishing', { publishing: PropertyPublishing.ACTIVE })
+            .andWhere('property.latitude IS NOT NULL')
+            .andWhere('property.longitude IS NOT NULL')
+            .andWhere('property.latitude BETWEEN :south AND :north', { south: dto.south, north: dto.north })
+            .andWhere('property.longitude BETWEEN :west AND :east', { west: dto.west, east: dto.east });
+
+        return applyPropertyFilters(query, dto).getMany();
+    }
+
+    async viewMyPropertiesOnMap(userId: number,dto: PropertyMapDto) {
+
+        if (dto.south > dto.north) {
+            throw new BadRequestException(
+                'Invalid map latitude bounds'
+            )
+        }
+
+        if (dto.west > dto.east) {
+            throw new BadRequestException(
+                'Invalid map longitude bounds'
+            )
+        }
+
+        const query = this.propertyRepo
+            .createQueryBuilder('property')
+
+            .innerJoin(
+                'property.owner',
+                'owner'
+            )
+
+            .leftJoinAndSelect(
+                'property.images',
+                'images'
+            )
+
+            .where(
+                'owner.id = :userId',
+                {
+                    userId
+                }
+            )
+
+            .andWhere(
+                'property.latitude IS NOT NULL'
+            )
+
+            .andWhere(
+                'property.longitude IS NOT NULL'
+            )
+
+            .andWhere(
+                'property.latitude BETWEEN :south AND :north',
+                {
+                    south: dto.south,
+                    north: dto.north
+                }
+            )
+
+            .andWhere(
+                'property.longitude BETWEEN :west AND :east',
+                {
+                    west: dto.west,
+                    east: dto.east
+                }
+            );
+
+        return await applyPropertyFilters(query,dto).getMany();
     }
 
 }

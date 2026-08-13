@@ -43,6 +43,7 @@ lerna-debug.log*
 .env.local
 docker.env
 app.yaml
+.pnpm-store/
 
 # temp directory
 .temp

@@ -4,17 +4,17 @@ import { Filter, Search, SlidersHorizontal, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { apiMessage, propertiesApi } from "@/lib/api";
-import type { ArmeniaCity, Property, PropertyFeature, PropertyListing, PropertySort, SearchParams } from "@/types/models";
+import type { ArmeniaCity, Currency, Property, PropertyFeature, PropertyListing, PropertySort, SearchParams } from "@/types/models";
 import { Empty, ErrorBlock } from "./home-view";
 import { PropertyCard, PropertySkeleton } from "./property-card";
 import { CustomSelect } from "./custom-select";
-import { featureGroups, listingOptions } from "./property-form-options";
+import { currencyOptions, featureGroups, listingOptions } from "./property-form-options";
 import { categoryLabels, cityOf, getFeatureLabel, getListingLabel, readableEnum, sortOptions } from "./property-presentation";
 
 const cities = ["YEREVAN", "GYUMRI", "VANADZOR", "DILIJAN", "TSAGHKADZOR", "SEVAN", "JERMUK"];
-type SearchFormState = { city: string; category: string; listing: PropertyListing | ""; rooms: string; minPrice: string; maxPrice: string; bedrooms: string; floor: string; constructionYear: string; area: string; features: PropertyFeature | ""; sort: PropertySort | "" };
-const paramKeys = ["city", "category", "listing", "rooms", "minPrice", "maxPrice", "bedrooms", "floor", "constructionYear", "area", "features", "sort"] as const;
-const blankState: SearchFormState = { city: "", category: "", listing: "", rooms: "", minPrice: "", maxPrice: "", bedrooms: "", floor: "", constructionYear: "", area: "", features: "", sort: "" };
+type SearchFormState = { city: string; category: string; listing: PropertyListing | ""; currency: Currency | ""; rooms: string; minPrice: string; maxPrice: string; bedrooms: string; floor: string; constructionYear: string; area: string; features: PropertyFeature | ""; sort: PropertySort | "" };
+const paramKeys = ["city", "category", "listing", "currency", "rooms", "minPrice", "maxPrice", "bedrooms", "floor", "constructionYear", "area", "features", "sort"] as const;
+const blankState: SearchFormState = { city: "", category: "", listing: "", currency: "", rooms: "", minPrice: "", maxPrice: "", bedrooms: "", floor: "", constructionYear: "", area: "", features: "", sort: "" };
 
 function stateFromParams(params: URLSearchParams): SearchFormState {
   return paramKeys.reduce((state, key) => ({ ...state, [key]: params.get(key) || "" }), blankState) as SearchFormState;
@@ -25,6 +25,7 @@ function requestFromState(state: SearchFormState): SearchParams {
   if (state.city) request.city = state.city as ArmeniaCity;
   if (state.category) request.category = state.category as SearchParams["category"];
   if (state.listing) request.listing = state.listing;
+  if (state.currency) request.currency = state.currency;
   (["rooms", "minPrice", "maxPrice", "bedrooms", "floor", "constructionYear", "area"] as const).forEach((key) => { if (state[key]) request[key] = Number(state[key]); });
   if (state.features) request.features = state.features;
   if (state.sort) request.sort = state.sort;
@@ -82,7 +83,7 @@ export function SearchView() {
         <label className="field search-number"><span>Price from</span><input value={form.minPrice} onChange={(event) => set("minPrice", event.target.value.replace(/\D/g, ""))} inputMode="numeric" placeholder="Any"/></label>
         <label className="field search-number"><span>Price to</span><input value={form.maxPrice} onChange={(event) => set("maxPrice", event.target.value.replace(/\D/g, ""))} inputMode="numeric" placeholder="Any"/></label>
       </div>
-      <div className="mt-4 flex flex-wrap items-center gap-3"><button type="button" onClick={() => setMoreOpen((open) => !open)} className={`btn-secondary gap-2 ${moreOpen ? "is-active" : ""}`}><SlidersHorizontal size={16}/> More filters</button><CustomSelect className="search-sort" value={form.listing} onChange={(value) => set("listing", value as PropertyListing | "")} placeholder="Sale or rent" options={listingOptions.map((item) => ({ ...item, label: getListingLabel(item.value) }))}/><CustomSelect className="search-sort" value={form.sort} onChange={(value) => set("sort", value as PropertySort | "")} placeholder="Sort listings" options={sortOptions}/><button className="btn-primary ml-auto gap-2"><Search size={17}/> Apply filters</button></div>
+      <div className="mt-4 flex flex-wrap items-center gap-3"><button type="button" onClick={() => setMoreOpen((open) => !open)} className={`btn-secondary gap-2 ${moreOpen ? "is-active" : ""}`}><SlidersHorizontal size={16}/> More filters</button><CustomSelect className="search-sort" value={form.listing} onChange={(value) => set("listing", value as PropertyListing | "")} placeholder="Sale or rent" options={listingOptions.map((item) => ({ ...item, label: getListingLabel(item.value) }))}/><CustomSelect className="search-sort" value={form.currency} onChange={(value) => set("currency", value as Currency | "")} placeholder="Any currency" options={currencyOptions}/><CustomSelect className="search-sort" value={form.sort} onChange={(value) => set("sort", value as PropertySort | "")} placeholder="Sort listings" options={sortOptions}/><button className="btn-primary ml-auto gap-2"><Search size={17}/> Apply filters</button></div>
       {moreOpen && <div className="search-more-panel">
         <div className="search-extra-grid">
           <label className="field search-number"><span>Bedrooms</span><input value={form.bedrooms} onChange={(event) => set("bedrooms", event.target.value.replace(/\D/g, ""))} inputMode="numeric" placeholder="Any"/></label>

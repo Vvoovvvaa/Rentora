@@ -13,11 +13,15 @@ import {
     IsArray,
     IsEnum,
     IsInt,
+    IsLatitude,
+    IsLongitude,
+    isNotEmpty,
     IsNotEmpty,
     IsNumber,
     IsOptional,
     IsString,
     Max,
+    MaxLength,
     Min,
     MinLength
 } from "class-validator";
@@ -107,4 +111,17 @@ export class CreatePropertyDto {
     @IsArray()
     @IsEnum(PropertyFeature, { each: true })
     features?: PropertyFeature[];
+
+    @IsString()
+    @MaxLength(255)
+    @IsNotEmpty()
+    address: string;
+
+    @IsLatitude()
+    @IsNotEmpty()
+    latitude: number;
+
+    @IsLongitude()
+    @IsNotEmpty()
+    longitude: number;
 }

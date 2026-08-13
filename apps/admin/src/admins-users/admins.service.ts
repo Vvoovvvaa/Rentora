@@ -3,7 +3,7 @@ import { SenderService } from '@app/common-rentora/smtp';
 import { BadGatewayException, BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { accauntSatus } from '@app/common-rentora/database/enums';
+import { accauntSatus, adminRoleEnum } from '@app/common-rentora/database/enums';
 import { findUserDto } from './dto/user-find.dto';
 
 @Injectable()
@@ -173,4 +173,82 @@ export class AdminsService {
         return users;
     }
 
+    async viewMyprofile(adminId: number) {
+        const admin = await this.adminRepo.findOne({
+            where: { id: adminId },
+            select: {
+                id: true,
+                gmail: true,
+                name: true,
+                adminRole: true,
+                createdAt: true,
+                updatedAt: true,
+            }
+        })
+
+        if (!admin) {
+            throw new BadRequestException('Admin not found')
+        }
+
+        return admin
+    }
+
+    async findeOneAdmin(adminId: number, searchAdmin: number) {
+        const admin = await this.adminRepo.findOne({ where: { id: adminId } })
+
+        if (!admin) {
+            throw new BadRequestException("Admin not found")
+        }
+
+        const search = await this.adminRepo.findOne({ where: { id: searchAdmin } })
+
+        if (!search) {
+            throw new BadRequestException("Admin not found")
+        }
+
+        return search
+    }
+
+    async allAdmins() {
+        return this.adminRepo.find({
+            select: {
+                id: true,
+                gmail: true,
+                name: true,
+                adminRole: true,
+                createdAt: true,
+                updatedAt: true,
+            }
+        })
+    }
+
+
+    async deleteAdmin(adminId: number, deltedId: number) {
+        const admin = await this.adminRepo.findOne({ where: { id: adminId } })
+
+        if (!admin) {
+            throw new BadRequestException("Admin not found")
+        }
+
+        const deleted = await this.adminRepo.findOne({ where: { id: deltedId } })
+
+        if (!deleted) {
+            throw new BadRequestException("Admin not found")
+        }
+
+        if (adminId === deltedId) {
+            throw new BadRequestException(
+                'You cannot delete your own admin account'  
+            )
+        }
+
+        if (admin.adminRole !== adminRoleEnum.super_admin) {
+            throw new BadRequestException('only super admin can delete admins')
+        }
+
+        await this.adminRepo.remove(deleted)
+
+        return { message: ` admin - ${deleted.name} succesfuly deleted by admin - ${admin.name}` }
+
+    }
 }

@@ -63,12 +63,19 @@ export class UserService {
 
         await this.userRepo.save(user)
 
-        return await this.userRepo.findOne({
+        const updatedUser = await this.userRepo.findOne({
             where: { id: userId },
             relations: {
                 image: true
             }
         })
+
+        if (!updatedUser) {
+            throw new BadRequestException('please try again later')
+        }
+
+        const { password, ...profile } = updatedUser
+        return profile
     }
 
     async changePassword(dto: changePasswordDto, userId: number) {

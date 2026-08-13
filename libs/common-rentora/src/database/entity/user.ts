@@ -9,6 +9,7 @@ import { Property } from "./property";
 import { UserImage } from "./user-images";
 import { Favorites } from "./favorites";
 import { Report } from "./report";
+import { Support } from "./support";
 
 @Entity("users")
 export class User extends Base {
@@ -54,6 +55,9 @@ export class User extends Base {
 
     @OneToMany(() => Report, report => report.user)
     report: Report
+
+    @OneToMany(() => Support, support => support.user, {onDelete: 'CASCADE'})
+    support: Support
 
 }
 

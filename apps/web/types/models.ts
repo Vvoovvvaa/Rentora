@@ -7,6 +7,7 @@ export type ArmeniaCity = "YEREVAN" | "GYUMRI" | "ARTIK" | "MARALIK" | "VANADZOR
 export type AccountStatus = "ACTIVE" | "TEMPORARY_BLOCK" | "PERMANETLY_BLOCK";
 export type EmailStatus = "VERIFIED" | "NOT_VERIFIED";
 export type UserRole = "user" | "admin";
+export type AdminRole = "SUPERADMIN" | "AMDIN";
 export type PropertySort = "PRICE_ASC" | "PRICE_DESC" | "NEWEST" | "OLDEST" | "MOST_VIEWED";
 export type ReportReason = "FRAUD" | "INCCORECT_PRICE" | "PROPERTY_ALREADY_SOLD" | "INCORRECT_INFORMATION" | "DUBLICATE" | "OTHER";
 export type PropertyCondition = "NEW" | "EXCELLENT" | "GOOD" | "AVERAGE" | "NEEDS_RENOVATION" | "UNDER_CONSTRUCTION";
@@ -23,13 +24,15 @@ export type PropertyFeature =
   | "CITY_VIEW" | "MOUNTAIN_VIEW" | "COURTYARD_VIEW" | "STREET_VIEW" | "PETS_ALLOWED" | "CHILDREN_ALLOWED";
 
 export interface UserImage { id: number; url: string; }
+export interface Admin { id: number; name: string; gmail: string; adminRole: AdminRole; createdAt?: string; updatedAt?: string; }
 export interface UserSecurity { id: number; temporaryBlock: number; permanetlyBlock: boolean; totalAttemps: number; temporaryBlockUntil: string | null; }
 export interface User { id: number; name: string; phone: string; age: number; gmail: string; gmailStatus: EmailStatus; userRole: UserRole; accauntStatus: AccountStatus; createdAt?: string; updatedAt?: string; image?: UserImage; security?: UserSecurity; properties?: Property[]; }
 export interface PropertyImage { id: number; url: string; size: number; publicId?: string; }
-export interface Property { id: number; title: string; description: string; status: PropertyStatus; publishing: PropertyPublishing; category: PropertyCategory; listing?: PropertyListing | null; price: number | string; currency: Currency; views: number; city: ArmeniaCity; rooms: number; area: number; bedrooms?: number | null; bathrooms?: number | null; floor?: number | null; totalFloors?: number | null; ceilingHeight?: number | string | null; constructionYear?: number | null; condition?: PropertyCondition | null; buildingType?: BuildingType | null; features?: PropertyFeature[]; createdAt?: string; updatedAt?: string; owner?: User; images?: PropertyImage[]; }
+export interface Property { id: number; title: string; description: string; status: PropertyStatus; publishing: PropertyPublishing; category: PropertyCategory; listing?: PropertyListing | null; price: number | string; currency: Currency; views: number; city: ArmeniaCity; address?: string | null; latitude?: number | null; longitude?: number | null; rooms: number; area: number; bedrooms?: number | null; bathrooms?: number | null; floor?: number | null; totalFloors?: number | null; ceilingHeight?: number | string | null; constructionYear?: number | null; condition?: PropertyCondition | null; buildingType?: BuildingType | null; features?: PropertyFeature[]; createdAt?: string; updatedAt?: string; owner?: User; images?: PropertyImage[]; }
+export interface PropertyMapBounds { north: number; south: number; east: number; west: number; }
 export interface ComparedProperty extends Property { pricePerSquareMeter: number; }
 export interface CompareResponse { firstProperty: ComparedProperty; secondProperty: ComparedProperty; }
 export interface AuthResponse { accessToken: string; message: string; }
 export interface ChatRoom { id: number; propertyId: number; ownerId: number; clientId: number; createdAt?: string; }
 export interface ChatMessage { id: number; roomId: number; senderId: number; text: string; createdAt: string; }
-export interface SearchParams { city?: ArmeniaCity; category?: PropertyCategory; listing?: PropertyListing; minPrice?: number; maxPrice?: number; rooms?: number; area?: number; sort?: PropertySort; bedrooms?: number; floor?: number; constructionYear?: number; features?: PropertyFeature; }
+export interface SearchParams { city?: ArmeniaCity; category?: PropertyCategory; listing?: PropertyListing; currency?: Currency; minPrice?: number; maxPrice?: number; rooms?: number; area?: number; sort?: PropertySort; bedrooms?: number; floor?: number; constructionYear?: number; features?: PropertyFeature; }

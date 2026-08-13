@@ -1,5 +1,8 @@
+"use client";
+
 import { Bath, BedDouble, Building2, CalendarDays, CarFront, ChefHat, Flame, Layers3, Mountain, PanelsTopLeft, PawPrint, Refrigerator, Ruler, ShieldCheck, Snowflake, Sofa, Sparkles, TreePine, WashingMachine, Wifi } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { useState } from "react";
 import type { Property, PropertyFeature } from "@/types/models";
 import { featureGroups } from "./property-form-options";
 import { buildingLabels, conditionLabels, getFeatureLabel, readableEnum } from "./property-presentation";
@@ -42,29 +45,49 @@ export function PropertyCharacteristics({ property }: { property: Property }) {
   const items = detailItems(property).filter((item): item is typeof item & { value: string | number } => item.value !== undefined && item.value !== null);
   if (!items.length) return null;
   return <section className="property-characteristics" aria-labelledby="characteristics-title">
-    <h2 id="characteristics-title">Property details</h2>
+    <p className="eyebrow">At a glance</p><h2 id="characteristics-title">Property details</h2>
     <div className="characteristics-grid">{items.map(({ icon: Icon, label, value }) => <div className="characteristic-item" key={label}><Icon size={18}/><span><small>{label}</small><strong>{value}</strong></span></div>)}</div>
   </section>;
 }
 
 export function PropertyHighlights({ features = [] }: { features?: PropertyFeature[] }) {
-  const featureSet = new Set(features);
-  const selectedGroups = featureGroups.map((group) => ({
+  const [expanded, setExpanded] = useState(false);
+  const detailGroupLabels = ["Parking & building", "Security & access", "Outdoor", "Comfort", "Kitchen & appliances", "Heating & utilities", "Bathroom & storage", "Windows, views & other"];
+  const knownFeatures = new Set(featureGroups.flatMap((group) => group.options.map((option) => option.value)));
+  // Preserve the API array verbatim. A feature added on the backend before the
+  // form options are updated still has a visible, readable home under Other features.
+  const selectedGroups = featureGroups.map((group, index) => ({
     ...group,
-    displayLabel: featureGroupLabels[group.label] || group.label,
-    options: group.options.filter((option) => featureSet.has(option.value)),
+    displayLabel: detailGroupLabels[index] || featureGroupLabels[group.label] || group.label,
+    options: group.options.flatMap((option) => features.filter((feature) => feature === option.value).map(() => option)),
   })).filter((group) => group.options.length > 0);
-  if (!selectedGroups.length) return null;
+  const otherFeatures = features.filter((feature) => !knownFeatures.has(feature));
+  const groups = otherFeatures.length ? [...selectedGroups, {
+    label: "Other features",
+    displayLabel: "Other features",
+    icon: Sparkles,
+    options: otherFeatures.map((value) => ({ value, label: getFeatureLabel(value) })),
+  }] : selectedGroups;
+  if (!groups.length) return null;
+  const totalFeatures = features.length;
+  const visibleGroups = groups.reduce((result, group) => {
+    const options = group.options.slice(0, Math.max(result.remaining, 0));
+    return {
+      remaining: result.remaining - options.length,
+      groups: options.length ? [...result.groups, { ...group, options }] : result.groups,
+    };
+  }, { remaining: expanded ? totalFeatures : 9, groups: [] as typeof groups }).groups;
   return <section className="property-highlights" aria-labelledby="property-highlights-title">
     <p className="eyebrow">Features</p>
     <h2 id="property-highlights-title">What this home offers</h2>
     <div className="property-feature-groups">
-      {selectedGroups.map(({ displayLabel, icon: Icon, options }) => <section className="property-feature-group" key={displayLabel} aria-label={displayLabel}>
+      {visibleGroups.map(({ displayLabel, icon: Icon, options }) => <section className="property-feature-group" key={displayLabel} aria-label={displayLabel}>
         <h3><Icon size={17}/>{displayLabel}</h3>
         <div className="highlights-grid">
-          {options.map((option) => { const FeatureIcon = featureIcons[option.value] || Icon; return <div className="highlight-chip" key={option.value}><FeatureIcon size={18}/><span>{getFeatureLabel(option.value)}</span></div>; })}
+          {options.map((option, index) => { const FeatureIcon = featureIcons[option.value] || Icon; return <div className="highlight-chip" key={`${option.value}-${index}`}><FeatureIcon size={16}/><span>{option.label || getFeatureLabel(option.value)}</span></div>; })}
         </div>
       </section>)}
     </div>
+    {totalFeatures > 9 && <button type="button" onClick={() => setExpanded((value) => !value)} className="property-show-more" aria-expanded={expanded}>{expanded ? "Show fewer features" : `Show all ${totalFeatures} features`}</button>}
   </section>;
 }

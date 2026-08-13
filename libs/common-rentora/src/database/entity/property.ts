@@ -57,7 +57,7 @@ export class Property extends Base {
     })
     currency: PropertyCurrency;
 
-    @Column({type: 'enum', enum: PropertyPublishing, default: PropertyPublishing.PENDING})
+    @Column({ type: 'enum', enum: PropertyPublishing, default: PropertyPublishing.PENDING })
     publishing: PropertyPublishing
 
     @Column({ default: 0 })
@@ -121,8 +121,26 @@ export class Property extends Base {
     })
     features: PropertyFeature[];
 
-    @Column({type: 'enum', enum: propertyListing, nullable: true})
-    listing?: propertyListing
+    @Column({
+        type: 'varchar',
+        nullable: true
+    })
+    address: string;
+
+    @Column({
+        type: 'double precision',
+        nullable: true
+    })
+    latitude: number;
+
+    @Column({
+        type: 'double precision',
+        nullable: true
+    })
+    longitude: number;
+
+    @Column({ type: 'enum', enum: propertyListing, nullable: true })
+    listing: propertyListing
 
     @ManyToOne(
         () => User,
@@ -148,6 +166,6 @@ export class Property extends Base {
     )
     favorites: Favorites[];
 
-    @OneToMany(() => Report, report => report.property, {onDelete: 'CASCADE'})
+    @OneToMany(() => Report, report => report.property, { onDelete: 'CASCADE' })
     report: Report
 }

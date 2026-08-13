@@ -1,7 +1,8 @@
-import { Column, Entity, OneToOne } from "typeorm";
+import { Column, Entity, OneToMany, OneToOne } from "typeorm";
 import { Base } from "./base";
 import { adminRoleEnum } from "../enums";
 import { AdminSecretcode } from "./adminSecretCode";
+import { Support } from "./support";
 
 @Entity('admin')
 export class Admin extends Base{
@@ -19,5 +20,8 @@ export class Admin extends Base{
 
     @OneToOne(() => AdminSecretcode, code => code.admin, {onDelete: 'CASCADE'})
     code: AdminSecretcode
+
+    @OneToMany(() => Support, support => support.admin, {onDelete: 'CASCADE'})
+    support: Support
 
 }

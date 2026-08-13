@@ -15,8 +15,8 @@ export class AdminsController {
     }
 
     @Post('find/:id')
-    findOneUser(@Param('id') userId:number, @AuthUser('id') adminId:number){
-        return this.adminservice.findOneUser(userId,adminId)
+    findOneUser(@Param('id') userId: number, @AuthUser('id') adminId: number) {
+        return this.adminservice.findOneUser(userId, adminId)
     }
 
     @Post('block/:id')
@@ -25,12 +25,34 @@ export class AdminsController {
     }
 
     @Post('unBlock/:id')
-    unBlockUser(@Param('id') userId: number, @AuthUser('id') adminId: number) { 
-        return this.adminservice.unBlockUser(userId,adminId)
+    unBlockUser(@Param('id') userId: number, @AuthUser('id') adminId: number) {
+        return this.adminservice.unBlockUser(userId, adminId)
     }
 
     @Post('search')
-    findUser(@Body() dto: findUserDto,@AuthUser('id') adminId: number) {
-        return this.adminservice.findUserByQuery(dto,adminId);
+    findUser(@Body() dto: findUserDto, @AuthUser('id') adminId: number) {
+        return this.adminservice.findUserByQuery(dto, adminId);
+    }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+    @Get('me')
+    viewMyProfile(@AuthUser('id') adminId: number) {
+        return this.adminservice.viewMyprofile(adminId)
+    }
+    @Post('admin/:id')
+    findOneAdmin(@AuthUser('id') adminId: number, @Param('id') searchAdmin: number) {
+        return this.adminservice.findeOneAdmin(adminId, searchAdmin)
+    }
+
+    @Get('all-admins')
+    allAdmins() {
+        return this.adminservice.allAdmins()
+    }
+
+    @Post('delete-admin/:id')
+    deleteAdmin(@AuthUser('id') adminId: number, @Param('id') deletedId: number) {
+        return this.adminservice.deleteAdmin(adminId, deletedId)
     }
 }
