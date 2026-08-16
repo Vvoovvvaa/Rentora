@@ -1,0 +1,20 @@
+{
+    "USER_NOT_FOUND": "Пользователь не найден",
+    "VERIFY_EMAIL": "Пожалуйста, подтвердите вашу электронную почту",
+    "PROPERTY_NOT_FOUND": "Объявление не найдено",
+    "PROPERTY_NOT_FOUND_TRY_AGAIN": "Объявление не найдено, попробуйте ещё раз",
+    "PROPERTY_DELETED": "Объявление {title} успешно удалено",
+    "TRY_AGAIN_LATER": "Пожалуйста, попробуйте позже",
+    "PROPERTY_ALREADY_ARCHIVED": "Объявление уже находится в архиве",
+    "CANNOT_ARCHIVE_PROPERTY": "Вы не можете архивировать это объявление",
+    "PROPERTY_ARCHIVED": "Объявление успешно перемещено в архив",
+    "CANNOT_RESTORE_PROPERTY": "Вы не можете восстановить это объявление",
+    "PROPERTY_NOT_ARCHIVED": "Объявление не находится в архиве",
+    "PROPERTY_RESTORED": "Объявление успешно восстановлено",
+    "CANNOT_COMPARE_SAME_PROPERTY": "Нельзя сравнивать одно и то же объявление",
+    "PROPERTIES_NOT_FOUND": "Одно или несколько объявлений не найдены",
+    "ALREADY_REPORTED": "Вы уже отправляли жалобу на это объявление",
+    "REPORT_SENT": "Жалоба успешно отправлена. Наши администраторы рассмотрят её.",
+    "INVALID_MAP_LATITUDE_BOUNDS": "Некорректные границы широты карты",
+    "INVALID_MAP_LONGITUDE_BOUNDS": "Некорректные границы долготы карты"
+}

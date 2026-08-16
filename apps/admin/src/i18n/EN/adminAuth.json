@@ -1,0 +1,15 @@
+{
+    "ADMIN_NOT_FOUND": "Admin not found",
+    "INCORRECT_CREDENTIALS": "Incorrect email or password",
+    "ONLY_SUPER_ADMIN_CREATE": "Only super admin can create admins",
+    "ADMIN_ALREADY_EXISTS": "Admin with this email already exists",
+    "ADMIN_CREATED": "Admin {name} successfully created",
+    "INVALID_OLD_PASSWORD": "Invalid old password",
+    "NEW_PASSWORD_MUST_BE_DIFFERENT": "New password must be different from old password",
+    "PASSWORD_CHANGED": "Password successfully changed",
+    "TRY_AGAIN_LATER": "Please try again later",
+    "SECRET_CODE_SENT": "Secret code sent to {email}",
+    "INVALID_CREDENTIALS": "Invalid credentials, try again",
+    "VERIFICATION_CODE_EXPIRED": "Verification code expired",
+    "NEW_PASSWORD_MUST_BE_DIFFERENT_PREVIOUS": "New password must be different from previous password"
+}

@@ -1,0 +1,9 @@
+{
+    "TRY_AGAIN_LATER": "Please try again later",
+    "TRY_AGAIN": "Please try again",
+    "INVALID_PASSWORD": "Invalid password, please try again later",
+    "PASSWORD_CHANGED": "Password successfully changed",
+    "EMAIL_CHANGED": "Your email was successfully changed to {email}, please verify your new email",
+    "USER_DELETED": "User {name} successfully deleted",
+    "USER_OR_PROPERTY_NOT_FOUND": "User or property not found"
+}

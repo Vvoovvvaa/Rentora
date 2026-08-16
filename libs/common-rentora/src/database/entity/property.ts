@@ -22,6 +22,7 @@ import { User } from "./user";
 import { PropertyImage } from "./property-image";
 import { Favorites } from "./favorites";
 import { Report } from "./report";
+import { PropertyPriceHistory } from "./price-history";
 
 @Entity('property')
 export class Property extends Base {
@@ -168,4 +169,8 @@ export class Property extends Base {
 
     @OneToMany(() => Report, report => report.property, { onDelete: 'CASCADE' })
     report: Report
+
+    @OneToMany(() => PropertyPriceHistory, price_history => price_history.property, {onDelete: 'CASCADE'})
+    price_history: PropertyPriceHistory
 }
+

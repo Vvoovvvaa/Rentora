@@ -14,7 +14,14 @@
       "entryFile": "main",
       "sourceRoot": "apps/admin/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/admin/tsconfig.app.json"
+        "tsConfigPath": "apps/admin/tsconfig.app.json",
+        "assets": [
+          {
+            "include": "i18n/**/*",
+            "watchAssets": true,
+            "outDir": "dist/apps/admin"
+          }
+        ]
       }
     },
     "common": {
@@ -41,7 +48,14 @@
       "entryFile": "main",
       "sourceRoot": "apps/rentora/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/rentora/tsconfig.app.json"
+        "tsConfigPath": "apps/rentora/tsconfig.app.json",
+        "assets": [
+          {
+            "include": "i18n/**/*",
+            "watchAssets": true,
+            "outDir": "dist/apps/rentora"
+          }
+        ]
       }
     }
   },

@@ -1,12 +1,14 @@
-import { Admin, Property, Support, User } from "@app/common-rentora/database/entity";
+import { Admin, Support } from "@app/common-rentora/database/entity";
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
+import { SupportAdminController } from "./support.controller";
+import { SupportAdminservice } from "./support.service";
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([User,Support])
+        TypeOrmModule.forFeature([Admin, Support])
     ],
-    controllers: [],
-    providers: []
+    controllers: [SupportAdminController],
+    providers: [SupportAdminservice]
 })
-export class SupportAdminModule{}
+export class SupportAdminModule { }

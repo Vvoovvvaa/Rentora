@@ -1,0 +1,6 @@
+{
+    "PROPERTY_NOT_FOUND": "Property not found",
+    "CANNOT_CHAT_WITH_YOURSELF": "You cannot create a chat with yourself",
+    "ROOM_NOT_FOUND": "Chat room not found",
+    "ACCESS_DENIED": "Access denied"
+}

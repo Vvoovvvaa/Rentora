@@ -21,6 +21,9 @@ export class Support extends Base {
     @Column()
     message: string
 
+    @Column({nullable: true})
+    adminRespone?: string
+
     @ManyToOne(() => User, user => user.support, { onDelete: 'CASCADE' })
     user: User
 

@@ -1,0 +1,20 @@
+{
+    "USER_NOT_FOUND": "User not found",
+    "VERIFY_EMAIL": "Please verify your email",
+    "PROPERTY_NOT_FOUND": "Property not found",
+    "PROPERTY_NOT_FOUND_TRY_AGAIN": "Property not found, please try again",
+    "PROPERTY_DELETED": "{title} property was successfully deleted",
+    "TRY_AGAIN_LATER": "Please try again later",
+    "PROPERTY_ALREADY_ARCHIVED": "Property is already archived",
+    "CANNOT_ARCHIVE_PROPERTY": "You cannot archive this property",
+    "PROPERTY_ARCHIVED": "Property status was successfully changed",
+    "CANNOT_RESTORE_PROPERTY": "You cannot restore this property",
+    "PROPERTY_NOT_ARCHIVED": "Property is not archived",
+    "PROPERTY_RESTORED": "Property status was successfully restored",
+    "CANNOT_COMPARE_SAME_PROPERTY": "You cannot compare the same property",
+    "PROPERTIES_NOT_FOUND": "One or more properties not found",
+    "ALREADY_REPORTED": "You already reported this property",
+    "REPORT_SENT": "Report successfully sent. Our admins will review it.",
+    "INVALID_MAP_LATITUDE_BOUNDS": "Invalid map latitude bounds",
+    "INVALID_MAP_LONGITUDE_BOUNDS": "Invalid map longitude bounds"
+}

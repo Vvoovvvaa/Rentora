@@ -1,6 +1,7 @@
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { I18nContext, I18nService } from 'nestjs-i18n';
 
 import { ChatRoom, Message, Property } from '@app/common-rentora/database/entity';
 
@@ -15,8 +16,17 @@ export class ChatService {
         private readonly chatRoomRepository: Repository<ChatRoom>,
 
         @InjectRepository(Property)
-        private readonly propertyRepository: Repository<Property>
+        private readonly propertyRepository: Repository<Property>,
+
+        private readonly i18n: I18nService
     ) { }
+
+    private t(key: string, args?: Record<string, any>,): string {
+        return this.i18n.t(key, {
+            lang: I18nContext.current()?.lang || 'en',
+            args,
+        }) as string;
+    }
 
     async createMessage(data: {
         roomId: number;
@@ -52,14 +62,14 @@ export class ChatService {
 
         if (!property) {
             throw new BadRequestException(
-                'Property not found'
+                this.t('chat.PROPERTY_NOT_FOUND')
             );
         }
 
 
         if (property.owner.id === data.clientId) {
             throw new BadRequestException(
-                'You cannot create chat with yourself'
+                this.t('chat.CANNOT_CHAT_WITH_YOURSELF')
             );
         }
 
@@ -101,32 +111,32 @@ export class ChatService {
         });
     }
 
-  async checkRoomAccess(roomId: number, userId: number) {
+    async checkRoomAccess(roomId: number, userId: number) {
 
-    const room = await this.chatRoomRepository.findOne({
-        where: {
-            id: roomId
+        const room = await this.chatRoomRepository.findOne({
+            where: {
+                id: roomId
+            }
+        });
+
+
+        if (!room) {
+            throw new BadRequestException(
+                this.t('chat.ROOM_NOT_FOUND')
+            );
         }
-    });
 
 
-    if (!room) {
-        throw new BadRequestException(
-            'Room not found'
-        );
+        if (
+            room.ownerId !== userId &&
+            room.clientId !== userId
+        ) {
+            throw new ForbiddenException(
+                this.t('chat.ACCESS_DENIED')
+            );
+        }
+
+
+        return true;
     }
-
-
-    if (
-        room.ownerId !== userId &&
-        room.clientId !== userId
-    ) {
-        throw new ForbiddenException(
-            'Access denied'
-        );
-    }
-
-
-    return true;
-}
 }

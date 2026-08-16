@@ -4,6 +4,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { CreateSupportDto } from "./dto/create-support.dto";
 import { SupportStatusEnum } from "@app/common-rentora/database/enums/support-status";
+import { I18nContext, I18nService } from "nestjs-i18n";
 
 @Injectable()
 export class SupportService {
@@ -13,14 +14,23 @@ export class SupportService {
         private readonly userRepo: Repository<User>,
 
         @InjectRepository(Support)
-        private readonly supportRepo: Repository<Support>
+        private readonly supportRepo: Repository<Support>,
+
+        private readonly i18n: I18nService
     ) { }
+
+    private t(key: string,args?: Record<string, any>,): string {
+        return this.i18n.t(key, {
+            lang: I18nContext.current()?.lang || 'am',
+            args,
+        }) as string;
+    }
 
     async createSupport(dto: CreateSupportDto, userId: number) {
         const user = await this.userRepo.findOne({ where: { id: userId } })
 
         if (!user) {
-            throw new BadRequestException("Please try again later")
+            throw new BadRequestException(this.t('support.TRY_AGAIN_LATER'))
         }
 
         const create = this.supportRepo.create({
@@ -29,20 +39,20 @@ export class SupportService {
         })
 
         await this.supportRepo.save(create)
-        return { message: "Support ticket successfully created" }
+        return { message: this.t('support.SUPPORT_CREATED') }
     }
 
     async viewMySupports(userId: number) {
         const user = await this.userRepo.findOne({ where: { id: userId } })
 
         if (!user) {
-            throw new BadRequestException("please try again later")
+            throw new BadRequestException(this.t('support.TRY_AGAIN_LATER'))
         }
 
         const support = await this.supportRepo.find({ where: { user: { id: userId } } })
 
         if (support.length === 0) {
-            throw new BadRequestException(`No supports yet`)
+            throw new BadRequestException(this.t('support.NO_SUPPORTS'))
         }
 
         return support
@@ -52,13 +62,13 @@ export class SupportService {
         const user = await this.userRepo.findOne({ where: { id: userId } })
 
         if (!user) {
-            throw new BadRequestException("Please try again later")
+            throw new BadRequestException(this.t('support.TRY_AGAIN_LATER'))
         }
 
         const support = await this.supportRepo.findOne({ where: { id: supportId, user: { id: userId } } })
 
         if (!support) {
-            throw new BadRequestException("Please try again later")
+            throw new BadRequestException(this.t('support.TRY_AGAIN_LATER'))
         }
 
         return support
@@ -69,19 +79,19 @@ export class SupportService {
         const user = await this.userRepo.findOne({ where: { id: userId } })
 
         if (!user) {
-            throw new BadRequestException('please try again later')
+            throw new BadRequestException(this.t('support.TRY_AGAIN_LATER'))
         }
 
         const support = await this.supportRepo.findOne({ where: { id: supportId, user: { id: userId } } })
 
         if (!support) {
-            throw new BadRequestException("Support ticket not found")
+            throw new BadRequestException(this.t('support.SUPPORT_NOT_FOUND'))
         }
 
         support.status = SupportStatusEnum.CANCELED
         await this.supportRepo.save(support)
 
-        return { message: "support succefuly canceled" }
+        return { message: this.t('support.SUPPORT_CANCELED') }
     }
 
 }

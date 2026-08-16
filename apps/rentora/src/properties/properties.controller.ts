@@ -23,22 +23,19 @@ export class PropertiesController {
 
     @Patch(':id')
     @UseGuards(AuthGuard)
-    updateProperty(
-        @Param('id') propId: number,
-        @Body() body: changePropertyDto,
-        @AuthUser('id') userId: number,
-    ) {
-        return this.propertyservice.changeProperty(
-            userId,
-            propId,
-            body
-        )
+    updateProperty(@Param('id') propId: number, @Body() body: changePropertyDto, @AuthUser('id') userId: number) {
+        return this.propertyservice.changeProperty(userId, propId, body)
     }
 
     @Get('my')
     @UseGuards(AuthGuard)
     viewMyproperty(@AuthUser('id') userId: number) {
         return this.propertyservice.myProperties(userId)
+    }
+
+    @Get(':id/price-history')
+    viewPriceHistory(@Param('id') propId: number) {
+        return this.propertyservice.viewPriceHistory(propId)
     }
 
     @Delete(':id')
@@ -97,4 +94,5 @@ export class PropertiesController {
     async viewMyPropertiesOnMap(@AuthUser('id') userId: number, @Query() dto: PropertyMapDto) {
         return this.propertyservice.viewMyPropertiesOnMap(userId, dto);
     }
+
 }

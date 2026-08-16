@@ -20,6 +20,7 @@ import { changeAdminPasswordDto } from './dto/change-password.dto';
 import { SendCodeChangePasswordDto } from './dto/send-code-change-password';
 import { randomCode } from '@app/common-rentora/helpers';
 import { NewPassowrdDto } from './dto/new-password.dto';
+import { I18nContext, I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class AdminAuthService {
@@ -34,10 +35,18 @@ export class AdminAuthService {
 
         private readonly jwtservice: JwtService,
         private readonly configService: ConfigService,
-        private readonly senderservice: SenderService
+        private readonly senderservice: SenderService,
+        private readonly i18n: I18nService
     ) {
         this.jwtconfig =
             this.configService.get('JWTCONFIG') as IJwtconfig;
+    }
+
+    private t(key: string,args?: Record<string, any>,): string {
+        return this.i18n.t(key, {
+            lang: I18nContext.current()?.lang || 'am',
+            args,
+        }) as string;
     }
 
     private async generateToken(admin: Admin) {
@@ -64,7 +73,7 @@ export class AdminAuthService {
 
         if (!admin) {
             throw new NotFoundException(
-                'Admin not found'
+                this.t('adminAuth.ADMIN_NOT_FOUND')
             );
         }
 
@@ -75,7 +84,7 @@ export class AdminAuthService {
 
         if (!isMatch) {
             throw new BadRequestException(
-                'Incorrect email or password'
+                this.t('adminAuth.INCORRECT_CREDENTIALS')
             );
         }
 
@@ -105,13 +114,13 @@ export class AdminAuthService {
 
         if (!superAdmin) {
             throw new BadRequestException(
-                'Admin not found'
+                this.t('adminAuth.ADMIN_NOT_FOUND')
             );
         }
 
         if (superAdmin.adminRole !== adminRoleEnum.super_admin) {
             throw new ForbiddenException(
-                'Only super admin can create admins'
+                this.t('adminAuth.ONLY_SUPER_ADMIN_CREATE')
             );
         }
 
@@ -124,7 +133,7 @@ export class AdminAuthService {
 
         if (exists) {
             throw new BadRequestException(
-                'Admin with this email already exists'
+                this.t('adminAuth.ADMIN_ALREADY_EXISTS')
             );
         }
 
@@ -143,7 +152,7 @@ export class AdminAuthService {
 
         return {
             message:
-                `Admin ${newAdmin.name} successfully created`,
+                this.t('adminAuth.ADMIN_CREATED', { name: newAdmin.name }),
         };
     }
 
@@ -153,7 +162,7 @@ export class AdminAuthService {
         });
 
         if (!admin) {
-            throw new BadRequestException('Admin not found')
+            throw new BadRequestException(this.t('adminAuth.ADMIN_NOT_FOUND'))
         }
 
         const isMatch = await bcrypt.compare(
@@ -162,12 +171,12 @@ export class AdminAuthService {
         );
 
         if (!isMatch) {
-            throw new BadRequestException('Invalid old password')
+            throw new BadRequestException(this.t('adminAuth.INVALID_OLD_PASSWORD'))
         }
 
         if (dto.oldPassword === dto.newPassword) {
             throw new BadRequestException(
-                'New password must be different from old password',
+                this.t('adminAuth.NEW_PASSWORD_MUST_BE_DIFFERENT'),
             );
         }
 
@@ -175,7 +184,7 @@ export class AdminAuthService {
 
         if (samePassword) {
             throw new BadRequestException(
-                'New password must be different from old password'
+                this.t('adminAuth.NEW_PASSWORD_MUST_BE_DIFFERENT')
             );
         }
 
@@ -219,7 +228,7 @@ export class AdminAuthService {
         }
 
         return {
-            message: 'Password successfully changed',
+            message: this.t('adminAuth.PASSWORD_CHANGED'),
         };
     }
 
@@ -227,7 +236,7 @@ export class AdminAuthService {
         const admin = await this.adminrepo.findOne({ where: { gmail: dto.gmail } })
 
         if (!admin) {
-            throw new BadRequestException('please try again later')
+            throw new BadRequestException(this.t('adminAuth.TRY_AGAIN_LATER'))
         }
 
         await this.secretCodeRepo.delete({
@@ -256,7 +265,7 @@ export class AdminAuthService {
             })
         }
 
-        return { message: `secret code sended in ${admin.gmail}` }
+        return { message: this.t('adminAuth.SECRET_CODE_SENT', { email: admin.gmail }) }
 
     }
 
@@ -264,14 +273,14 @@ export class AdminAuthService {
         const secret = await this.secretCodeRepo.findOne({ where: { code: dto.code }, relations: { admin: true } })
 
         if (!secret || !secret.admin) {
-            throw new BadRequestException('ivalid credentials, try again')
+            throw new BadRequestException(this.t('adminAuth.INVALID_CREDENTIALS'))
         }
 
         if (secret.expiresAt < new Date()) {
             await this.secretCodeRepo.remove(secret);
 
             throw new BadRequestException(
-                'Verification code expired'
+                this.t('adminAuth.VERIFICATION_CODE_EXPIRED')
             );
         }
 
@@ -284,7 +293,7 @@ export class AdminAuthService {
 
         if (samePassword) {
             throw new BadRequestException(
-                'New password must be different from previous password'
+                this.t('adminAuth.NEW_PASSWORD_MUST_BE_DIFFERENT_PREVIOUS')
             );
         }
 
@@ -322,7 +331,7 @@ export class AdminAuthService {
             })
         }
 
-        return { message: "password succefuly changed" }
+        return { message: this.t('adminAuth.PASSWORD_CHANGED') }
 
     }
 }

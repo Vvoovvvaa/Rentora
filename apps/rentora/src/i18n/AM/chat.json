@@ -1,0 +1,6 @@
+{
+    "PROPERTY_NOT_FOUND": "Հայտարարությունը չի գտնվել",
+    "CANNOT_CHAT_WITH_YOURSELF": "Դուք չեք կարող չատ ստեղծել ինքներդ ձեզ հետ",
+    "ROOM_NOT_FOUND": "Չատը չի գտնվել",
+    "ACCESS_DENIED": "Մուտքն արգելված է"
+}

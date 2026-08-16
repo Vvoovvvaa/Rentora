@@ -1,0 +1,15 @@
+{
+    "ADMIN_NOT_FOUND": "Ադմինիստրատորը չի գտնվել",
+    "INCORRECT_CREDENTIALS": "Սխալ էլ. փոստ կամ գաղտնաբառ",
+    "ONLY_SUPER_ADMIN_CREATE": "Միայն գլխավոր ադմինիստրատորը կարող է ստեղծել ադմինիստրատորներ",
+    "ADMIN_ALREADY_EXISTS": "Այս էլ. փոստով ադմինիստրատոր արդեն գոյություն ունի",
+    "ADMIN_CREATED": "{name} ադմինիստրատորը հաջողությամբ ստեղծվել է",
+    "INVALID_OLD_PASSWORD": "Հին գաղտնաբառը սխալ է",
+    "NEW_PASSWORD_MUST_BE_DIFFERENT": "Նոր գաղտնաբառը պետք է տարբերվի հին գաղտնաբառից",
+    "PASSWORD_CHANGED": "Գաղտնաբառը հաջողությամբ փոխվել է",
+    "TRY_AGAIN_LATER": "Խնդրում ենք փորձել ավելի ուշ",
+    "SECRET_CODE_SENT": "Գաղտնի կոդն ուղարկվել է {email} հասցեին",
+    "INVALID_CREDENTIALS": "Սխալ տվյալներ, խնդրում ենք կրկին փորձել",
+    "VERIFICATION_CODE_EXPIRED": "Հաստատման կոդի ժամկետը լրացել է",
+    "NEW_PASSWORD_MUST_BE_DIFFERENT_PREVIOUS": "Նոր գաղտնաբառը պետք է տարբերվի նախորդ գաղտնաբառից"
+}

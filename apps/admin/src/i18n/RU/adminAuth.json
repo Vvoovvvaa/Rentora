@@ -1,0 +1,15 @@
+{
+    "ADMIN_NOT_FOUND": "Администратор не найден",
+    "INCORRECT_CREDENTIALS": "Неверный email или пароль",
+    "ONLY_SUPER_ADMIN_CREATE": "Только супер-администратор может создавать администраторов",
+    "ADMIN_ALREADY_EXISTS": "Администратор с таким email уже существует",
+    "ADMIN_CREATED": "Администратор {name} успешно создан",
+    "INVALID_OLD_PASSWORD": "Неверный старый пароль",
+    "NEW_PASSWORD_MUST_BE_DIFFERENT": "Новый пароль должен отличаться от старого",
+    "PASSWORD_CHANGED": "Пароль успешно изменён",
+    "TRY_AGAIN_LATER": "Пожалуйста, попробуйте позже",
+    "SECRET_CODE_SENT": "Секретный код отправлен на {email}",
+    "INVALID_CREDENTIALS": "Неверные данные, попробуйте ещё раз",
+    "VERIFICATION_CODE_EXPIRED": "Срок действия кода подтверждения истёк",
+    "NEW_PASSWORD_MUST_BE_DIFFERENT_PREVIOUS": "Новый пароль должен отличаться от предыдущего"
+}

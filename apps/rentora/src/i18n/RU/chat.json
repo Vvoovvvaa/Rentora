@@ -1,0 +1,6 @@
+{
+    "PROPERTY_NOT_FOUND": "Объявление не найдено",
+    "CANNOT_CHAT_WITH_YOURSELF": "Вы не можете создать чат с самим собой",
+    "ROOM_NOT_FOUND": "Чат не найден",
+    "ACCESS_DENIED": "Доступ запрещён"
+}

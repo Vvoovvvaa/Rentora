@@ -4,12 +4,13 @@ import { AdminsPropertiesController } from './admins-properties.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Admin, Property } from '@app/common-rentora/database/entity';
 import { EmailModule } from '@app/common-rentora/smtp';
+import { PropertyPriceHistory } from '@app/common-rentora/database/entity/price-history';
 
 @Module({
   providers: [AdminsPropertiesService],
   controllers: [AdminsPropertiesController],
   imports: [
-    TypeOrmModule.forFeature([Admin, Property]), EmailModule
+    TypeOrmModule.forFeature([Admin, Property, PropertyPriceHistory]), EmailModule
   ]
 })
 export class AdminsPropertiesModule {}

@@ -16,6 +16,9 @@ import { VerifyEmailDto } from './dto/verify-email.dto';
 import { forgetPasswordDto } from './dto/forget.dto';
 import { ChangedPassword } from './dto/acceptchangePassword.dto';
 import { sendVerifyCodeDto } from './dto/sendverifyCode.dto';
+import { I18nService, I18nContext } from 'nestjs-i18n';
+import { randomUUID } from 'crypto';
+import { RedisService } from '@app/common-rentora/redis/redis.service';
 
 @Injectable()
 export class AuthService {
@@ -32,8 +35,10 @@ export class AuthService {
         private readonly secretCodeRepo: Repository<SecretCode>,
 
         private readonly jwtservice: JwtService,
+        private readonly redisservice: RedisService,
         private readonly configService: ConfigService,
-        private readonly senderservice: SenderService
+        private readonly senderservice: SenderService,
+        private readonly i18n: I18nService
     ) {
         this.jwtconfig = this.configService.get("JWTCONFIG") as IJwtconfig;
     }
@@ -43,7 +48,8 @@ export class AuthService {
             {
                 sub: user.id,
                 gmail: user.gmail,
-                role: user.userRole
+                role: user.userRole,
+                jti: randomUUID()
             },
             {
                 secret: this.jwtconfig.JWT_SECRET1
@@ -55,11 +61,18 @@ export class AuthService {
         };
     }
 
+    private t(key: string, args?: Record<string, any>,): string {
+        return this.i18n.t(key, {
+            lang: I18nContext.current()?.lang || 'en',
+            args,
+        }) as string;
+    }
+
     async register(dto: CreateAuthDto) {
         const exists = await this.userRepo.findOne({ where: { gmail: dto.gmail } });
 
         if (exists) {
-            throw new ConflictException("user already exists");
+            throw new BadRequestException(this.t('auth.USER_ALREADY_EXISTS'));
         }
 
         const hashPassword = await bcrypt.hash(dto.password, 10);
@@ -105,7 +118,7 @@ export class AuthService {
 
         return {
             ...token,
-            message: `User ${user.name || user.gmail} successfully registered`,
+            message: this.t('auth.REGISTER_SUCCESS', { name: user.name || user.gmail }),
         };
     }
 
@@ -116,11 +129,11 @@ export class AuthService {
         });
 
         if (!user) {
-            throw new UnauthorizedException("Incorrect Gmail or password, please try again");
+            throw new UnauthorizedException(this.t('auth.INCORRECT_CREDENTIALS'));
         }
 
         if (user.accauntStatus === accauntSatus.PERMANETLY_BLOCK) {
-            throw new ForbiddenException("Your account has been permanently banned");
+            throw new ForbiddenException(this.t('auth.PERMANENTLY_BANNED'));
         }
 
         let security = user.security;
@@ -140,7 +153,7 @@ export class AuthService {
             const now = new Date();
             if (now < security.temporaryBlockUntil) {
                 const remaining = Math.ceil((security.temporaryBlockUntil.getTime() - now.getTime()) / 60000);
-                throw new ForbiddenException(`Your account is temporarily blocked. You can try again in ${remaining} minute(s)`);
+                throw new ForbiddenException(this.t('auth.TEMPORARILY_BLOCKED_REMAINING', { remaining }));
             }
 
             user.accauntStatus = accauntSatus.ACTIVE;
@@ -170,14 +183,14 @@ export class AuthService {
                     user.accauntStatus = accauntSatus.PERMANETLY_BLOCK;
                     await this.userRepo.save(user);
                     await this.usersecurityRepo.save(security);
-                    throw new ForbiddenException("Your account is permanently blocked due to too many failed attempts");
+                    throw new ForbiddenException(this.t('auth.PERMANENTLY_BLOCKED_ATTEMPTS'));
                 }
 
-                throw new ForbiddenException("Your account is temporarily blocked for 15 minutes");
+                throw new ForbiddenException(this.t('auth.TEMPORARILY_BLOCKED_15'));
             }
 
             await this.usersecurityRepo.save(security);
-            throw new UnauthorizedException("Incorrect Gmail or password, please try again");
+            throw new UnauthorizedException(this.t('auth.INCORRECT_CREDENTIALS'));
         }
 
         security.totalAttemps = 0;
@@ -207,51 +220,51 @@ export class AuthService {
 
         return {
             ...token,
-            message: `User ${user.name || user.gmail} successfully logged in`,
+            message: this.t('auth.LOGIN_SUCCESS', { name: user.name || user.gmail }),
         };
     }
 
-   async sendVerifyCode(dto: sendVerifyCodeDto) {
-    const user = await this.userRepo.findOne({
-        where: {
-            gmail: dto.email,
-        },
-    });
+    async sendVerifyCode(dto: sendVerifyCodeDto) {
+        const user = await this.userRepo.findOne({
+            where: {
+                gmail: dto.email,
+            },
+        });
 
-    if (!user) {
-        throw new NotFoundException('User not found');
+        if (!user) {
+            throw new NotFoundException(this.t('auth.USER_NOT_FOUND'));
+        }
+
+        await this.secretCodeRepo.delete({
+            user: {
+                id: user.id,
+            },
+        });
+
+        const generated = this.secretCodeRepo.create({
+            code: randomCode().toString(),
+            user,
+            createdAt: new Date(Date.now() + 10 * 60 * 1000),
+        });
+
+        await this.secretCodeRepo.save(generated);
+
+        await this.senderservice.sendEmail({
+            to: user.gmail,
+            from: process.env.SMTP_FROM || 'no-reply@example.com',
+            subject: 'Verify Email',
+            template: 'verify-email',
+            context: {
+                name: user.name || user.gmail,
+                code: generated.code,
+                year: new Date().getFullYear(),
+            },
+        });
+
+        return {
+            message: this.t('auth.VERIFICATION_CODE_SENT'),
+        };
     }
-
-    await this.secretCodeRepo.delete({
-        user: {
-            id: user.id,
-        },
-    });
-
-    const generated = this.secretCodeRepo.create({
-        code: randomCode().toString(),
-        user,
-        createdAt: new Date(Date.now() + 10 * 60 * 1000),
-    });
-
-    await this.secretCodeRepo.save(generated);
-
-    await this.senderservice.sendEmail({
-        to: user.gmail,
-        from: process.env.SMTP_FROM || 'no-reply@example.com',
-        subject: 'Verify Email',
-        template: 'verify-email',
-        context: {
-            name: user.name || user.gmail,
-            code: generated.code,
-            year: new Date().getFullYear(),
-        },
-    });
-
-    return {
-        message: 'Verification code sent successfully',
-    };
-}
 
     async VerifyEmail(dto: VerifyEmailDto) {
         let user = await this.userRepo.findOne(
@@ -261,17 +274,17 @@ export class AuthService {
             })
 
         if (!user) {
-            throw new BadRequestException("User not found")
+            throw new BadRequestException(this.t('auth.USER_NOT_FOUND'))
         }
 
         if (user.gmailStatus === EmailStatusEnum.VERIFIED) {
-            throw new BadRequestException("your email already verified")
+            throw new BadRequestException(this.t('auth.EMAIL_ALREADY_VERIFIED'))
         }
 
         const secret = await this.secretCodeRepo.findOne({ where: { code: dto.code, user: { id: user.id } } })
 
         if (!secret) {
-            throw new BadRequestException("Invalid Verification Code")
+            throw new BadRequestException(this.t('auth.INVALID_VERIFICATION_CODE'))
         }
 
         if (secret.createdAt < new Date()) {
@@ -280,24 +293,24 @@ export class AuthService {
             });
 
             throw new BadRequestException(
-                "Verification code expired"
+                this.t('auth.VERIFICATION_CODE_EXPIRED')
             );
         }
         user.gmailStatus = EmailStatusEnum.VERIFIED
         await this.userRepo.save(user)
 
-        return { message: `Congratulations ${user.gmail}, your email Verified` }
+        return { message: this.t('auth.EMAIL_VERIFIED', { email: user.gmail }) }
     }
 
     async forgetPassword(dto: forgetPasswordDto) {
         let user = await this.userRepo.findOne({ where: { gmail: dto.gmail } })
 
         if (!user) {
-            throw new BadRequestException("User Not Found")
+            throw new BadRequestException(this.t('auth.USER_NOT_FOUND'))
         }
 
         if (user.gmailStatus === EmailStatusEnum.NOT_VERIFIED) {
-            throw new BadRequestException("Please verified you Email")
+            throw new BadRequestException(this.t('auth.VERIFY_EMAIL_FIRST'))
         }
 
         await this.secretCodeRepo.delete({
@@ -327,7 +340,7 @@ export class AuthService {
             await this.secretCodeRepo.save(generated);
         }
 
-        return { message: `secret code sended in ${user.gmail}` }
+        return { message: this.t('auth.SECRET_CODE_SENT', { email: user.gmail }) }
 
 
     }
@@ -339,7 +352,7 @@ export class AuthService {
         });
 
         if (!secret || !secret.user) {
-            throw new BadRequestException("Invalid Code");
+            throw new BadRequestException(this.t('auth.INVALID_CODE'));
         }
 
         const user = secret.user;
@@ -362,7 +375,40 @@ export class AuthService {
                 }
             })
 
-            return { message: "Password changed successfully" };
+            return { message: this.t('auth.PASSWORD_CHANGED') };
         }
+    }
+
+    async logout(token: string) {
+        const payload = await this.jwtservice.verifyAsync(
+            token,
+            {
+                secret: process.env.JWT_SECRET1
+            }
+        );
+
+        if (!payload.jti) {
+            throw new UnauthorizedException(
+                'Invalid token'
+            );
+        }
+
+        const now = Math.floor(
+            Date.now() / 1000
+        );
+
+        const ttl = payload.exp - now;
+
+        if (ttl > 0) {
+            await this.redisservice.set(
+                `blacklist:token:${payload.jti}`,
+                '1',
+                ttl
+            );
+        }
+
+        return {
+            message: 'Logged out successfully'
+        };
     }
 }

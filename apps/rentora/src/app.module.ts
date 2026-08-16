@@ -16,6 +16,10 @@ import { SearchModule } from './search/search.module';
 import { UserModule } from './user/user.module';
 import { ChatModule } from './chat/chat.module';
 import { SupportModule } from './support/support.module';
+import { I18nModule, AcceptLanguageResolver } from 'nestjs-i18n';
+import path from 'path';
+import { PropertyPriceHistory } from '@app/common-rentora/database/entity/price-history';
+import { RedisModule } from '@app/common-rentora/redis/redis.module';
 
 @Module({
   imports: [
@@ -26,6 +30,20 @@ import { SupportModule } from './support/support.module';
     UserModule,
     ChatModule,
     SupportModule,
+    RedisModule,
+
+    I18nModule.forRoot({
+      fallbackLanguage: 'en',
+
+      loaderOptions: {
+        path: path.join(__dirname, '/i18n/'),
+        watch: true,
+      },
+
+      resolvers: [
+        AcceptLanguageResolver,
+      ],
+    }),
 
 
     ConfigModule.forRoot({
@@ -47,7 +65,7 @@ import { SupportModule } from './support/support.module';
           username: dbconfig.POSTGRES_USER,
           password: dbconfig.POSTGRES_PASSWORD,
           database: dbconfig.POSTGRES_DB,
-          entities: [User, UserSecurity, SecretCode, Property, PropertyImage, UserImage, Favorites, Report, Admin, AdminSecretcode,Support],
+          entities: [User, UserSecurity, SecretCode, Property, PropertyImage, UserImage, Favorites, Report, Admin, AdminSecretcode, Support, PropertyPriceHistory],
           autoLoadEntities: true,
           synchronize: true,
           // dropSchema: true,
@@ -55,12 +73,9 @@ import { SupportModule } from './support/support.module';
       },
     }),
 
-
-
-
   ],
 
   controllers: [AppController],
   providers: [AppService,],
 })
-export class AppModule { }
+export class AppModule {}

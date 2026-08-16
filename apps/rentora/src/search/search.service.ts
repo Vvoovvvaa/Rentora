@@ -25,7 +25,6 @@ export class SearchService {
         return applyPropertyFilters(query, dto).getMany()
     }
 
-
 }
 
 

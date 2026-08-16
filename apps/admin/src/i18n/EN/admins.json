@@ -1,0 +1,12 @@
+{
+    "TRY_AGAIN_LATER": "Please try again later",
+    "USER_NOT_FOUND": "User not found",
+    "USER_ALREADY_BLOCKED": "User is already blocked",
+    "USER_BLOCKED": "User {name} successfully blocked",
+    "USER_NOT_BLOCKED": "User is not blocked",
+    "USER_UNBLOCKED": "User {name} successfully unblocked by admin {admin}",
+    "ADMIN_NOT_FOUND": "Admin not found",
+    "CANNOT_DELETE_SELF": "You cannot delete your own admin account",
+    "ONLY_SUPER_ADMIN_DELETE": "Only super admin can delete admins",
+    "ADMIN_DELETED": "Admin {deleted} successfully deleted by admin {admin}"
+}

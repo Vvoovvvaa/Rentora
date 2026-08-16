@@ -7,23 +7,30 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/auth-context";
 import { useCompare } from "@/context/compare-context";
 import { apiMessage, propertiesApi } from "@/lib/api";
-import type { ComparedProperty, PropertyFeature } from "@/types/models";
+import type { ComparedProperty, PropertyFeature, PropertyListing } from "@/types/models";
 import { ErrorBlock } from "./home-view";
-import { featureGroups } from "./property-form-options";
-import { featureGroupLabels } from "./property-highlights";
-import { buildingLabels, cityOf, conditionLabels, formatMoney, getCategoryLabel, getFeatureLabel, priceOf, readableEnum } from "./property-presentation";
+import { getFeatureGroups } from "./property-form-options";
+import { buildingLabels, cityOf, conditionLabels, formatMoney, getCategoryLabel, getFeatureLabel, getListingLabel, priceOf, readableEnum } from "./property-presentation";
+import { useI18n } from "@/context/i18n-context";
 
 const parseId = (value: string | null) => value && /^\d+$/.test(value) && Number(value) > 0 ? Number(value) : undefined;
 const isPair = (first?: number, second?: number): first is number => Boolean(first && second && first !== second);
 const numeric = (value: unknown) => { const parsed = Number(value); return Number.isFinite(parsed) ? parsed : undefined; };
 const dash = "—";
 
+type DetailKey = "price" | "pricePerSquareMeter" | "city" | "category" | "listing" | "area" | "rooms" | "bedrooms" | "bathrooms" | "floor" | "totalFloors" | "ceilingHeight" | "constructionYear" | "buildingType" | "condition";
+
 function pricePerSquareMeter(property: ComparedProperty) {
   const price = numeric(property.pricePerSquareMeter);
   return price === undefined ? dash : `${formatMoney(Math.round(price), property.currency)} / m²`;
 }
 
-function propertyValue(property: ComparedProperty, key: "area" | "rooms" | "bedrooms" | "bathrooms" | "floor" | "ceilingHeight" | "constructionYear" | "buildingType" | "condition") {
+function propertyValue(property: ComparedProperty, key: DetailKey) {
+  if (key === "price") return priceOf(property);
+  if (key === "pricePerSquareMeter") return pricePerSquareMeter(property);
+  if (key === "city") return cityOf(property.city);
+  if (key === "category") return getCategoryLabel(property.category);
+  if (key === "listing") return property.listing ? getListingLabel(property.listing as PropertyListing) : dash;
   const raw = property[key];
   if (key === "floor") {
     const floor = property.floor;
@@ -39,32 +46,44 @@ function propertyValue(property: ComparedProperty, key: "area" | "rooms" | "bedr
   return String(raw);
 }
 
-function lowerHint(first: number | undefined, second: number | undefined, label: string) {
-  if (first === undefined || second === undefined || first === second) return [undefined, undefined] as const;
-  return first < second ? [label, undefined] as const : [undefined, label] as const;
+function numberDifference(first: number | undefined, second: number | undefined, suffix = "") {
+  if (first === undefined || second === undefined || first === second) return "";
+  return `${Math.abs(first - second)}${suffix}`;
 }
 
-function largerHint(first: number | undefined, second: number | undefined) {
-  if (first === undefined || second === undefined || first === second) return [undefined, undefined] as const;
-  return first > second ? ["Larger area", undefined] as const : [undefined, "Larger area"] as const;
+function moneyDifference(first: number | undefined, second: number | undefined, currency: ComparedProperty["currency"]) {
+  if (first === undefined || second === undefined || first === second) return "";
+  return formatMoney(Math.abs(first - second), currency);
 }
 
-function PropertySummary({ property, hint, priceHint, perSquareHint, onRemove }: { property: ComparedProperty; hint?: string; priceHint?: string; perSquareHint?: string; onRemove: () => void }) {
+function SummaryFact({ label, value }: { label: string; value: string }) {
+  return <span><small>{label}</small><strong>{value === dash ? "—" : value}</strong></span>;
+}
+
+function PropertySummary({ property, index, onRemove }: { property: ComparedProperty; index: number; onRemove: () => void }) {
+  const { t } = useI18n();
   const image = property.images?.[0]?.url;
   return <article className="compare-property-card">
-    <div className="compare-summary-image">{image ? <img src={image} alt={property.title}/> : <div className="compare-image-placeholder"/>}<button className="compare-remove" type="button" onClick={onRemove} aria-label={`Remove ${property.title} from comparison`}><X size={15}/><span>Remove</span></button></div>
+    <div className="compare-summary-image">{image ? <img src={image} alt={property.title}/> : <div className="compare-image-placeholder"/>}<button className="compare-remove" type="button" onClick={onRemove} aria-label={t("compare.remove")}><X size={15}/><span>{t("compare.remove")}</span></button></div>
     <div className="compare-summary-content">
-      <div className="compare-summary-meta"><span className="compare-category-badge">{getCategoryLabel(property.category)}</span><span><MapPin size={14}/>{cityOf(property.city)}</span></div>
+      <p className="compare-property-identity">{index === 0 ? t("compare.propertyA") : t("compare.propertyB")}</p>
+      <div className="compare-summary-meta"><div><span className="compare-category-badge">{getCategoryLabel(property.category)}</span>{property.listing && <span className="compare-listing-badge">{getListingLabel(property.listing)}</span>}</div><span><MapPin size={14}/>{cityOf(property.city)}</span></div>
       <h2>{property.title}</h2>
-      <div className="compare-summary-prices"><div><strong>{priceOf(property)}</strong>{priceHint && <span className="compare-insight">{priceHint}</span>}</div><div><small>{pricePerSquareMeter(property)}</small>{perSquareHint && <span className="compare-insight">{perSquareHint}</span>}</div></div>
-      {hint && <span className="sr-only">{hint}</span>}
-      <Link href={`/properties/${property.id}`} className="compare-view-listing">View listing</Link>
+      <div className="compare-summary-prices"><strong>{priceOf(property)}</strong><small>{pricePerSquareMeter(property)}</small></div>
+      <div className="compare-summary-facts"><SummaryFact label={t("property.rooms")} value={propertyValue(property, "rooms")}/><SummaryFact label={t("property.area")} value={propertyValue(property, "area")}/><SummaryFact label={t("property.bedrooms")} value={propertyValue(property, "bedrooms")}/></div>
+      <Link href={`/properties/${property.id}`} className="compare-view-listing">{t("common.viewProperty")}</Link>
     </div>
   </article>;
 }
 
+function ComparisonColumnsHeader({ properties }: { properties: ComparedProperty[] }) {
+  const { t } = useI18n();
+  return <div className="comparison-columns-header" role="row"><span>{t("compare.parameter")}</span>{properties.map((property, index) => <div key={property.id} className="comparison-property-column"><small>{index === 0 ? t("compare.propertyA") : t("compare.propertyB")}</small>{property.images?.[0]?.url && <img src={property.images[0].url} alt=""/>}<div><strong>{property.title}</strong><span>{cityOf(property.city)} · {priceOf(property)}</span></div></div>)}</div>;
+}
+
 export function CompareView() {
   const router = useRouter();
+  const { t } = useI18n();
   const params = useSearchParams();
   const { user, loading: authLoading } = useAuth();
   const { selectedIds, remove, clear } = useCompare();
@@ -98,47 +117,64 @@ export function CompareView() {
     if (!result) return [];
     const allFeatures = new Set<PropertyFeature>([...(result.firstProperty.features || []), ...(result.secondProperty.features || [])]);
     const remaining = new Set(allFeatures);
-    const grouped = featureGroups.map((group) => {
-      const features = group.options.map((option) => option.value).filter((feature) => allFeatures.has(feature));
+    const grouped = getFeatureGroups((id) => t(`property.${id}`)).map((group) => {
+      const features = group.options.map((option) => option.value).filter((feature) => allFeatures.has(feature)).sort((first, second) => {
+        const firstShared = result.firstProperty.features?.includes(first) && result.secondProperty.features?.includes(first);
+        const secondShared = result.firstProperty.features?.includes(second) && result.secondProperty.features?.includes(second);
+        return Number(firstShared) - Number(secondShared);
+      });
       features.forEach((feature) => remaining.delete(feature));
-      return { label: featureGroupLabels[group.label] || group.label, features };
+      return { label: group.label, features };
     }).filter((group) => group.features.length > 0);
-    if (remaining.size) grouped.push({ label: "Other features", features: Array.from(remaining) });
+    if (remaining.size) grouped.push({ label: t("property.otherFeatures"), features: Array.from(remaining) });
     return grouped;
-  }, [result]);
+  }, [result, t]);
 
   const removeProperty = (id: number) => { remove(id); router.push("/compare"); };
   const clearComparison = () => { clear(); router.push("/compare"); };
 
   if (authLoading) return <div className="shell page-space"><div className="skeleton h-72"/></div>;
-  if (!user) return <div className="shell page-space text-center"><GitCompare className="mx-auto text-[#a77d54]" size={38}/><h1 className="mt-5 text-3xl font-bold">Sign in to compare homes</h1><p className="mt-2 text-stone-500">Your selected homes will remain ready for comparison after you sign in.</p><Link href="/login" className="btn-primary mt-6">Log in</Link></div>;
+  if (!user) return <div className="shell page-space text-center"><GitCompare className="mx-auto text-[#a77d54]" size={38}/><h1 className="mt-5 text-3xl font-bold">{t("compare.title")}</h1><p className="mt-2 text-stone-500">{t("compare.emptyCopy")}</p><Link href="/login" className="btn-primary mt-6">{t("navigation.logIn")}</Link></div>;
 
   if (!hasTwoIds) {
     const oneSelected = selectedIds.length === 1;
-    return <div className="shell page-space compare-page"><div className="compare-empty"><GitCompare size={32}/><p className="eyebrow">COMPARE</p><h1>{oneSelected ? "One home selected" : "Compare homes side by side"}</h1><p>{oneSelected ? "Choose one more listing to start comparing." : "Select two listings to compare prices, property details and amenities."}</p><Link href="/search" className="btn-primary">Explore homes</Link></div></div>;
+    return <div className="shell page-space compare-page"><div className="compare-empty"><GitCompare size={32}/><p className="eyebrow">{t("compare.title")}</p><h1>{oneSelected ? t("compare.oneSelected") : t("compare.emptyTitle")}</h1><p>{oneSelected ? t("compare.oneSelectedCopy") : t("compare.emptyCopy")}</p><Link href="/search" className="btn-primary">{t("home.exploreHomes")}</Link></div></div>;
   }
 
   const properties = result ? [result.firstProperty, result.secondProperty] : [];
-  const detailRows: Array<{ label: string; key: "area" | "rooms" | "bedrooms" | "bathrooms" | "floor" | "ceilingHeight" | "constructionYear" | "buildingType" | "condition" }> = [
-    { label: "Area", key: "area" }, { label: "Rooms", key: "rooms" }, { label: "Bedrooms", key: "bedrooms" }, { label: "Bathrooms", key: "bathrooms" }, { label: "Floor", key: "floor" }, { label: "Ceiling height", key: "ceilingHeight" }, { label: "Year built", key: "constructionYear" }, { label: "Building type", key: "buildingType" }, { label: "Condition", key: "condition" },
+  const detailRows: Array<{ label: string; key: DetailKey }> = [
+    { label: t("common.price"), key: "price" }, { label: t("compare.pricePerSquareMeter"), key: "pricePerSquareMeter" }, { label: t("property.city"), key: "city" }, { label: t("property.category"), key: "category" }, { label: t("create.listingPurpose"), key: "listing" }, { label: t("property.area"), key: "area" }, { label: t("property.rooms"), key: "rooms" }, { label: t("property.bedrooms"), key: "bedrooms" }, { label: t("property.bathrooms"), key: "bathrooms" }, { label: t("property.floor"), key: "floor" }, { label: t("property.totalFloors"), key: "totalFloors" }, { label: t("property.ceilingHeight"), key: "ceilingHeight" }, { label: t("property.constructionYear"), key: "constructionYear" }, { label: t("property.buildingType"), key: "buildingType" }, { label: t("property.condition"), key: "condition" },
   ];
-
+  const visibleDetailRows = result ? detailRows.filter((row) => !(propertyValue(properties[0], row.key) === dash && propertyValue(properties[1], row.key) === dash)) : [];
   const sameCurrency = result?.firstProperty.currency === result?.secondProperty.currency;
-  const [firstPriceHint, secondPriceHint] = sameCurrency && result ? lowerHint(numeric(result.firstProperty.price), numeric(result.secondProperty.price), "Lower price") : [undefined, undefined];
-  const [firstPerSquareHint, secondPerSquareHint] = sameCurrency && result ? lowerHint(numeric(result.firstProperty.pricePerSquareMeter), numeric(result.secondProperty.pricePerSquareMeter), "Lower price / m²") : [undefined, undefined];
-  const [firstAreaHint, secondAreaHint] = result ? largerHint(numeric(result.firstProperty.area), numeric(result.secondProperty.area)) : [undefined, undefined];
+  const lowerNote = (first: number | undefined, second: number | undefined, amount: string, label: string) => {
+    if (first === undefined || second === undefined || first === second) return undefined;
+    return first < second ? { side: 0, text: `${label} · ${amount}` } : { side: 1, text: `${label} · ${amount}` };
+  };
+  const largerNote = (first: number | undefined, second: number | undefined, amount: string, label: string) => {
+    if (first === undefined || second === undefined || first === second) return undefined;
+    return first > second ? { side: 0, text: `${label} · ${amount}` } : { side: 1, text: `${label} · ${amount}` };
+  };
+  const keyDifferences = result ? [
+    { label: t("common.price"), first: priceOf(properties[0]), second: priceOf(properties[1]), note: sameCurrency ? lowerNote(numeric(properties[0].price), numeric(properties[1].price), moneyDifference(numeric(properties[0].price), numeric(properties[1].price), properties[0].currency), t("compare.lowerPrice")) : undefined },
+    { label: t("compare.pricePerSquareMeter"), first: pricePerSquareMeter(properties[0]), second: pricePerSquareMeter(properties[1]), note: sameCurrency ? lowerNote(numeric(properties[0].pricePerSquareMeter), numeric(properties[1].pricePerSquareMeter), moneyDifference(numeric(properties[0].pricePerSquareMeter), numeric(properties[1].pricePerSquareMeter), properties[0].currency), t("compare.lowerPricePerSquareMeter")) : undefined },
+    { label: t("property.area"), first: propertyValue(properties[0], "area"), second: propertyValue(properties[1], "area"), note: largerNote(numeric(properties[0].area), numeric(properties[1].area), numberDifference(numeric(properties[0].area), numeric(properties[1].area), " m²"), t("compare.largerArea")) },
+    { label: t("property.rooms"), first: propertyValue(properties[0], "rooms"), second: propertyValue(properties[1], "rooms"), note: largerNote(numeric(properties[0].rooms), numeric(properties[1].rooms), numberDifference(numeric(properties[0].rooms), numeric(properties[1].rooms)), t("compare.moreRooms")) },
+    { label: t("property.bedrooms"), first: propertyValue(properties[0], "bedrooms"), second: propertyValue(properties[1], "bedrooms"), note: largerNote(numeric(properties[0].bedrooms), numeric(properties[1].bedrooms), numberDifference(numeric(properties[0].bedrooms), numeric(properties[1].bedrooms)), t("compare.moreRooms")) },
+  ].filter((row) => row.first !== dash || row.second !== dash) : [];
 
   return <div className="shell page-space compare-page">
-    <header className="compare-page-header"><div><p className="eyebrow">COMPARE</p><h1>Compare homes</h1><p>See the important differences side by side.</p></div><button type="button" onClick={clearComparison} className="btn-secondary compare-clear-page"><X size={16}/> Clear comparison</button></header>
-    {loading && <div className="compare-summary-grid mt-10"><div className="skeleton h-96"/><div className="skeleton h-96"/><p className="sr-only">Loading comparison...</p></div>}
-    {error && <div className="mt-8"><h2 className="mb-3 text-xl font-bold text-stone-900">Couldn&apos;t load comparison</h2><ErrorBlock message={error} retry={() => setRequestVersion((version) => version + 1)}/></div>}
+    <header className="compare-page-header"><div><p className="eyebrow">{t("compare.title")}</p><h1>{t("compare.title")}</h1><p>{t("compare.subtitle")}</p></div><div className="compare-header-actions"><span>{t("compare.homesSelected", { count: 2 })}</span><button type="button" onClick={clearComparison} className="btn-secondary compare-clear-page"><X size={16}/> {t("compare.clearComparison")}</button></div></header>
+    {loading && <div className="compare-summary-grid mt-8"><div className="skeleton h-80"/><div className="skeleton h-80"/><p className="sr-only">{t("common.loading")}</p></div>}
+    {error && <div className="mt-8"><ErrorBlock message={error} retry={() => setRequestVersion((version) => version + 1)}/></div>}
     {result && <>
-      <section className="compare-summary-grid" aria-label="Selected properties">
-        <PropertySummary property={properties[0]} priceHint={firstPriceHint} perSquareHint={firstPerSquareHint} hint={firstAreaHint} onRemove={() => removeProperty(properties[0].id)}/>
-        <PropertySummary property={properties[1]} priceHint={secondPriceHint} perSquareHint={secondPerSquareHint} hint={secondAreaHint} onRemove={() => removeProperty(properties[1].id)}/>
+      <section className="compare-summary-grid" aria-label={t("compare.selected", { count: 2 })}>
+        <PropertySummary property={properties[0]} index={0} onRemove={() => removeProperty(properties[0].id)}/>
+        <PropertySummary property={properties[1]} index={1} onRemove={() => removeProperty(properties[1].id)}/>
       </section>
-      <section className="compare-table-section"><div className="compare-section-heading"><div><p className="eyebrow">SIDE BY SIDE</p><h2>Property details</h2></div></div><div className="compare-table" role="table"><div className="compare-table-head" role="row"><span>Details</span><strong>{properties[0].title}</strong><strong>{properties[1].title}</strong></div>{detailRows.map((row) => <div className={`compare-table-row ${row.key === "area" ? "compare-highlight-row" : ""}`} role="row" key={row.key}><span>{row.label}</span><strong>{propertyValue(properties[0], row.key)}{row.key === "area" && firstAreaHint && <em className="compare-insight">{firstAreaHint}</em>}</strong><strong>{propertyValue(properties[1], row.key)}{row.key === "area" && secondAreaHint && <em className="compare-insight">{secondAreaHint}</em>}</strong></div>)}</div></section>
-      {featureSections.length > 0 && <section className="compare-table-section compare-features-section"><div className="compare-section-heading"><div><p className="eyebrow">AMENITIES</p><h2>Amenities &amp; features</h2></div></div><div className="compare-feature-groups">{featureSections.map((group) => <section className="compare-feature-group" key={group.label}><h3>{group.label}</h3><div className="compare-table" role="table"><div className="compare-table-head" role="row"><span>Feature</span><strong>{properties[0].title}</strong><strong>{properties[1].title}</strong></div>{group.features.map((feature) => <div className="compare-table-row compare-feature-row" role="row" key={feature}><span>{getFeatureLabel(feature)}</span><strong>{properties[0].features?.includes(feature) ? <Check aria-label="Available" size={17}/> : <Minus aria-label="Not available" size={17}/>}</strong><strong>{properties[1].features?.includes(feature) ? <Check aria-label="Available" size={17}/> : <Minus aria-label="Not available" size={17}/>}</strong></div>)}</div></section>)}</div></section>}
+      <section className="compare-key-differences"><div className="compare-section-heading"><p className="eyebrow">{t("compare.title")}</p><h2>{t("compare.keyDifferences")}</h2></div><div className="compare-table-scroll"><div className="comparison-matrix comparison-key-matrix" role="table"><ComparisonColumnsHeader properties={properties}/>{keyDifferences.map((row) => <div className={`comparison-matrix-row ${row.first !== row.second ? "is-different" : ""}`} role="row" key={row.label}><span>{row.label}</span><strong>{row.first === dash ? t("compare.notSpecified") : row.first}{row.note?.side === 0 && <em>{row.note.text}</em>}</strong><strong>{row.second === dash ? t("compare.notSpecified") : row.second}{row.note?.side === 1 && <em>{row.note.text}</em>}</strong></div>)}</div></div></section>
+      <section className="compare-table-section"><div className="compare-section-heading"><p className="eyebrow">{t("compare.title")}</p><h2>{t("compare.details")}</h2></div><div className="compare-table-scroll"><div className="comparison-matrix" role="table"><ComparisonColumnsHeader properties={properties}/>{visibleDetailRows.map((row) => { const first = propertyValue(properties[0], row.key); const second = propertyValue(properties[1], row.key); return <div className={`comparison-matrix-row ${first !== second ? "is-different" : ""}`} role="row" key={row.key}><span>{row.label}</span><strong>{first === dash ? t("compare.notSpecified") : first}</strong><strong>{second === dash ? t("compare.notSpecified") : second}</strong></div>; })}</div></div></section>
+      {featureSections.length > 0 && <section className="compare-table-section compare-features-section"><div className="compare-section-heading"><p className="eyebrow">{t("search.feature")}</p><h2>{t("compare.amenities")}</h2></div><div className="compare-feature-groups">{featureSections.map((group) => <section className="compare-feature-group" key={group.label}><h3>{group.label}</h3><div className="compare-table-scroll"><div className="comparison-matrix" role="table"><ComparisonColumnsHeader properties={properties}/>{group.features.map((feature) => <div className="comparison-matrix-row comparison-feature-row" role="row" key={feature}><span>{getFeatureLabel(feature)}</span><strong>{properties[0].features?.includes(feature) ? <Check aria-label={t("compare.available")} size={17}/> : <Minus aria-label={t("compare.notAvailable")} size={17}/>}</strong><strong>{properties[1].features?.includes(feature) ? <Check aria-label={t("compare.available")} size={17}/> : <Minus aria-label={t("compare.notAvailable")} size={17}/>}</strong></div>)}</div></div></section>)}</div></section>}
     </>}
   </div>;
 }

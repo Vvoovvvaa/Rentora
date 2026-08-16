@@ -5,6 +5,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { accauntSatus, adminRoleEnum } from '@app/common-rentora/database/enums';
 import { findUserDto } from './dto/user-find.dto';
+import { I18nContext, I18nService } from 'nestjs-i18n';
+import { RedisService } from '@app/common-rentora/redis/redis.service';
 
 @Injectable()
 export class AdminsService {
@@ -18,8 +20,17 @@ export class AdminsService {
         @InjectRepository(UserSecurity)
         private readonly usersecurtyrepo: Repository<UserSecurity>,
 
-        private readonly senderService: SenderService
+        private readonly senderService: SenderService,
+        private readonly i18n: I18nService,
+        private readonly redisService: RedisService
     ) { }
+
+    private t(key: string, args?: Record<string, any>,): string {
+        return this.i18n.t(key, {
+            lang: I18nContext.current()?.lang || 'am',
+            args,
+        }) as string;
+    }
 
     async viewUsers() {
         return this.userRepo.find()
@@ -29,13 +40,13 @@ export class AdminsService {
         const admin = await this.adminRepo.findOne({ where: { id: adminId } })
 
         if (!admin) {
-            throw new BadRequestException('please try again later')
+            throw new BadRequestException(this.t('admins.TRY_AGAIN_LATER'))
         }
 
         const user = await this.userRepo.findOne({ where: { id: userId }, relations: { properties: true, security: true } })
 
         if (!user) {
-            throw new BadRequestException("user not found")
+            throw new BadRequestException(this.t('admins.USER_NOT_FOUND'))
         }
 
         return user
@@ -47,25 +58,29 @@ export class AdminsService {
         const admin = await this.adminRepo.findOne({ where: { id: adminId } })
 
         if (!admin) {
-            throw new BadRequestException('please try again later')
+            throw new BadRequestException(this.t('admins.TRY_AGAIN_LATER'))
         }
 
         const user = await this.userRepo.findOne({ where: { id: userid } })
 
         if (!user) {
-            throw new BadRequestException("user not found")
+            throw new BadRequestException(this.t('admins.USER_NOT_FOUND'))
         }
 
         const userSecurity = await this.usersecurtyrepo.findOne({ where: { user: { id: user.id } } })
 
         if (!userSecurity) {
-            throw new BadRequestException("please try again later")
+            throw new BadRequestException(this.t('admins.TRY_AGAIN_LATER'))
         }
 
         if (user.accauntStatus === accauntSatus.PERMANETLY_BLOCK) {
-            throw new BadRequestException('User already blocket')
+            throw new BadRequestException(this.t('admins.USER_ALREADY_BLOCKED'))
         }
 
+        await this.redisService.set(
+            `blocked:user:${user.id}`,
+            '1'
+        );
         user.accauntStatus = accauntSatus.PERMANETLY_BLOCK
         await this.userRepo.save(user)
 
@@ -82,7 +97,7 @@ export class AdminsService {
             })
         }
 
-        return { message: `user - ${user.name} succesfuly blocket ` }
+        return { message: this.t('admins.USER_BLOCKED', { name: user.name }) }
 
     }
 
@@ -90,19 +105,22 @@ export class AdminsService {
         const user = await this.userRepo.findOne({ where: { id: userId } })
 
         if (!user) {
-            throw new BadRequestException('Please try again later')
+            throw new BadRequestException(this.t('admins.TRY_AGAIN_LATER'))
         }
 
         const admin = await this.adminRepo.findOne({ where: { id: adminId } })
 
         if (!admin) {
-            throw new BadRequestException("Please try again later")
+            throw new BadRequestException(this.t('admins.TRY_AGAIN_LATER'))
         }
 
         if (user.accauntStatus === accauntSatus.ACTIVE) {
-            throw new BadRequestException("User is not Blcoked")
+            throw new BadRequestException(this.t('admins.USER_NOT_BLOCKED'))
         }
 
+          await this.redisService.delete(
+            `blocked:user:${user.id}`,
+        );
         user.accauntStatus = accauntSatus.ACTIVE
         await this.userRepo.save(user)
 
@@ -119,7 +137,7 @@ export class AdminsService {
             })
         }
 
-        return { message: `${user.name} succesfuly unblocked by admin ${admin.name}` }
+        return { message: this.t('admins.USER_UNBLOCKED', { name: user.name, admin: admin.name }) }
     }
 
     async findUserByQuery(
@@ -134,7 +152,7 @@ export class AdminsService {
 
         if (!admin) {
             throw new BadRequestException(
-                'Admin not found'
+                this.t('admins.ADMIN_NOT_FOUND')
             );
         }
 
@@ -187,7 +205,7 @@ export class AdminsService {
         })
 
         if (!admin) {
-            throw new BadRequestException('Admin not found')
+            throw new BadRequestException(this.t('admins.ADMIN_NOT_FOUND'))
         }
 
         return admin
@@ -197,13 +215,13 @@ export class AdminsService {
         const admin = await this.adminRepo.findOne({ where: { id: adminId } })
 
         if (!admin) {
-            throw new BadRequestException("Admin not found")
+            throw new BadRequestException(this.t('admins.ADMIN_NOT_FOUND'))
         }
 
         const search = await this.adminRepo.findOne({ where: { id: searchAdmin } })
 
         if (!search) {
-            throw new BadRequestException("Admin not found")
+            throw new BadRequestException(this.t('admins.ADMIN_NOT_FOUND'))
         }
 
         return search
@@ -227,28 +245,28 @@ export class AdminsService {
         const admin = await this.adminRepo.findOne({ where: { id: adminId } })
 
         if (!admin) {
-            throw new BadRequestException("Admin not found")
+            throw new BadRequestException(this.t('admins.ADMIN_NOT_FOUND'))
         }
 
         const deleted = await this.adminRepo.findOne({ where: { id: deltedId } })
 
         if (!deleted) {
-            throw new BadRequestException("Admin not found")
+            throw new BadRequestException(this.t('admins.ADMIN_NOT_FOUND'))
         }
 
         if (adminId === deltedId) {
             throw new BadRequestException(
-                'You cannot delete your own admin account'  
+                this.t('admins.CANNOT_DELETE_SELF')
             )
         }
 
         if (admin.adminRole !== adminRoleEnum.super_admin) {
-            throw new BadRequestException('only super admin can delete admins')
+            throw new BadRequestException(this.t('admins.ONLY_SUPER_ADMIN_DELETE'))
         }
 
         await this.adminRepo.remove(deleted)
 
-        return { message: ` admin - ${deleted.name} succesfuly deleted by admin - ${admin.name}` }
+        return { message: this.t('admins.ADMIN_DELETED', { deleted: deleted.name, admin: admin.name }) }
 
     }
 }

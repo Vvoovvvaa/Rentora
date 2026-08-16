@@ -1,0 +1,14 @@
+{
+    "TRY_AGAIN_LATER": "Խնդրում ենք փորձել ավելի ուշ",
+    "ADMIN_NOT_FOUND": "Ադմինիստրատորը չի գտնվել",
+    "PROPERTY_NOT_FOUND": "Հայտարարությունը չի գտնվել",
+    "PROPERTY_ALREADY_ACCEPTED": "Հայտարարությունն արդեն հաստատվել է",
+    "PROPERTY_ALREADY_REJECTED": "Հայտարարությունն արդեն մերժվել է",
+    "PROPERTY_ACCEPTED": "Հայտարարությունը հաջողությամբ հաստատվել է",
+    "PROPERTY_REJECTED": "Հայտարարությունը մերժվել է",
+    "PROPERTY_ALREADY_ARCHIVED": "Հայտարարությունն արդեն արխիվացվել է օգտատիրոջ կողմից",
+    "PROPERTY_ARCHIVED": "Հայտարարությունը արխիվացվել է",
+    "PROPERTY_ALREADY_ACTIVE": "Հայտարարությունն արդեն ակտիվ է",
+    "PROPERTY_RESTORED": "Հայտարարությունը հաջողությամբ վերականգնվել է",
+    "PROPERTY_DELETED": "Հայտարարությունը հաջողությամբ ջնջվել է"
+}

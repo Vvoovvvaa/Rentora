@@ -10,6 +10,7 @@ import { UploadService } from '../upload/upload.service';
 import { changePasswordDto } from './dto/change-password.dto';
 import { SenderService } from '@app/common-rentora/smtp';
 import { ChangeGmailDto } from './dto/change-gmail.dto';
+import { I18nContext, I18nService } from 'nestjs-i18n';
 
 
 @Injectable()
@@ -31,16 +32,24 @@ export class UserService {
         private readonly propertyRepo: Repository<Property>,
 
         private readonly uploadservice: UploadService,
-        private readonly senderservice: SenderService
+        private readonly senderservice: SenderService,
+        private readonly i18n: I18nService
 
 
     ) { }
+
+    private t(key: string,args?: Record<string, any>,): string {
+        return this.i18n.t(key, {
+            lang: I18nContext.current()?.lang || 'am',
+            args,
+        }) as string;
+    }
 
     async changeData(dto: changeUserdataDto, userId: number, file: Express.Multer.File) {
         const user = await this.userRepo.findOne({ where: { id: userId }, relations: { image: true } })
 
         if (!user) {
-            throw new BadRequestException('please try again later')
+            throw new BadRequestException(this.t('user.TRY_AGAIN_LATER'))
         }
 
         Object.assign(user, dto)
@@ -71,7 +80,7 @@ export class UserService {
         })
 
         if (!updatedUser) {
-            throw new BadRequestException('please try again later')
+            throw new BadRequestException(this.t('user.TRY_AGAIN_LATER'))
         }
 
         const { password, ...profile } = updatedUser
@@ -82,13 +91,13 @@ export class UserService {
         const user = await this.userRepo.findOne({ where: { id: userId } })
 
         if (!user) {
-            throw new BadRequestException('try again later')
+            throw new BadRequestException(this.t('user.TRY_AGAIN_LATER'))
         }
 
         const isMatch = await bcrypt.compare(dto.Oldpassword, user.password)
 
         if (!isMatch) {
-            throw new BadRequestException('Invalid password, try again later')
+            throw new BadRequestException(this.t('user.INVALID_PASSWORD'))
         }
 
         user.password = await bcrypt.hash(dto.NewPassword, 10)
@@ -106,7 +115,7 @@ export class UserService {
                 }
             })
         }
-        return { message: "password succesfuly changed" }
+        return { message: this.t('user.PASSWORD_CHANGED') }
     }
 
 
@@ -114,7 +123,7 @@ export class UserService {
         const user = await this.userRepo.findOne({ where: { id: userId } })
 
         if (!user) {
-            throw new BadRequestException('Please try again later')
+            throw new BadRequestException(this.t('user.TRY_AGAIN_LATER'))
         }
 
         user.gmail = dto.gmail
@@ -133,7 +142,7 @@ export class UserService {
                 }
             })
         }
-        return { message: `Your email succesfuly changed in ${user.gmail}, please verify your new email ` }
+        return { message: this.t('user.EMAIL_CHANGED', { email: user.gmail }) }
     }
 
 
@@ -141,7 +150,7 @@ export class UserService {
         const user = await this.userRepo.findOne({ where: { id: userId }, relations: { image: true, properties: true } })
 
         if (!user) {
-            throw new BadRequestException('Please, try aain later')
+            throw new BadRequestException(this.t('user.TRY_AGAIN_LATER'))
         }
 
         const { password, ...profile } = user;
@@ -160,7 +169,7 @@ export class UserService {
         });
 
         if (!user) {
-            throw new BadRequestException("Please try again")
+            throw new BadRequestException(this.t('user.TRY_AGAIN'))
         }
 
         if (user.security) {
@@ -174,7 +183,7 @@ export class UserService {
         await this.userRepo.remove(user);
 
         return {
-            message: `User ${user.name} successfully deleted`,
+            message: this.t('user.USER_DELETED', { name: user.name }),
         };
     }
 
@@ -214,7 +223,7 @@ export class UserService {
         });
 
         if (!user || !property) {
-            throw new BadRequestException('User or property not found');
+            throw new BadRequestException(this.t('user.USER_OR_PROPERTY_NOT_FOUND'));
         }
 
         const newFavorite = this.favoritesRepo.create({
@@ -239,7 +248,7 @@ export class UserService {
         })
 
         if (!user) {
-            throw new BadRequestException('Please try again later')
+            throw new BadRequestException(this.t('user.TRY_AGAIN_LATER'))
         }
 
         return favorites

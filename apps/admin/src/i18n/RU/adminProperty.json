@@ -1,0 +1,14 @@
+{
+    "TRY_AGAIN_LATER": "Пожалуйста, попробуйте позже",
+    "ADMIN_NOT_FOUND": "Администратор не найден",
+    "PROPERTY_NOT_FOUND": "Объявление не найдено",
+    "PROPERTY_ALREADY_ACCEPTED": "Объявление уже было одобрено",
+    "PROPERTY_ALREADY_REJECTED": "Объявление уже было отклонено",
+    "PROPERTY_ACCEPTED": "Объявление успешно одобрено",
+    "PROPERTY_REJECTED": "Объявление отклонено",
+    "PROPERTY_ALREADY_ARCHIVED": "Объявление уже было архивировано пользователем",
+    "PROPERTY_ARCHIVED": "Объявление архивировано",
+    "PROPERTY_ALREADY_ACTIVE": "Объявление уже активно",
+    "PROPERTY_RESTORED": "Объявление успешно восстановлено",
+    "PROPERTY_DELETED": "Объявление успешно удалено"
+}

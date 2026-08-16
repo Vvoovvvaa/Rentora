@@ -4,6 +4,7 @@ import { SenderService } from '@app/common-rentora/smtp';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { I18nContext, I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class AdminsPropertiesService {
@@ -14,8 +15,17 @@ export class AdminsPropertiesService {
         @InjectRepository(Admin)
         private readonly adminRepo: Repository<Admin>,
 
-        private readonly senderserive: SenderService
+        private readonly senderserive: SenderService,
+
+        private readonly i18n: I18nService
     ) { }
+
+    private t(key: string,args?: Record<string, any>,): string {
+        return this.i18n.t(key, {
+            lang: I18nContext.current()?.lang || 'am',
+            args,
+        }) as string;
+    }
 
     async viewProperties() {
         return this.propertyrepo.find({relations: {owner: true, images: true}})
@@ -25,13 +35,13 @@ export class AdminsPropertiesService {
         const admin = await this.adminRepo.findOne({ where: { id: adminId }, })
 
         if (!admin) {
-            throw new BadRequestException("Please try again later")
+            throw new BadRequestException(this.t('adminProperty.TRY_AGAIN_LATER'))
         }
 
         const property = await this.propertyrepo.findOne({ where: { id: propertyId }, relations: { owner: true, images: true } })
 
         if (!property) {
-            throw new BadRequestException("porperty not found")
+            throw new BadRequestException(this.t('adminProperty.PROPERTY_NOT_FOUND'))
         }
 
         return property
@@ -42,21 +52,21 @@ export class AdminsPropertiesService {
         const admin = await this.adminRepo.findOne({ where: { id: adminId } })
 
         if (!admin) {
-            throw new BadRequestException("Please try again later")
+            throw new BadRequestException(this.t('adminProperty.TRY_AGAIN_LATER'))
         }
 
         const property = await this.propertyrepo.findOne({ where: { id: propertyId }, relations: { owner: true } })
 
         if (!property) {
-            throw new BadRequestException("porperty not found")
+            throw new BadRequestException(this.t('adminProperty.PROPERTY_NOT_FOUND'))
         }
 
         if (property.publishing === PropertyPublishing.ACTIVE) {
-            throw new BadRequestException("property already Accpeted")
+            throw new BadRequestException(this.t('adminProperty.PROPERTY_ALREADY_ACCEPTED'))
         }
 
         if (property.publishing === PropertyPublishing.REJECTED) {
-            throw new BadRequestException("property already Rejected")
+            throw new BadRequestException(this.t('adminProperty.PROPERTY_ALREADY_REJECTED'))
         }
 
         property.publishing = PropertyPublishing.ACTIVE
@@ -76,7 +86,7 @@ export class AdminsPropertiesService {
             })
         }
 
-        return { message: "property succesful Accepted" }
+        return { message: this.t('adminProperty.PROPERTY_ACCEPTED') }
 
     }
 
@@ -88,21 +98,21 @@ export class AdminsPropertiesService {
         const admin = await this.adminRepo.findOne({ where: { id: adminId } })
 
         if (!admin) {
-            throw new BadRequestException("Please try again later")
+            throw new BadRequestException(this.t('adminProperty.TRY_AGAIN_LATER'))
         }
 
         const property = await this.propertyrepo.findOne({ where: { id: propId }, relations: { owner: true } })
 
         if (!property) {
-            throw new BadRequestException("porperty not found")
+            throw new BadRequestException(this.t('adminProperty.PROPERTY_NOT_FOUND'))
         }
 
         if (property.publishing === PropertyPublishing.ACTIVE) {
-            throw new BadRequestException("property already Accpeted")
+            throw new BadRequestException(this.t('adminProperty.PROPERTY_ALREADY_ACCEPTED'))
         }
 
         if (property.publishing === PropertyPublishing.REJECTED) {
-            throw new BadRequestException("property already Rejected")
+            throw new BadRequestException(this.t('adminProperty.PROPERTY_ALREADY_REJECTED'))
         }
 
         property.publishing = PropertyPublishing.REJECTED
@@ -123,7 +133,7 @@ export class AdminsPropertiesService {
 
         }
 
-        return { message: 'Property Rejected' }
+        return { message: this.t('adminProperty.PROPERTY_REJECTED') }
 
     }
 
@@ -132,18 +142,18 @@ export class AdminsPropertiesService {
         const admin = await this.adminRepo.findOne({ where: { id: adminId } })
 
         if (!admin) {
-            throw new BadRequestException("Please try again later")
+            throw new BadRequestException(this.t('adminProperty.TRY_AGAIN_LATER'))
         }
 
         const property = await this.propertyrepo.findOne({ where: { id: propId }, relations: { owner: true } })
 
         if (!property) {
-            throw new BadRequestException("porperty not found")
+            throw new BadRequestException(this.t('adminProperty.PROPERTY_NOT_FOUND'))
         }
 
 
         if (property.status === PropertyStatus.ARCHIVED) {
-            throw new BadRequestException("Property already archieved by User")
+            throw new BadRequestException(this.t('adminProperty.PROPERTY_ALREADY_ARCHIVED'))
         }
 
         property.status = PropertyStatus.ARCHIVED
@@ -163,7 +173,7 @@ export class AdminsPropertiesService {
             })
         }
 
-        return { message: "property archived" }
+        return { message: this.t('adminProperty.PROPERTY_ARCHIVED') }
 
     }
 
@@ -179,7 +189,7 @@ export class AdminsPropertiesService {
 
         if (!admin) {
             throw new BadRequestException(
-                'Admin not found'
+                this.t('adminProperty.ADMIN_NOT_FOUND')
             )
         }
 
@@ -191,7 +201,7 @@ export class AdminsPropertiesService {
 
         if (!property) {
             throw new BadRequestException(
-                'Property not found'
+                this.t('adminProperty.PROPERTY_NOT_FOUND')
             )
         }
 
@@ -200,7 +210,7 @@ export class AdminsPropertiesService {
             PropertyStatus.ACTIVE
         ) {
             throw new BadRequestException(
-                'Property is already active'
+                this.t('adminProperty.PROPERTY_ALREADY_ACTIVE')
             )
         }
 
@@ -211,7 +221,7 @@ export class AdminsPropertiesService {
 
         return {
             message:
-                'Property successfully restored'
+                this.t('adminProperty.PROPERTY_RESTORED')
         }
     }
 
@@ -219,16 +229,16 @@ export class AdminsPropertiesService {
         const admin = await this.adminRepo.findOne({ where: { id: adminId } })
 
         if (!admin) {
-            throw new BadRequestException("Please try again later")
+            throw new BadRequestException(this.t('adminProperty.TRY_AGAIN_LATER'))
         }
 
         const property = await this.propertyrepo.findOne({ where: { id: propId }, relations: { owner: true } })
 
         if (!property) {
-            throw new BadRequestException("porperty not found")
+            throw new BadRequestException(this.t('adminProperty.PROPERTY_NOT_FOUND'))
         }
 
         await this.propertyrepo.remove(property)
-        return { message: `property succesful deleted` }
+        return { message: this.t('adminProperty.PROPERTY_DELETED') }
     }
 }

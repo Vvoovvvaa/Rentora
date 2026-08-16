@@ -16,6 +16,10 @@ import { IDbcongif } from '@app/common-rentora/models';
 import { EmailModule } from '@app/common-rentora/smtp';
 import { AdminsModule } from './admins-users/admins.module';
 import { AdminsPropertiesModule } from './admins-properties/admins-properties.module';
+import { SupportAdminModule } from './support-admin/support.module';
+import { I18nModule, AcceptLanguageResolver } from 'nestjs-i18n';
+import path from 'path';
+import { RedisModule } from '@app/common-rentora/redis/redis.module';
 
 @Module({
   imports: [
@@ -25,6 +29,19 @@ import { AdminsPropertiesModule } from './admins-properties/admins-properties.mo
         dbconfig,
         jwtconfig,
         smtpconfig
+      ],
+    }),
+
+    I18nModule.forRoot({
+      fallbackLanguage: 'en',
+
+      loaderOptions: {
+        path: path.join(__dirname, '/i18n/'),
+        watch: true,
+      },
+
+      resolvers: [
+        AcceptLanguageResolver,
       ],
     }),
 
@@ -62,7 +79,9 @@ import { AdminsPropertiesModule } from './admins-properties/admins-properties.mo
     AdminAuthModule,
     EmailModule,
     AdminsModule,
-    AdminsPropertiesModule
+    AdminsPropertiesModule,
+    SupportAdminModule,
+    RedisModule
   ],
 
   controllers: [AdminController],

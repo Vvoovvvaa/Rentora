@@ -4,8 +4,9 @@ import { Bath, BedDouble, Building2, CalendarDays, CarFront, ChefHat, Flame, Lay
 import type { LucideIcon } from "lucide-react";
 import { useState } from "react";
 import type { Property, PropertyFeature } from "@/types/models";
-import { featureGroups } from "./property-form-options";
+import { getFeatureGroups } from "./property-form-options";
 import { buildingLabels, conditionLabels, getFeatureLabel, readableEnum } from "./property-presentation";
+import { useI18n } from "@/context/i18n-context";
 
 export const featureGroupLabels: Record<string, string> = {
   "Парковка и здание": "Parking & building",
@@ -31,40 +32,41 @@ const featureIcons: Partial<Record<PropertyFeature, LucideIcon>> = {
   DOUBLE_GLAZED_WINDOWS: PanelsTopLeft, PANORAMIC_WINDOWS: PanelsTopLeft, SOUND_INSULATION: PanelsTopLeft, THERMAL_INSULATION: PanelsTopLeft, CITY_VIEW: Building2, MOUNTAIN_VIEW: Mountain, COURTYARD_VIEW: TreePine, STREET_VIEW: Building2, PETS_ALLOWED: PawPrint, CHILDREN_ALLOWED: Sparkles,
 };
 
-const detailItems = (property: Property) => [
-  { icon: BedDouble, label: "Bedrooms", value: property.bedrooms },
-  { icon: Bath, label: "Bathrooms", value: property.bathrooms },
-  { icon: Layers3, label: "Floor", value: property.floor && property.totalFloors ? `${property.floor} of ${property.totalFloors}` : property.floor },
-  { icon: Ruler, label: "Ceiling height", value: property.ceilingHeight ? `${property.ceilingHeight} m` : undefined },
-  { icon: CalendarDays, label: "Year built", value: property.constructionYear },
-  { icon: Building2, label: "Building type", value: property.buildingType ? buildingLabels[property.buildingType] || readableEnum(property.buildingType) : undefined },
-  { icon: Sparkles, label: "Condition", value: property.condition ? conditionLabels[property.condition] || readableEnum(property.condition) : undefined },
-];
-
 export function PropertyCharacteristics({ property }: { property: Property }) {
-  const items = detailItems(property).filter((item): item is typeof item & { value: string | number } => item.value !== undefined && item.value !== null);
+  const { t } = useI18n();
+  const detailItems = [
+    { icon: BedDouble, label: t("property.bedrooms"), value: property.bedrooms },
+    { icon: Bath, label: t("property.bathrooms"), value: property.bathrooms },
+    { icon: Layers3, label: t("property.floor"), value: property.floor && property.totalFloors ? `${property.floor}/${property.totalFloors}` : property.floor },
+    { icon: Ruler, label: t("property.ceilingHeight"), value: property.ceilingHeight ? `${property.ceilingHeight} m` : undefined },
+    { icon: CalendarDays, label: t("property.constructionYear"), value: property.constructionYear },
+    { icon: Building2, label: t("property.buildingType"), value: property.buildingType ? buildingLabels[property.buildingType] || readableEnum(property.buildingType) : undefined },
+    { icon: Sparkles, label: t("property.condition"), value: property.condition ? conditionLabels[property.condition] || readableEnum(property.condition) : undefined },
+  ];
+  const items = detailItems.filter((item): item is typeof item & { value: string | number } => item.value !== undefined && item.value !== null);
   if (!items.length) return null;
   return <section className="property-characteristics" aria-labelledby="characteristics-title">
-    <p className="eyebrow">At a glance</p><h2 id="characteristics-title">Property details</h2>
+    <p className="eyebrow">{t("property.overview")}</p><h2 id="characteristics-title">{t("property.details")}</h2>
     <div className="characteristics-grid">{items.map(({ icon: Icon, label, value }) => <div className="characteristic-item" key={label}><Icon size={18}/><span><small>{label}</small><strong>{value}</strong></span></div>)}</div>
   </section>;
 }
 
 export function PropertyHighlights({ features = [] }: { features?: PropertyFeature[] }) {
   const [expanded, setExpanded] = useState(false);
-  const detailGroupLabels = ["Parking & building", "Security & access", "Outdoor", "Comfort", "Kitchen & appliances", "Heating & utilities", "Bathroom & storage", "Windows, views & other"];
+  const { t } = useI18n();
+  const featureGroups = getFeatureGroups((id) => t(`property.${id}`));
   const knownFeatures = new Set(featureGroups.flatMap((group) => group.options.map((option) => option.value)));
   // Preserve the API array verbatim. A feature added on the backend before the
   // form options are updated still has a visible, readable home under Other features.
-  const selectedGroups = featureGroups.map((group, index) => ({
+  const selectedGroups = featureGroups.map((group) => ({
     ...group,
-    displayLabel: detailGroupLabels[index] || featureGroupLabels[group.label] || group.label,
+    displayLabel: group.label,
     options: group.options.flatMap((option) => features.filter((feature) => feature === option.value).map(() => option)),
   })).filter((group) => group.options.length > 0);
   const otherFeatures = features.filter((feature) => !knownFeatures.has(feature));
   const groups = otherFeatures.length ? [...selectedGroups, {
-    label: "Other features",
-    displayLabel: "Other features",
+    label: t("property.otherFeatures"),
+    displayLabel: t("property.otherFeatures"),
     icon: Sparkles,
     options: otherFeatures.map((value) => ({ value, label: getFeatureLabel(value) })),
   }] : selectedGroups;
@@ -78,16 +80,16 @@ export function PropertyHighlights({ features = [] }: { features?: PropertyFeatu
     };
   }, { remaining: expanded ? totalFeatures : 9, groups: [] as typeof groups }).groups;
   return <section className="property-highlights" aria-labelledby="property-highlights-title">
-    <p className="eyebrow">Features</p>
-    <h2 id="property-highlights-title">What this home offers</h2>
+    <p className="eyebrow">{t("search.feature")}</p>
+    <h2 id="property-highlights-title">{t("property.offers")}</h2>
     <div className="property-feature-groups">
       {visibleGroups.map(({ displayLabel, icon: Icon, options }) => <section className="property-feature-group" key={displayLabel} aria-label={displayLabel}>
         <h3><Icon size={17}/>{displayLabel}</h3>
         <div className="highlights-grid">
-          {options.map((option, index) => { const FeatureIcon = featureIcons[option.value] || Icon; return <div className="highlight-chip" key={`${option.value}-${index}`}><FeatureIcon size={16}/><span>{option.label || getFeatureLabel(option.value)}</span></div>; })}
+          {options.map((option, index) => { const FeatureIcon = featureIcons[option.value] || Icon; return <div className="highlight-chip" key={`${option.value}-${index}`}><FeatureIcon size={16}/><span>{getFeatureLabel(option.value)}</span></div>; })}
         </div>
       </section>)}
     </div>
-    {totalFeatures > 9 && <button type="button" onClick={() => setExpanded((value) => !value)} className="property-show-more" aria-expanded={expanded}>{expanded ? "Show fewer features" : `Show all ${totalFeatures} features`}</button>}
+    {totalFeatures > 9 && <button type="button" onClick={() => setExpanded((value) => !value)} className="property-show-more" aria-expanded={expanded}>{expanded ? t("property.showFewerFeatures") : `${t("property.showAllFeatures")} (${totalFeatures})`}</button>}
   </section>;
 }

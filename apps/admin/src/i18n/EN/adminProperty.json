@@ -1,0 +1,14 @@
+{
+    "TRY_AGAIN_LATER": "Please try again later",
+    "ADMIN_NOT_FOUND": "Admin not found",
+    "PROPERTY_NOT_FOUND": "Property not found",
+    "PROPERTY_ALREADY_ACCEPTED": "Property has already been accepted",
+    "PROPERTY_ALREADY_REJECTED": "Property has already been rejected",
+    "PROPERTY_ACCEPTED": "Property successfully accepted",
+    "PROPERTY_REJECTED": "Property rejected",
+    "PROPERTY_ALREADY_ARCHIVED": "Property has already been archived by the user",
+    "PROPERTY_ARCHIVED": "Property archived",
+    "PROPERTY_ALREADY_ACTIVE": "Property is already active",
+    "PROPERTY_RESTORED": "Property successfully restored",
+    "PROPERTY_DELETED": "Property successfully deleted"
+}

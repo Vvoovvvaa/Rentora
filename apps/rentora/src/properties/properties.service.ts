@@ -12,6 +12,8 @@ import { SenderService } from '@app/common-rentora/smtp';
 import { CreateReportDto } from './dto/create-report.dto';
 import { PropertyMapDto } from './dto/property-map.dto';
 import { applyPropertyFilters } from '../search/property-filter.helper';
+import { I18nContext, I18nService } from 'nestjs-i18n';
+import { PropertyPriceHistory } from '@app/common-rentora/database/entity/price-history';
 
 @Injectable()
 export class PropertiesService {
@@ -28,10 +30,22 @@ export class PropertiesService {
         @InjectRepository(Report)
         private readonly reportRepo: Repository<Report>,
 
+        @InjectRepository(PropertyPriceHistory)
+        private readonly priceHistoryRepo: Repository<PropertyPriceHistory>,
+
         private readonly uploadservice: UploadService,
 
-        private readonly senderservice: SenderService
+        private readonly senderservice: SenderService,
+
+        private readonly i18n: I18nService
     ) { }
+
+    private t(key: string, args?: Record<string, any>,): string {
+        return this.i18n.t(key, {
+            lang: I18nContext.current()?.lang || 'am',
+            args,
+        }) as string;
+    }
 
     async createProperty(userId: number, dto: CreatePropertyDto, files: Express.Multer.File[]) {
         const user = await this.userRepo.findOne({
@@ -39,11 +53,11 @@ export class PropertiesService {
         });
 
         if (!user) {
-            throw new BadRequestException('User not found');
+            throw new BadRequestException(this.t('property.USER_NOT_FOUND'));
         }
 
         if (user.gmailStatus !== EmailStatusEnum.VERIFIED) {
-            throw new BadRequestException('Please Verify your Email');
+            throw new BadRequestException(this.t('property.VERIFY_EMAIL'));
         }
 
         const property = this.propertyRepo.create({
@@ -53,6 +67,14 @@ export class PropertiesService {
         });
 
         const savedProperty = await this.propertyRepo.save(property);
+
+        const priceHistory = await this.priceHistoryRepo.create({
+            property: savedProperty,
+            price: Number(savedProperty.price),
+            currency: savedProperty.currency
+        })
+
+        await this.priceHistoryRepo.save(priceHistory)
 
         if (files.length) {
             const images: PropertyImage[] = [];
@@ -97,10 +119,27 @@ export class PropertiesService {
         const property = await this.propertyRepo.findOne({ where: { id: propId, owner: { id: userId } } })
 
         if (!property) {
-            throw new BadRequestException('Property not found')
+            throw new BadRequestException(this.t('property.PROPERTY_NOT_FOUND'))
         }
 
+        const oldPrice = Number(property.price);
+        const oldCurrency = property.currency;
+
         Object.assign(property, dto)
+
+        const savedProperty = await this.propertyRepo.save(property);
+        const priceChanged = dto.price !== undefined && Number(dto.price) !== oldPrice;
+        const currencyChanged = dto.currency !== undefined && dto.currency !== oldCurrency;
+
+        if (priceChanged || currencyChanged) {
+            const history = this.priceHistoryRepo.create({
+                property: savedProperty,
+                price: Number(savedProperty.price),
+                currency: savedProperty.currency
+            });
+
+            await this.priceHistoryRepo.save(history);
+        }
 
         return await this.propertyRepo.save(property)
 
@@ -120,13 +159,13 @@ export class PropertiesService {
         const property = await this.propertyRepo.findOne({ where: { id: propId, owner: { id: userId } } })
 
         if (!property) {
-            throw new NotFoundException('property not found')
+            throw new NotFoundException(this.t('property.PROPERTY_NOT_FOUND'))
         }
 
         await this.propertyRepo.delete(property.id);
 
         return {
-            message: `${property.title} property was successfully deleted`,
+            message: this.t('property.PROPERTY_DELETED', { title: property.title }),
         };
 
     }
@@ -143,14 +182,12 @@ export class PropertiesService {
             .getOne()
 
         if (!property) {
-            throw new NotFoundException("Property Not found,Please try again")
+            throw new NotFoundException(this.t('property.PROPERTY_NOT_FOUND_TRY_AGAIN'))
         }
 
         property.views++
 
         await this.propertyRepo.save(property)
-
-
         return property
     }
 
@@ -165,26 +202,26 @@ export class PropertiesService {
         const user = await this.userRepo.findOne({ where: { id: userId } })
 
         if (!property) {
-            throw new BadRequestException('Please,try again later')
+            throw new BadRequestException(this.t('property.TRY_AGAIN_LATER'))
         }
 
         if (!user) {
-            throw new BadRequestException('please,try again later')
+            throw new BadRequestException(this.t('property.TRY_AGAIN_LATER'))
         }
 
         if (property.status === PropertyStatus.ARCHIVED) {
-            throw new BadRequestException(`property already achived`)
+            throw new BadRequestException(this.t('property.PROPERTY_ALREADY_ARCHIVED'))
         }
 
         if (property.owner.id !== userId) {
-            throw new ForbiddenException("You cannot archive this property")
+            throw new ForbiddenException(this.t('property.CANNOT_ARCHIVE_PROPERTY'))
         }
 
         property.status = PropertyStatus.ARCHIVED
         await this.propertyRepo.save(property)
 
         return {
-            message: " Property status was succefuly chanaged"
+            message: this.t('property.PROPERTY_ARCHIVED')
         }
 
     }
@@ -196,34 +233,32 @@ export class PropertiesService {
         })
 
         if (!property) {
-            throw new BadRequestException('Please,try again later')
+            throw new BadRequestException(this.t('property.TRY_AGAIN_LATER'))
         }
 
         if (property.owner.id !== userId) {
-            throw new ForbiddenException("You cannot restore this property")
+            throw new ForbiddenException(this.t('property.CANNOT_RESTORE_PROPERTY'))
         }
 
         if (property.status !== PropertyStatus.ARCHIVED) {
-            throw new BadRequestException('property is not archived')
+            throw new BadRequestException(this.t('property.PROPERTY_NOT_ARCHIVED'))
         }
 
-        // Keep the moderation decision intact: restoring only changes visibility
-        // from archived back to the listing's previous active lifecycle.
         property.status = PropertyStatus.ACTIVE
         await this.propertyRepo.save(property)
 
-        return { message: "Property status was successfully restored" }
+        return { message: this.t('property.PROPERTY_RESTORED') }
     }
 
     async compareProperties(userId: number, propId1: number, propId2: number) {
         const user = await this.userRepo.findOne({ where: { id: userId } })
 
         if (!user) {
-            throw new BadRequestException('please try again later')
+            throw new BadRequestException(this.t('property.TRY_AGAIN_LATER'))
         }
 
         if (propId1 === propId2) {
-            throw new BadRequestException(`You cannot compare same property`)
+            throw new BadRequestException(this.t('property.CANNOT_COMPARE_SAME_PROPERTY'))
         }
 
 
@@ -247,7 +282,7 @@ export class PropertiesService {
 
         if (!prop1 || !prop2) {
             throw new BadRequestException(
-                'One or more properties not found'
+                this.t('property.PROPERTIES_NOT_FOUND')
             )
         }
 
@@ -272,7 +307,7 @@ export class PropertiesService {
         const user = await this.userRepo.findOne({ where: { id: userId } })
 
         if (!user) {
-            throw new BadRequestException('Please try again later')
+            throw new BadRequestException(this.t('property.TRY_AGAIN_LATER'))
         }
 
         const prop = await this.propertyRepo.findOne({ where: { id: propId } })
@@ -287,12 +322,12 @@ export class PropertiesService {
 
         if (oldReport) {
             throw new BadRequestException(
-                'You already reported this property'
+                this.t('property.ALREADY_REPORTED')
             )
         }
 
         if (!prop) {
-            throw new BadRequestException("please try again later")
+            throw new BadRequestException(this.t('property.TRY_AGAIN_LATER'))
         }
 
         const report = this.reportRepo.create({
@@ -304,7 +339,7 @@ export class PropertiesService {
 
         await this.reportRepo.save(report)
 
-        return { message: 'Report successfully sent. Our admins will review it.' }
+        return { message: this.t('property.REPORT_SENT') }
 
     }
 
@@ -312,13 +347,13 @@ export class PropertiesService {
         const user = await this.userRepo.findOne({ where: { id: userid } })
 
         if (!user) {
-            throw new BadRequestException(`Please try again later`)
+            throw new BadRequestException(this.t('property.TRY_AGAIN_LATER'))
         }
 
         const report = await this.reportRepo.find({ where: { user: { id: userid } }, relations: { property: true } })
 
         if (!report) {
-            throw new BadRequestException('please try again later')
+            throw new BadRequestException(this.t('property.TRY_AGAIN_LATER'))
         }
 
         return report
@@ -326,11 +361,11 @@ export class PropertiesService {
 
     async viewPropertiesOnMap(dto: PropertyMapDto) {
         if (dto.south > dto.north) {
-            throw new BadRequestException('Invalid map latitude bounds');
+            throw new BadRequestException(this.t('property.INVALID_MAP_LATITUDE_BOUNDS'));
         }
 
         if (dto.west > dto.east) {
-            throw new BadRequestException('Invalid map longitude bounds');
+            throw new BadRequestException(this.t('property.INVALID_MAP_LONGITUDE_BOUNDS'));
         }
 
         const query = this.propertyRepo
@@ -346,17 +381,17 @@ export class PropertiesService {
         return applyPropertyFilters(query, dto).getMany();
     }
 
-    async viewMyPropertiesOnMap(userId: number,dto: PropertyMapDto) {
+    async viewMyPropertiesOnMap(userId: number, dto: PropertyMapDto) {
 
         if (dto.south > dto.north) {
             throw new BadRequestException(
-                'Invalid map latitude bounds'
+                this.t('property.INVALID_MAP_LATITUDE_BOUNDS')
             )
         }
 
         if (dto.west > dto.east) {
             throw new BadRequestException(
-                'Invalid map longitude bounds'
+                this.t('property.INVALID_MAP_LONGITUDE_BOUNDS')
             )
         }
 
@@ -404,7 +439,34 @@ export class PropertiesService {
                 }
             );
 
-        return await applyPropertyFilters(query,dto).getMany();
+        return await applyPropertyFilters(query, dto).getMany();
+    }
+
+    async viewPriceHistory(propId: number) {
+        const property = await this.propertyRepo.findOne({
+            where: {
+                id: propId
+            }
+        })
+
+        if (!property) {
+            throw new NotFoundException(
+                'Property not found'
+            )
+        }
+
+        const history = await this.priceHistoryRepo.find({
+            where: {
+                property: {
+                    id: propId
+                }
+            },
+            order: {
+                createdAt: 'ASC'
+            }
+        })
+
+        return history
     }
 
 }
