@@ -4,28 +4,28 @@ import { Repository } from 'typeorm';
 
 import { Property } from '@app/common-rentora/database/entity';
 import { SearchDto } from './dto/search.dto';
-import { PropertyPublishing, PropertyStatus } from '@app/common-rentora/database/enums';
+import { PropertyPublishing, PropertyStatus } from '@app/common-rentora/enums';
 import { applyPropertyFilters } from './property-filter.helper';
 
 @Injectable()
 export class SearchService {
-    constructor(
-        @InjectRepository(Property)
-        private readonly propertyRepo: Repository<Property>
-    ) { }
+  constructor(
+    @InjectRepository(Property)
+    private readonly propertyRepo: Repository<Property>,
+  ) {}
 
-    async searchProperties(dto: SearchDto) {
-        const query = this.propertyRepo
-            .createQueryBuilder('property')
-            .leftJoinAndSelect('property.images', 'images')
-            .leftJoinAndSelect('property.owner', 'owner')
-            .where('property.status = :status', { status: PropertyStatus.ACTIVE })
-            .andWhere('property.publishing = :publishing', { publishing: PropertyPublishing.ACTIVE });
+  async searchProperties(dto: SearchDto) {
+    const query = this.propertyRepo
+      .createQueryBuilder('property')
+      .leftJoinAndSelect('property.images', 'images')
+      .leftJoinAndSelect('property.owner', 'owner')
+      .where('property.status = :status', { status: PropertyStatus.ACTIVE })
+      .andWhere('property.publishing = :publishing', {
+        publishing: PropertyPublishing.ACTIVE,
+      });
 
-        return applyPropertyFilters(query, dto).getMany()
-    }
-
+    return applyPropertyFilters(query, dto).getMany();
+  }
 }
-
 
 // features

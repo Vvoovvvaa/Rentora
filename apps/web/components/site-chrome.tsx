@@ -75,12 +75,10 @@ export function Header() {
       </nav>
       <div className="hidden items-center gap-3 xl:flex">
         <LanguageSelector/>
-        {!loading && (user ? <>
           <Link href="/properties/create" className="btn-secondary gap-1.5 px-3 py-2 text-xs"><Plus size={15}/> {t("navigation.addListing")}</Link>
-          <div className="relative"><button onClick={() => setAccountOpen((value) => !value)} className={`account-menu-trigger ${accountOpen ? "is-open" : ""}`} aria-label={t("profile.title")} aria-expanded={accountOpen}><span className="grid h-8 w-8 place-items-center rounded-lg bg-[#ead8bd] text-[#513f30]"><UserRound size={16}/></span><span className="max-w-24 truncate text-sm font-bold text-stone-700">{user.name}</span><ChevronDown size={15}/></button>
+          <div className="relative"><button onClick={() => setAccountOpen((value) => !value)} className={`account-menu-trigger ${accountOpen ? "is-open" : ""}`} aria-label={t("profile.title")} aria-expanded={accountOpen}><span className="grid h-8 w-8 place-items-center rounded-lg bg-[#ead8bd] text-[#513f30]"><UserRound size={16}/></span><span className="max-w-24 truncate text-sm font-bold text-stone-700">{user?.name || 'Unnamed'}</span><ChevronDown size={15}/></button>
             {accountOpen && <div className="account-menu">{accountLinks.map(({ href, label, icon: Icon }) => <Link key={href} href={href} onClick={() => setAccountOpen(false)}><Icon size={15}/>{label}</Link>)}<button onClick={() => { setAccountOpen(false); void signOut(); }}><X size={15}/> {t("navigation.logOut")}</button></div>}
           </div>
-        </> : <><Link href="/login" className="text-sm font-semibold text-stone-600">{t("navigation.logIn")}</Link><Link href="/register" className="btn-primary px-4 py-2.5 text-sm">{t("navigation.createAccount")}</Link></>)}
       </div>
       <button onClick={() => setOpen(!open)} className="grid h-10 w-10 place-items-center rounded-xl bg-[#f1ece4] xl:hidden" aria-label={open ? t("common.close") : t("navigation.explore")} aria-expanded={open}>{open ? <X size={19}/> : <Menu size={19}/>}</button>
     </div>

@@ -1,127 +1,126 @@
 import {
-    PropertyCategory,
-    ArmeniaCity,
-    PropertyFeature,
-    PropertyCondition,
-    BuildingType,
-    propertyListing,
-} from "@app/common-rentora/database/enums";
+  PropertyCategory,
+  ArmeniaCity,
+  PropertyFeature,
+  PropertyCondition,
+  BuildingType,
+  propertyListing,
+} from '@app/common-rentora/enums';
 
-import { PropertyCurrency } from "@app/common-rentora/database/enums/property-currency";
+import { PropertyCurrency } from '@app/common-rentora/enums/property-currency';
 
 import {
-    IsArray,
-    IsEnum,
-    IsInt,
-    IsLatitude,
-    IsLongitude,
-    isNotEmpty,
-    IsNotEmpty,
-    IsNumber,
-    IsOptional,
-    IsString,
-    Max,
-    MaxLength,
-    Min,
-    MinLength
-} from "class-validator";
+  IsArray,
+  IsEnum,
+  IsInt,
+  IsLatitude,
+  IsLongitude,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Max,
+  MaxLength,
+  Min,
+  MinLength,
+} from 'class-validator';
 
 export class CreatePropertyDto {
-    @IsString()
-    @IsNotEmpty()
-    title: string;
+  @IsString()
+  @IsNotEmpty()
+  title: string;
 
-    @IsString()
-    @IsNotEmpty()
-    @MinLength(30)
-    description: string;
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(30)
+  description: string;
 
-    @IsEnum(ArmeniaCity)
-    @IsNotEmpty()
-    city: ArmeniaCity;
+  @IsEnum(ArmeniaCity)
+  @IsNotEmpty()
+  city: ArmeniaCity;
 
-    @IsNotEmpty()
-    @IsEnum(PropertyCategory)
-    category: PropertyCategory;
+  @IsNotEmpty()
+  @IsEnum(PropertyCategory)
+  category: PropertyCategory;
 
-    @IsNotEmpty()
-    @IsEnum(propertyListing)
-    listing: propertyListing;
+  @IsNotEmpty()
+  @IsEnum(propertyListing)
+  listing: propertyListing;
 
-    @IsNotEmpty()
-    @IsNumber()
-    @Min(1)
-    price: number;
+  @IsNotEmpty()
+  @IsNumber()
+  @Min(1)
+  price: number;
 
-    @IsNotEmpty()
-    @IsInt()
-    @Min(1)
-    rooms: number;
+  @IsNotEmpty()
+  @IsInt()
+  @Min(1)
+  rooms: number;
 
-    @IsNotEmpty()
-    @IsNumber()
-    @Min(5)
-    area: number;
+  @IsNotEmpty()
+  @IsNumber()
+  @Min(5)
+  area: number;
 
-    @IsNotEmpty()
-    @IsEnum(PropertyCurrency)
-    currency: PropertyCurrency;
+  @IsNotEmpty()
+  @IsEnum(PropertyCurrency)
+  currency: PropertyCurrency;
 
-    @IsOptional()
-    @IsInt()
-    @Min(0)
-    bedrooms?: number;
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  bedrooms?: number;
 
-    @IsOptional()
-    @IsInt()
-    @Min(1)
-    bathrooms?: number;
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  bathrooms?: number;
 
-    @IsOptional()
-    @IsInt()
-    @Min(0)
-    floor?: number;
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  floor?: number;
 
-    @IsOptional()
-    @IsInt()
-    @Min(1)
-    totalFloors?: number;
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  totalFloors?: number;
 
-    @IsOptional()
-    @IsNumber()
-    @Min(1.5)
-    @Max(10)
-    ceilingHeight?: number;
+  @IsOptional()
+  @IsNumber()
+  @Min(1.5)
+  @Max(10)
+  ceilingHeight?: number;
 
-    @IsOptional()
-    @IsInt()
-    @Min(1800)
-    @Max(new Date().getFullYear() + 10)
-    constructionYear?: number;
+  @IsOptional()
+  @IsInt()
+  @Min(1800)
+  @Max(new Date().getFullYear() + 10)
+  constructionYear?: number;
 
-    @IsOptional()
-    @IsEnum(PropertyCondition)
-    condition?: PropertyCondition;
+  @IsOptional()
+  @IsEnum(PropertyCondition)
+  condition?: PropertyCondition;
 
-    @IsOptional()
-    @IsEnum(BuildingType)
-    buildingType?: BuildingType;
+  @IsOptional()
+  @IsEnum(BuildingType)
+  buildingType?: BuildingType;
 
-    @IsOptional()
-    @IsArray()
-    @IsEnum(PropertyFeature, { each: true })
-    features?: PropertyFeature[];
+  @IsOptional()
+  @IsArray()
+  @IsEnum(PropertyFeature, { each: true })
+  features?: PropertyFeature[];
 
-    @IsString()
-    @MaxLength(255)
-    @IsNotEmpty()
-    address: string;
+  @IsString()
+  @MaxLength(255)
+  @IsNotEmpty()
+  address: string;
 
-    @IsLatitude()
-    @IsNotEmpty()
-    latitude: number;
+  @IsLatitude()
+  @IsNotEmpty()
+  latitude: number;
 
-    @IsLongitude()
-    @IsNotEmpty()
-    longitude: number;
+  @IsLongitude()
+  @IsNotEmpty()
+  longitude: number;
 }

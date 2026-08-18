@@ -45,7 +45,7 @@ export class ChatGateway {
 
     await this.chatService.checkRoomAccess(roomId, userId);
 
-    socket.join(roomId.toString());
+    await socket.join(roomId.toString());
 
     console.log(`User ${userId} joined room ${roomId}`);
 

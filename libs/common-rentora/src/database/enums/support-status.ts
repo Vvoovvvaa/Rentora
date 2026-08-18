@@ -1,8 +1,0 @@
-export enum SupportStatusEnum {
-    OPEN = 'OPEN',
-    IN_PROGRESS = 'IN_PROGRESS',
-    WAITING_ADMIN = 'WAITING_ADMIN',
-    RESOLVED = 'RESOLVED',
-    CLOSED = 'CLOSED',
-    CANCELED = 'CANCELED'
-}

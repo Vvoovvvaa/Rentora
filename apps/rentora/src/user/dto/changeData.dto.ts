@@ -1,16 +1,15 @@
-import { IsNumber, IsOptional, IsPhoneNumber, IsString } from "class-validator"
+import { IsNumber, IsOptional, IsPhoneNumber, IsString } from 'class-validator';
 
-export class changeUserdataDto{
-    @IsString()
-    @IsOptional()
-    name?: string
+export class changeUserdataDto {
+  @IsString()
+  @IsOptional()
+  name?: string;
 
-    @IsNumber()
-    @IsOptional()
-    age?: number
+  @IsNumber()
+  @IsOptional()
+  age?: number;
 
-    @IsPhoneNumber()
-    @IsOptional()
-    phone?: string
-
+  @IsPhoneNumber()
+  @IsOptional()
+  phone?: string;
 }

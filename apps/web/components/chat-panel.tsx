@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowUpRight, CircleDot, ImageOff, MessageCircle, Send, UserRound } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, CircleDot, ImageOff, MessageCircle, Send, UserRound } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import { API_URL, apiMessage, chatApi, propertiesApi } from "@/lib/api";
@@ -10,8 +10,20 @@ import type { ChatMessage, ChatRoom, Property } from "@/types/models";
 import { useI18n } from "@/context/i18n-context";
 
 type RoomContext = { property?: Property; lastMessage?: ChatMessage };
+
 const messageTime = (value?: string) => value ? new Intl.DateTimeFormat(undefined, { hour: "2-digit", minute: "2-digit" }).format(new Date(value)) : "";
-const messageDay = (value?: string) => value ? new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric" }).format(new Date(value)) : "";
+const messageDayKey = (value?: string) => value ? new Date(value).toDateString() : "";
+const isSameDay = (first?: string, second?: string) => messageDayKey(first) === messageDayKey(second);
+
+function DateSeparator({ value }: { value: string }) {
+  const { t } = useI18n();
+  const date = new Date(value);
+  const today = new Date();
+  const yesterday = new Date();
+  yesterday.setDate(today.getDate() - 1);
+  const label = date.toDateString() === today.toDateString() ? t("messages.today") : date.toDateString() === yesterday.toDateString() ? t("messages.yesterday") : new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric" }).format(date);
+  return <div className="chat-day" aria-label={label}><span>{label}</span></div>;
+}
 
 export function ChatPanel({ selectedRoomId }: { selectedRoomId?: number }) {
   const { user } = useAuth();
@@ -27,6 +39,7 @@ export function ChatPanel({ selectedRoomId }: { selectedRoomId?: number }) {
   const socketRef = useRef<Socket | null>(null);
   const activeRef = useRef<number | undefined>(undefined);
   const feedRef = useRef<HTMLDivElement>(null);
+  const shouldStickToBottom = useRef(true);
 
   useEffect(() => { activeRef.current = active; }, [active]);
   useEffect(() => {
@@ -49,8 +62,12 @@ export function ChatPanel({ selectedRoomId }: { selectedRoomId?: number }) {
   }, [selectedRoomId]);
 
   useEffect(() => {
-    if (!active) { const timer = window.setTimeout(() => setMessages([]), 0); return () => window.clearTimeout(timer); }
+    if (!active) {
+      const timer = window.setTimeout(() => setMessages([]), 0);
+      return () => window.clearTimeout(timer);
+    }
     const mounted = true;
+    const errorTimer = window.setTimeout(() => setError(""), 0);
     chatApi.messages(active).then((items) => { if (mounted) setMessages(items); }).catch((reason) => mounted && setError(apiMessage(reason)));
     const unreadTimer = window.setTimeout(() => setUnread((current) => ({ ...current, [active]: 0 })), 0);
     const token = localStorage.getItem("rentora_token");
@@ -66,45 +83,100 @@ export function ChatPanel({ selectedRoomId }: { selectedRoomId?: number }) {
       setMessages((current) => current.some((item) => item.id === message.id) ? current : [...current, message]);
     };
     socket.on("newMessage", onMessage);
-    return () => { window.clearTimeout(unreadTimer); socket.off("newMessage", onMessage); socket.disconnect(); if (socketRef.current === socket) socketRef.current = null; };
+    return () => {
+      window.clearTimeout(errorTimer);
+      window.clearTimeout(unreadTimer);
+      socket.off("newMessage", onMessage);
+      socket.disconnect();
+      if (socketRef.current === socket) socketRef.current = null;
+    };
   }, [active]);
 
-  useEffect(() => { feedRef.current?.scrollTo({ top: feedRef.current.scrollHeight, behavior: "smooth" }); }, [messages, active]);
+  useEffect(() => {
+    const feed = feedRef.current;
+    if (!feed || (!shouldStickToBottom.current && messages.length)) return;
+    feed.scrollTo({ top: feed.scrollHeight, behavior: "smooth" });
+  }, [messages, active]);
+
   const activeRoom = useMemo(() => rooms.find((room) => room.id === active), [active, rooms]);
   const activeContext = active ? context[active] : undefined;
-  const counterpart = activeRoom ? activeRoom.ownerId === user?.id ? t("messages.conversations") : t("property.listedBy") : "";
-  const selectRoom = (roomId: number) => { setActive(roomId); setUnread((current) => ({ ...current, [roomId]: 0 })); };
-  const send = (event: React.FormEvent) => { event.preventDefault(); const body = text.trim(); if (!active || !body || !socketRef.current) return; socketRef.current.emit("sendMessage", { roomId: active, text: body }); setText(""); };
+  const activeTitle = activeContext?.property?.title || (activeRoom ? `#${activeRoom.propertyId}` : "");
+  const selectRoom = (roomId: number) => {
+    shouldStickToBottom.current = true;
+    setActive(roomId);
+    setUnread((current) => ({ ...current, [roomId]: 0 }));
+  };
+  const send = (event: React.FormEvent) => {
+    event.preventDefault();
+    const body = text.trim();
+    if (!active || !body || !socketRef.current) return;
+    socketRef.current.emit("sendMessage", { roomId: active, text: body });
+    setText("");
+  };
+  const handleFeedScroll = () => {
+    const feed = feedRef.current;
+    if (!feed) return;
+    shouldStickToBottom.current = feed.scrollHeight - feed.scrollTop - feed.clientHeight < 96;
+  };
 
-  return <div className="chat-shell">
-    <aside className="chat-sidebar">
-      <div className="chat-sidebar-head"><div><p className="eyebrow">{t("messages.conversations")}</p><h1>{t("messages.title")}</h1></div><span className="chat-room-count">{rooms.length}</span></div>
-      <p className="chat-sidebar-copy">{t("messages.selectConversation")}</p>
+  return <div className={`chat-shell ${active ? "has-active-chat" : ""}`}>
+    <aside className="chat-sidebar" aria-label={t("messages.conversations")}>
+      <div className="chat-sidebar-head">
+        <div><p className="eyebrow">{t("messages.conversations")}</p><h1>{t("messages.title")}</h1><p className="chat-sidebar-copy">{t("messages.conversationCount", { count: rooms.length })}</p></div>
+        <span className="chat-room-count" aria-label={t("messages.conversationCount", { count: rooms.length })}>{rooms.length}</span>
+      </div>
       <div className="chat-room-list" aria-label={t("messages.conversations")}>
         {loading && [1, 2, 3].map((item) => <div className="chat-room-skeleton" key={item}/>) }
         {!loading && rooms.map((room) => {
-          const roomContext = context[room.id]; const image = roomContext?.property?.images?.[0]?.url; const propertyTitle = roomContext?.property?.title || `#${room.propertyId}`; const other = room.ownerId === user?.id ? t("messages.conversations") : t("property.listedBy");
-          return <button key={room.id} onClick={() => selectRoom(room.id)} className={`chat-room ${active === room.id ? "is-active" : ""}`} aria-pressed={active === room.id}>
-            <span className="chat-room-image">{image ? <img src={image} alt=""/> : <ImageOff size={16}/>}</span>
-            <span className="chat-room-text"><strong>{other}</strong><small className="truncate">{propertyTitle}</small><em className="truncate">{roomContext?.lastMessage?.text || t("messages.noMessages")}</em></span>
-            <span className="chat-room-meta"><time>{messageTime(roomContext?.lastMessage?.createdAt)}</time>{unread[room.id] ? <b>{unread[room.id]}</b> : null}</span>
+          const roomContext = context[room.id];
+          const image = roomContext?.property?.images?.[0]?.url;
+          const propertyTitle = roomContext?.property?.title || `#${room.propertyId}`;
+          return <button key={room.id} type="button" onClick={() => selectRoom(room.id)} className={`chat-room ${active === room.id ? "is-active" : ""}`} aria-pressed={active === room.id}>
+            <span className="chat-room-thumb">{image ? <img src={image} alt=""/> : <ImageOff size={16}/>}</span>
+            <span className="chat-room-copy">
+              <span className="chat-room-title"><strong title={propertyTitle}>{propertyTitle}</strong><time>{messageTime(roomContext?.lastMessage?.createdAt)}</time></span>
+              <span>{t("messages.propertyConversation")}</span>
+              <p>{roomContext?.lastMessage?.text || t("messages.noMessages")}</p>
+            </span>
+            {unread[room.id] ? <b className="chat-unread">{unread[room.id]}</b> : null}
           </button>;
         })}
       </div>
-      {!loading && !rooms.length && <div className="chat-empty-list"><MessageCircle size={22}/><p>{t("messages.noConversations")}</p></div>}
+      {!loading && !rooms.length && <div className="chat-empty-list"><MessageCircle size={24}/><strong>{t("messages.noConversations")}</strong><p>{t("messages.noConversationsCopy")}</p></div>}
     </aside>
-    <section className="chat-conversation">
-      <header className="chat-header">
-        <div className="flex min-w-0 items-center gap-3"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#f3eadf] text-[#8a6745]"><UserRound size={19}/></span><div className="min-w-0"><p>{active ? counterpart : t("messages.conversations")}</p><small className="truncate">{activeContext?.property?.title || (activeRoom ? `#${activeRoom.propertyId}` : t("messages.selectConversation"))}</small></div></div>
+
+    <section className="chat-main" aria-label={t("messages.title")}>
+      <header className="chat-main-header">
+        <div className="chat-header-identity">
+          <button type="button" onClick={() => setActive(undefined)} className="chat-back-button" aria-label={t("messages.backToConversations")}><ArrowLeft size={18}/></button>
+          <span className="chat-header-thumbnail">{activeContext?.property?.images?.[0]?.url ? <img src={activeContext.property.images[0].url} alt=""/> : <UserRound size={20}/>}</span>
+          <div className="min-w-0"><h2 title={activeTitle}>{active ? activeTitle : t("messages.title")}</h2><p>{active ? t("messages.propertyConversation") : t("messages.selectConversation")}</p></div>
+        </div>
         {activeRoom && <Link href={`/properties/${activeRoom.propertyId}`} className="chat-property-link">{t("common.viewProperty")} <ArrowUpRight size={15}/></Link>}
       </header>
-      <div ref={feedRef} className="chat-feed" aria-live="polite">
+
+      <div ref={feedRef} onScroll={handleFeedScroll} className="chat-messages" aria-live="polite">
         {error && <p className="chat-error">{error}</p>}
-        {!active && !error && <div className="chat-empty-state"><MessageCircle size={29}/><h2>{t("messages.conversations")}</h2><p>{t("messages.selectConversation")}</p></div>}
-        {active && !messages.length && !error && <div className="chat-empty-state"><CircleDot size={25}/><h2>{t("messages.noMessages")}</h2><p>{t("messages.messageOwner")}</p></div>}
-        {messages.map((message, index) => { const mine = message.senderId === user?.id; const previous = messages[index - 1]; const showDay = !previous || messageDay(previous.createdAt) !== messageDay(message.createdAt); return <div key={message.id}>{showDay && <p className="chat-day"><span>{messageDay(message.createdAt)}</span></p>}<div className={`message-row ${mine ? "is-mine" : ""}`}><div className={`message-bubble ${mine ? "is-mine" : ""}`}><p>{message.text}</p><time dateTime={message.createdAt}>{messageTime(message.createdAt)}</time></div></div></div>; })}
+        {!active && !error && <div className="chat-empty-state"><MessageCircle size={30}/><h2>{t("messages.title")}</h2><p>{t("messages.selectConversation")}</p></div>}
+        {active && !messages.length && !error && <div className="chat-empty-state"><CircleDot size={27}/><h2>{t("messages.noMessages")}</h2><p>{t("messages.messageOwner")}</p></div>}
+        {messages.map((message, index) => {
+          const mine = message.senderId === user?.id;
+          const previous = messages[index - 1];
+          const next = messages[index + 1];
+          const previousSameSender = previous?.senderId === message.senderId && isSameDay(previous?.createdAt, message.createdAt);
+          const nextSameSender = next?.senderId === message.senderId && isSameDay(next?.createdAt, message.createdAt);
+          const showDay = !previous || !isSameDay(previous.createdAt, message.createdAt);
+          return <div className={`chat-message-group ${mine ? "is-own" : ""} ${previousSameSender ? "is-continuation" : ""} ${nextSameSender ? "has-next" : ""}`} key={message.id}>
+            {showDay && <DateSeparator value={message.createdAt}/>}
+            <div className={`chat-message ${mine ? "is-own" : ""}`}><div className="chat-bubble"><p>{message.text}</p><time dateTime={message.createdAt}>{messageTime(message.createdAt)}</time></div></div>
+          </div>;
+        })}
       </div>
-      <form onSubmit={send} className="chat-composer"><input disabled={!active} value={text} onChange={(event) => setText(event.target.value)} className="field" placeholder={active ? "Write a message…" : "Choose a conversation first"}/><button disabled={!active || !text.trim()} className="btn-primary chat-send" aria-label="Send message"><Send size={18}/></button></form>
+
+      <form onSubmit={send} className="chat-composer">
+        <textarea disabled={!active} value={text} onChange={(event) => setText(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} rows={1} maxLength={2000} placeholder={active ? t("messages.typeMessage") : t("messages.chooseConversationFirst")} aria-label={t("messages.typeMessage")}/>
+        <button type="submit" disabled={!active || !text.trim()} className="chat-send" aria-label={t("messages.send")}><Send size={18}/><span>{t("messages.send")}</span></button>
+      </form>
     </section>
   </div>;
 }

@@ -19,6 +19,10 @@ import { useI18n } from "@/context/i18n-context";
 
 type DetailFact = { icon: typeof BedDouble; label: string; value: string };
 
+function PropertyDetailSkeleton() {
+  return <main className="property-detail-shell" aria-busy="true"><div className="shell property-detail-page property-detail-loading"><div className="skeleton property-detail-loading-back"/><div className="skeleton property-detail-loading-gallery"/><div className="property-detail-loading-layout"><section className="property-detail-loading-summary"><div className="skeleton h-3 w-36"/><div className="skeleton mt-6 h-12 max-w-xl"/><div className="skeleton mt-3 h-5 w-2/5"/><div className="property-detail-loading-facts">{[1, 2, 3, 4, 5].map((item) => <div className="skeleton" key={item}/>)}</div></section><aside className="property-detail-loading-owner"><div className="skeleton h-3 w-20"/><div className="mt-5 flex items-center gap-3"><div className="skeleton h-14 w-14 rounded-full"/><div className="grid flex-1 gap-2"><div className="skeleton h-4 w-3/4"/><div className="skeleton h-3 w-1/2"/></div></div><div className="skeleton mt-7 h-12 w-full"/><div className="skeleton mt-3 h-12 w-full"/></aside></div></div></main>;
+}
+
 export function PropertyDetailView({ id }: { id: string }) {
   const router = useRouter();
   const { t, formatDate } = useI18n();
@@ -62,7 +66,7 @@ export function PropertyDetailView({ id }: { id: string }) {
     ].filter((fact): fact is DetailFact => Boolean(fact));
   }, [property, t]);
 
-  if (loading) return <div className="shell page-space"><div className="skeleton h-96"/></div>;
+  if (loading) return <PropertyDetailSkeleton/>;
   if (loadError || !property) return <div className="shell page-space"><ErrorBlock message={loadError || t("property.notFound")} retry={load}/></div>;
   if (!isPublicProperty(property) && property.owner?.id !== user?.id) return <div className="shell page-space"><ErrorBlock message={t("property.notFound")} retry={() => router.push("/properties")}/></div>;
 
@@ -82,8 +86,8 @@ export function PropertyDetailView({ id }: { id: string }) {
       <div className="property-detail-layout">
         <section className="property-summary" aria-labelledby="property-title">
           <div className="property-summary-topline"><p className="eyebrow">{[property.listing ? getListingLabel(property.listing) : null, categoryLabels[property.category] || property.category, cityOf(property.city)].filter(Boolean).join(" · ")}</p>{property.views > 0 && <span className="property-views"><Eye size={14}/>{property.views} {t("common.views")}</span>}</div>
-          <div className="property-summary-heading"><div><h1 id="property-title">{property.title}</h1>{property.address && <p className="property-address"><MapPin size={17}/>{property.address}</p>}</div><div className="property-price"><strong>{priceOf(property)}</strong>{pricePerSquareMeter && <span>{t("property.pricePerSquareMeter", { price: formatMoney(pricePerSquareMeter, property.currency) })}</span>}<PriceHistoryTrigger property={property} request={priceHistory} expanded={priceHistoryExpanded} onToggle={() => setPriceHistoryExpanded((value) => !value)}/></div></div>
-          <div className="property-facts" aria-label={t("property.details")}>{facts.map(({ icon: Icon, label, value }) => <div key={label}><Icon size={17}/><span><small>{label}</small><strong>{value}</strong></span></div>)}</div>
+          <div className="property-summary-heading"><div className="property-title-block"><h1 id="property-title">{property.title}</h1>{property.address && <p className="property-address"><MapPin size={17}/>{property.address}</p>}</div><div className="property-price"><span className="property-price-label">{t("property.currentPrice")}</span><strong>{priceOf(property)}</strong>{pricePerSquareMeter && <span className="property-price-per-square-meter">{t("property.pricePerSquareMeter", { price: formatMoney(pricePerSquareMeter, property.currency) })}</span>}<PriceHistoryTrigger property={property} request={priceHistory} expanded={priceHistoryExpanded} onToggle={() => setPriceHistoryExpanded((value) => !value)}/></div></div>
+          <div className="property-facts" aria-label={t("property.details")}>{facts.map(({ icon: Icon, label, value }) => <div className="property-fact-card" key={label}><Icon size={17}/><span><small>{label}</small><strong>{value}</strong></span></div>)}</div>
         </section>
 
         <PropertyPriceHistory property={property} request={priceHistory} expanded={priceHistoryExpanded}/>

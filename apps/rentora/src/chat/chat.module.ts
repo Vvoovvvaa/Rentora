@@ -8,9 +8,9 @@ import { ChatRoom, Property } from '@app/common-rentora/database/entity';
 import { ChatService } from './chat.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Message,ChatRoom,Property])],
-  providers: [ChatGateway,ChatService],
+  imports: [TypeOrmModule.forFeature([Message, ChatRoom, Property])],
+  providers: [ChatGateway, ChatService],
   controllers: [ChatController],
-  exports: [ChatService]
+  exports: [ChatService],
 })
 export class ChatModule {}

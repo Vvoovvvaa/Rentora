@@ -11,35 +11,35 @@ import { NewPassowrdDto } from './dto/new-password.dto';
 
 @Controller('admin-auth')
 export class AdminAuthController {
-    constructor(
-        private readonly authservice: AdminAuthService
-    ) { }
+  constructor(private readonly authservice: AdminAuthService) {}
 
-    @Post('create')
-    @UseGuards(AdminAuthGuard)
-    createAdmin(@Body() body: CreateAdminDto, @AuthUser('id') adminId: number) {
-        return this.authservice.createAdmin(body, adminId)
-    }
+  @Post('create')
+  @UseGuards(AdminAuthGuard)
+  createAdmin(@Body() body: CreateAdminDto, @AuthUser('id') adminId: number) {
+    return this.authservice.createAdmin(body, adminId);
+  }
 
-    @Post('login')
-    loginAdmin(@Body() body: LoginDto){
-        return this.authservice.loginAdmin(body)
-    }
+  @Post('login')
+  loginAdmin(@Body() body: LoginDto) {
+    return this.authservice.loginAdmin(body);
+  }
 
-    @Post('change-password')
-    @UseGuards(AdminAuthGuard)
-    changeAdminPassword(@Body() body: changeAdminPasswordDto, @AuthUser('id') adminId: number){
-        return this.authservice.changeAdminPassword(body,adminId)
-    }
+  @Post('change-password')
+  @UseGuards(AdminAuthGuard)
+  changeAdminPassword(
+    @Body() body: changeAdminPasswordDto,
+    @AuthUser('id') adminId: number,
+  ) {
+    return this.authservice.changeAdminPassword(body, adminId);
+  }
 
-    @Post("sendCode")
-    sendCode(@Body() body: SendCodeChangePasswordDto){
-        return this.authservice.SendCodeforgetPassword(body)
-    }
+  @Post('sendCode')
+  sendCode(@Body() body: SendCodeChangePasswordDto) {
+    return this.authservice.SendCodeforgetPassword(body);
+  }
 
-    @Post("newPassword")
-    newPassord(@Body() body: NewPassowrdDto){
-        return this.authservice.acceptNewpassword(body)
-    }
-
+  @Post('newPassword')
+  newPassord(@Body() body: NewPassowrdDto) {
+    return this.authservice.acceptNewpassword(body);
+  }
 }

@@ -1,7 +1,7 @@
-import { IsEmail, IsNotEmpty } from "class-validator";
+import { IsEmail, IsNotEmpty } from 'class-validator';
 
-export class SendCodeChangePasswordDto{
-    @IsNotEmpty()
-    @IsEmail()
-    gmail: string
+export class SendCodeChangePasswordDto {
+  @IsNotEmpty()
+  @IsEmail()
+  gmail: string;
 }

@@ -1,97 +1,100 @@
-import { Support, User } from "@app/common-rentora/database/entity";
-import { BadRequestException, Injectable } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
-import { CreateSupportDto } from "./dto/create-support.dto";
-import { SupportStatusEnum } from "@app/common-rentora/database/enums/support-status";
-import { I18nContext, I18nService } from "nestjs-i18n";
+import { Support, User } from '@app/common-rentora/database/entity';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { CreateSupportDto } from './dto/create-support.dto';
+import { SupportStatusEnum } from '@app/common-rentora/enums/support-status';
+import { I18nContext, I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class SupportService {
-    constructor(
+  constructor(
+    @InjectRepository(User)
+    private readonly userRepo: Repository<User>,
 
-        @InjectRepository(User)
-        private readonly userRepo: Repository<User>,
+    @InjectRepository(Support)
+    private readonly supportRepo: Repository<Support>,
 
-        @InjectRepository(Support)
-        private readonly supportRepo: Repository<Support>,
+    private readonly i18n: I18nService,
+  ) {}
 
-        private readonly i18n: I18nService
-    ) { }
+  private t(key: string, args?: Record<string, any>): string {
+    return this.i18n.t(key, {
+      lang: I18nContext.current()?.lang || 'am',
+      args,
+    });
+  }
 
-    private t(key: string,args?: Record<string, any>,): string {
-        return this.i18n.t(key, {
-            lang: I18nContext.current()?.lang || 'am',
-            args,
-        }) as string;
+  async createSupport(dto: CreateSupportDto, userId: number) {
+    const user = await this.userRepo.findOne({ where: { id: userId } });
+
+    if (!user) {
+      throw new BadRequestException(this.t('support.TRY_AGAIN_LATER'));
     }
 
-    async createSupport(dto: CreateSupportDto, userId: number) {
-        const user = await this.userRepo.findOne({ where: { id: userId } })
+    const create = this.supportRepo.create({
+      ...dto,
+      user,
+    });
 
-        if (!user) {
-            throw new BadRequestException(this.t('support.TRY_AGAIN_LATER'))
-        }
+    await this.supportRepo.save(create);
+    return { message: this.t('support.SUPPORT_CREATED') };
+  }
 
-        const create = this.supportRepo.create({
-            ...dto,
-            user,
-        })
+  async viewMySupports(userId: number) {
+    const user = await this.userRepo.findOne({ where: { id: userId } });
 
-        await this.supportRepo.save(create)
-        return { message: this.t('support.SUPPORT_CREATED') }
+    if (!user) {
+      throw new BadRequestException(this.t('support.TRY_AGAIN_LATER'));
     }
 
-    async viewMySupports(userId: number) {
-        const user = await this.userRepo.findOne({ where: { id: userId } })
+    const support = await this.supportRepo.find({
+      where: { user: { id: userId } },
+    });
 
-        if (!user) {
-            throw new BadRequestException(this.t('support.TRY_AGAIN_LATER'))
-        }
-
-        const support = await this.supportRepo.find({ where: { user: { id: userId } } })
-
-        if (support.length === 0) {
-            throw new BadRequestException(this.t('support.NO_SUPPORTS'))
-        }
-
-        return support
+    if (support.length === 0) {
+      throw new BadRequestException(this.t('support.NO_SUPPORTS'));
     }
 
-    async viewOneSupport(userId: number, supportId: number) {
-        const user = await this.userRepo.findOne({ where: { id: userId } })
+    return support;
+  }
 
-        if (!user) {
-            throw new BadRequestException(this.t('support.TRY_AGAIN_LATER'))
-        }
+  async viewOneSupport(userId: number, supportId: number) {
+    const user = await this.userRepo.findOne({ where: { id: userId } });
 
-        const support = await this.supportRepo.findOne({ where: { id: supportId, user: { id: userId } } })
-
-        if (!support) {
-            throw new BadRequestException(this.t('support.TRY_AGAIN_LATER'))
-        }
-
-        return support
+    if (!user) {
+      throw new BadRequestException(this.t('support.TRY_AGAIN_LATER'));
     }
 
+    const support = await this.supportRepo.findOne({
+      where: { id: supportId, user: { id: userId } },
+    });
 
-    async removeSupport(userId: number, supportId: number) {
-        const user = await this.userRepo.findOne({ where: { id: userId } })
-
-        if (!user) {
-            throw new BadRequestException(this.t('support.TRY_AGAIN_LATER'))
-        }
-
-        const support = await this.supportRepo.findOne({ where: { id: supportId, user: { id: userId } } })
-
-        if (!support) {
-            throw new BadRequestException(this.t('support.SUPPORT_NOT_FOUND'))
-        }
-
-        support.status = SupportStatusEnum.CANCELED
-        await this.supportRepo.save(support)
-
-        return { message: this.t('support.SUPPORT_CANCELED') }
+    if (!support) {
+      throw new BadRequestException(this.t('support.TRY_AGAIN_LATER'));
     }
 
+    return support;
+  }
+
+  async removeSupport(userId: number, supportId: number) {
+    const user = await this.userRepo.findOne({ where: { id: userId } });
+
+    if (!user) {
+      throw new BadRequestException(this.t('support.TRY_AGAIN_LATER'));
+    }
+
+    const support = await this.supportRepo.findOne({
+      where: { id: supportId, user: { id: userId } },
+    });
+
+    if (!support) {
+      throw new BadRequestException(this.t('support.SUPPORT_NOT_FOUND'));
+    }
+
+    support.status = SupportStatusEnum.CANCELED;
+    await this.supportRepo.save(support);
+
+    return { message: this.t('support.SUPPORT_CANCELED') };
+  }
 }

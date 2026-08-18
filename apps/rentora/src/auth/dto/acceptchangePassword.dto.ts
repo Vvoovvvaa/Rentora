@@ -1,11 +1,11 @@
-import { IsNotEmpty, IsString } from "class-validator";
+import { IsNotEmpty, IsString } from 'class-validator';
 
-export class ChangedPassword{
-    @IsString()
-    @IsNotEmpty()
-    newPassword:string
+export class ChangedPassword {
+  @IsString()
+  @IsNotEmpty()
+  newPassword: string;
 
-    @IsNotEmpty()
-    @IsString()
-    code:string
+  @IsNotEmpty()
+  @IsString()
+  code: string;
 }

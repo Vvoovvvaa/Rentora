@@ -1,5 +1,5 @@
 import { Admin, Property } from '@app/common-rentora/database/entity';
-import { PropertyPublishing, PropertyStatus } from '@app/common-rentora/database/enums';
+import { PropertyPublishing, PropertyStatus } from '@app/common-rentora/enums';
 import { SenderService } from '@app/common-rentora/smtp';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -8,237 +8,246 @@ import { I18nContext, I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class AdminsPropertiesService {
-    constructor(
-        @InjectRepository(Property)
-        private readonly propertyrepo: Repository<Property>,
+  constructor(
+    @InjectRepository(Property)
+    private readonly propertyrepo: Repository<Property>,
 
-        @InjectRepository(Admin)
-        private readonly adminRepo: Repository<Admin>,
+    @InjectRepository(Admin)
+    private readonly adminRepo: Repository<Admin>,
 
-        private readonly senderserive: SenderService,
+    private readonly senderserive: SenderService,
 
-        private readonly i18n: I18nService
-    ) { }
+    private readonly i18n: I18nService,
+  ) {}
 
-    private t(key: string,args?: Record<string, any>,): string {
-        return this.i18n.t(key, {
-            lang: I18nContext.current()?.lang || 'am',
-            args,
-        }) as string;
+  private t(key: string, args?: Record<string, any>): string {
+    return this.i18n.t(key, {
+      lang: I18nContext.current()?.lang || 'am',
+      args,
+    });
+  }
+
+  async viewProperties() {
+    return this.propertyrepo.find({ relations: { owner: true, images: true } });
+  }
+
+  async viewOneProperty(propertyId: number, adminId: number) {
+    const admin = await this.adminRepo.findOne({ where: { id: adminId } });
+
+    if (!admin) {
+      throw new BadRequestException(this.t('adminProperty.TRY_AGAIN_LATER'));
     }
 
-    async viewProperties() {
-        return this.propertyrepo.find({relations: {owner: true, images: true}})
+    const property = await this.propertyrepo.findOne({
+      where: { id: propertyId },
+      relations: { owner: true, images: true },
+    });
+
+    if (!property) {
+      throw new BadRequestException(this.t('adminProperty.PROPERTY_NOT_FOUND'));
     }
 
-    async viewOneProperty(propertyId: number, adminId: number) {
-        const admin = await this.adminRepo.findOne({ where: { id: adminId }, })
+    return property;
+  }
 
-        if (!admin) {
-            throw new BadRequestException(this.t('adminProperty.TRY_AGAIN_LATER'))
-        }
+  async acceptPropertyListing(propertyId: number, adminId: number) {
+    const admin = await this.adminRepo.findOne({ where: { id: adminId } });
 
-        const property = await this.propertyrepo.findOne({ where: { id: propertyId }, relations: { owner: true, images: true } })
-
-        if (!property) {
-            throw new BadRequestException(this.t('adminProperty.PROPERTY_NOT_FOUND'))
-        }
-
-        return property
-
+    if (!admin) {
+      throw new BadRequestException(this.t('adminProperty.TRY_AGAIN_LATER'));
     }
 
-    async acceptPropertyListing(propertyId: number, adminId: number) {
-        const admin = await this.adminRepo.findOne({ where: { id: adminId } })
+    const property = await this.propertyrepo.findOne({
+      where: { id: propertyId },
+      relations: { owner: true },
+    });
 
-        if (!admin) {
-            throw new BadRequestException(this.t('adminProperty.TRY_AGAIN_LATER'))
-        }
-
-        const property = await this.propertyrepo.findOne({ where: { id: propertyId }, relations: { owner: true } })
-
-        if (!property) {
-            throw new BadRequestException(this.t('adminProperty.PROPERTY_NOT_FOUND'))
-        }
-
-        if (property.publishing === PropertyPublishing.ACTIVE) {
-            throw new BadRequestException(this.t('adminProperty.PROPERTY_ALREADY_ACCEPTED'))
-        }
-
-        if (property.publishing === PropertyPublishing.REJECTED) {
-            throw new BadRequestException(this.t('adminProperty.PROPERTY_ALREADY_REJECTED'))
-        }
-
-        property.publishing = PropertyPublishing.ACTIVE
-        await this.propertyrepo.save(property)
-
-        const user = property.owner
-        if (user) {
-            await this.senderserive.sendEmail({
-                to: user.gmail,
-                from: process.env.SMTP_FROM || 'no-reply@Renotra.com',
-                subject: 'Property accepted',
-                template: 'property-accepted',
-                context: {
-                    name: user.name || user.gmail,
-                    year: new Date().getFullYear()
-                }
-            })
-        }
-
-        return { message: this.t('adminProperty.PROPERTY_ACCEPTED') }
-
+    if (!property) {
+      throw new BadRequestException(this.t('adminProperty.PROPERTY_NOT_FOUND'));
     }
 
-    async viewPropertyListing() {
-        return this.propertyrepo.find({ where: { publishing: PropertyPublishing.PENDING }, relations: {owner: true, images:true} })
+    if (property.publishing === PropertyPublishing.ACTIVE) {
+      throw new BadRequestException(
+        this.t('adminProperty.PROPERTY_ALREADY_ACCEPTED'),
+      );
     }
 
-    async rejectPropertyListing(propId: number, adminId: number) {
-        const admin = await this.adminRepo.findOne({ where: { id: adminId } })
-
-        if (!admin) {
-            throw new BadRequestException(this.t('adminProperty.TRY_AGAIN_LATER'))
-        }
-
-        const property = await this.propertyrepo.findOne({ where: { id: propId }, relations: { owner: true } })
-
-        if (!property) {
-            throw new BadRequestException(this.t('adminProperty.PROPERTY_NOT_FOUND'))
-        }
-
-        if (property.publishing === PropertyPublishing.ACTIVE) {
-            throw new BadRequestException(this.t('adminProperty.PROPERTY_ALREADY_ACCEPTED'))
-        }
-
-        if (property.publishing === PropertyPublishing.REJECTED) {
-            throw new BadRequestException(this.t('adminProperty.PROPERTY_ALREADY_REJECTED'))
-        }
-
-        property.publishing = PropertyPublishing.REJECTED
-        await this.propertyrepo.save(property)
-
-        const user = property.owner
-        if (user) {
-            await this.senderserive.sendEmail({
-                to: user.gmail,
-                from: process.env.SMTP_FROM || 'no-reply@Renotra.com',
-                subject: 'Property rejected',
-                template: 'property-rejected',
-                context: {
-                    name: user.name || user.gmail,
-                    year: new Date().getFullYear()
-                }
-            })
-
-        }
-
-        return { message: this.t('adminProperty.PROPERTY_REJECTED') }
-
+    if (property.publishing === PropertyPublishing.REJECTED) {
+      throw new BadRequestException(
+        this.t('adminProperty.PROPERTY_ALREADY_REJECTED'),
+      );
     }
 
+    property.publishing = PropertyPublishing.ACTIVE;
+    await this.propertyrepo.save(property);
 
-    async achiveProperty(propId: number, adminId: number) {
-        const admin = await this.adminRepo.findOne({ where: { id: adminId } })
-
-        if (!admin) {
-            throw new BadRequestException(this.t('adminProperty.TRY_AGAIN_LATER'))
-        }
-
-        const property = await this.propertyrepo.findOne({ where: { id: propId }, relations: { owner: true } })
-
-        if (!property) {
-            throw new BadRequestException(this.t('adminProperty.PROPERTY_NOT_FOUND'))
-        }
-
-
-        if (property.status === PropertyStatus.ARCHIVED) {
-            throw new BadRequestException(this.t('adminProperty.PROPERTY_ALREADY_ARCHIVED'))
-        }
-
-        property.status = PropertyStatus.ARCHIVED
-        await this.propertyrepo.save(property)
-
-        const user = property.owner
-        if (user) {
-            await this.senderserive.sendEmail({
-                to: user.gmail,
-                from: process.env.SMTP_FROM || 'no-reply@Renotra.com',
-                subject: 'Property archived',
-                template: 'property-archived',
-                context: {
-                    name: user.name || user.gmail,
-                    year: new Date().getFullYear()
-                }
-            })
-        }
-
-        return { message: this.t('adminProperty.PROPERTY_ARCHIVED') }
-
+    const user = property.owner;
+    if (user) {
+      await this.senderserive.sendEmail({
+        to: user.gmail,
+        from: process.env.SMTP_FROM || 'no-reply@Renotra.com',
+        subject: 'Property accepted',
+        template: 'property-accepted',
+        context: {
+          name: user.name || user.gmail,
+          year: new Date().getFullYear(),
+        },
+      });
     }
 
-    async restoreProperty(
-        propId: number,
-        adminId: number
-    ) {
-        const admin = await this.adminRepo.findOne({
-            where: {
-                id: adminId
-            }
-        })
+    return { message: this.t('adminProperty.PROPERTY_ACCEPTED') };
+  }
 
-        if (!admin) {
-            throw new BadRequestException(
-                this.t('adminProperty.ADMIN_NOT_FOUND')
-            )
-        }
+  async viewPropertyListing() {
+    return this.propertyrepo.find({
+      where: { publishing: PropertyPublishing.PENDING },
+      relations: { owner: true, images: true },
+    });
+  }
 
-        const property = await this.propertyrepo.findOne({
-            where: {
-                id: propId
-            }
-        })
+  async rejectPropertyListing(propId: number, adminId: number) {
+    const admin = await this.adminRepo.findOne({ where: { id: adminId } });
 
-        if (!property) {
-            throw new BadRequestException(
-                this.t('adminProperty.PROPERTY_NOT_FOUND')
-            )
-        }
-
-        if (
-            property.status ===
-            PropertyStatus.ACTIVE
-        ) {
-            throw new BadRequestException(
-                this.t('adminProperty.PROPERTY_ALREADY_ACTIVE')
-            )
-        }
-
-        property.status =
-            PropertyStatus.ACTIVE
-
-        await this.propertyrepo.save(property)
-
-        return {
-            message:
-                this.t('adminProperty.PROPERTY_RESTORED')
-        }
+    if (!admin) {
+      throw new BadRequestException(this.t('adminProperty.TRY_AGAIN_LATER'));
     }
 
-    async deleteProperty(propId: number, adminId: number) {
-        const admin = await this.adminRepo.findOne({ where: { id: adminId } })
+    const property = await this.propertyrepo.findOne({
+      where: { id: propId },
+      relations: { owner: true },
+    });
 
-        if (!admin) {
-            throw new BadRequestException(this.t('adminProperty.TRY_AGAIN_LATER'))
-        }
-
-        const property = await this.propertyrepo.findOne({ where: { id: propId }, relations: { owner: true } })
-
-        if (!property) {
-            throw new BadRequestException(this.t('adminProperty.PROPERTY_NOT_FOUND'))
-        }
-
-        await this.propertyrepo.remove(property)
-        return { message: this.t('adminProperty.PROPERTY_DELETED') }
+    if (!property) {
+      throw new BadRequestException(this.t('adminProperty.PROPERTY_NOT_FOUND'));
     }
+
+    if (property.publishing === PropertyPublishing.ACTIVE) {
+      throw new BadRequestException(
+        this.t('adminProperty.PROPERTY_ALREADY_ACCEPTED'),
+      );
+    }
+
+    if (property.publishing === PropertyPublishing.REJECTED) {
+      throw new BadRequestException(
+        this.t('adminProperty.PROPERTY_ALREADY_REJECTED'),
+      );
+    }
+
+    property.publishing = PropertyPublishing.REJECTED;
+    await this.propertyrepo.save(property);
+
+    const user = property.owner;
+    if (user) {
+      await this.senderserive.sendEmail({
+        to: user.gmail,
+        from: process.env.SMTP_FROM || 'no-reply@Renotra.com',
+        subject: 'Property rejected',
+        template: 'property-rejected',
+        context: {
+          name: user.name || user.gmail,
+          year: new Date().getFullYear(),
+        },
+      });
+    }
+
+    return { message: this.t('adminProperty.PROPERTY_REJECTED') };
+  }
+
+  async achiveProperty(propId: number, adminId: number) {
+    const admin = await this.adminRepo.findOne({ where: { id: adminId } });
+
+    if (!admin) {
+      throw new BadRequestException(this.t('adminProperty.TRY_AGAIN_LATER'));
+    }
+
+    const property = await this.propertyrepo.findOne({
+      where: { id: propId },
+      relations: { owner: true },
+    });
+
+    if (!property) {
+      throw new BadRequestException(this.t('adminProperty.PROPERTY_NOT_FOUND'));
+    }
+
+    if (property.status === PropertyStatus.ARCHIVED) {
+      throw new BadRequestException(
+        this.t('adminProperty.PROPERTY_ALREADY_ARCHIVED'),
+      );
+    }
+
+    property.status = PropertyStatus.ARCHIVED;
+    await this.propertyrepo.save(property);
+
+    const user = property.owner;
+    if (user) {
+      await this.senderserive.sendEmail({
+        to: user.gmail,
+        from: process.env.SMTP_FROM || 'no-reply@Renotra.com',
+        subject: 'Property archived',
+        template: 'property-archived',
+        context: {
+          name: user.name || user.gmail,
+          year: new Date().getFullYear(),
+        },
+      });
+    }
+
+    return { message: this.t('adminProperty.PROPERTY_ARCHIVED') };
+  }
+
+  async restoreProperty(propId: number, adminId: number) {
+    const admin = await this.adminRepo.findOne({
+      where: {
+        id: adminId,
+      },
+    });
+
+    if (!admin) {
+      throw new BadRequestException(this.t('adminProperty.ADMIN_NOT_FOUND'));
+    }
+
+    const property = await this.propertyrepo.findOne({
+      where: {
+        id: propId,
+      },
+    });
+
+    if (!property) {
+      throw new BadRequestException(this.t('adminProperty.PROPERTY_NOT_FOUND'));
+    }
+
+    if (property.status === PropertyStatus.ACTIVE) {
+      throw new BadRequestException(
+        this.t('adminProperty.PROPERTY_ALREADY_ACTIVE'),
+      );
+    }
+
+    property.status = PropertyStatus.ACTIVE;
+
+    await this.propertyrepo.save(property);
+
+    return {
+      message: this.t('adminProperty.PROPERTY_RESTORED'),
+    };
+  }
+
+  async deleteProperty(propId: number, adminId: number) {
+    const admin = await this.adminRepo.findOne({ where: { id: adminId } });
+
+    if (!admin) {
+      throw new BadRequestException(this.t('adminProperty.TRY_AGAIN_LATER'));
+    }
+
+    const property = await this.propertyrepo.findOne({
+      where: { id: propId },
+      relations: { owner: true },
+    });
+
+    if (!property) {
+      throw new BadRequestException(this.t('adminProperty.PROPERTY_NOT_FOUND'));
+    }
+
+    await this.propertyrepo.remove(property);
+    return { message: this.t('adminProperty.PROPERTY_DELETED') };
+  }
 }

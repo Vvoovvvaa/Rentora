@@ -10,4 +10,11 @@
 
 .map-owned-statuses{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}.map-owned-statuses .status-badge{padding:3px 5px;font-size:9px;line-height:1.1}
 
+/* Keep Map aligned with the same 1232px content rail used by the site shell. */
+.map-search-page{min-height:calc(100dvh - 88px)}
+.map-search-header,.map-search-workspace,.map-filter-panel{max-width:1232px}
+.map-search-workspace{min-height:calc(100dvh - 210px)}
+@media(max-width:800px){.map-search-workspace,.map-results-panel,.map-canvas-panel,.global-rentora-map{min-height:calc(100dvh - 260px)}}
+@media(max-width:520px){.map-results-panel,.map-canvas-panel,.global-rentora-map{min-height:calc(100dvh - 250px)}}
+
 .rentora-property-marker.is-selected.is-pending,.rentora-property-marker.is-selected.is-rejected,.rentora-property-marker.is-selected.is-archived{border-color:#513f30;background:#513f30;color:#fff;opacity:1}.rentora-property-marker.is-selected.is-pending .rentora-property-marker-tail,.rentora-property-marker.is-selected.is-rejected .rentora-property-marker-tail,.rentora-property-marker.is-selected.is-archived .rentora-property-marker-tail{border-color:#513f30;background:#513f30}

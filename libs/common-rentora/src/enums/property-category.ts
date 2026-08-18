@@ -1,10 +1,10 @@
 export enum PropertyCategory {
-  APARTMENT = "apartament",
+  APARTMENT = 'apartament',
   HOUSE = 'house',
   VILLA = 'villa',
   LAND = 'land',
-  OFFICE = "office",
-  COMMERCIAL = "commercial",
+  OFFICE = 'office',
+  COMMERCIAL = 'commercial',
   GARAGE = 'garage',
-  WAREHOUSE = 'warehouse'
+  WAREHOUSE = 'warehouse',
 }

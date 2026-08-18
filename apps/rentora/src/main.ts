@@ -1,8 +1,8 @@
-import { NestFactory, Reflector } from '@nestjs/core';
+import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 
-const PORT = process.env.PORT || 3000
+const PORT = process.env.PORT || 3000;
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -19,11 +19,7 @@ async function bootstrap() {
     credentials: true,
   });
 
-
-
-
-
   await app.listen(+PORT);
-  console.log(`User runing in port - ${PORT} `)
+  console.log(`User runing in port - ${PORT} `);
 }
-bootstrap();
+void bootstrap();

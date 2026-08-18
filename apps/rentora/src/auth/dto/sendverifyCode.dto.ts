@@ -1,6 +1,6 @@
-import { IsEmail } from "class-validator";
+import { IsEmail } from 'class-validator';
 
-export class sendVerifyCodeDto{
-    @IsEmail()
-    email:string
+export class sendVerifyCodeDto {
+  @IsEmail()
+  email: string;
 }

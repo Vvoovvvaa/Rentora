@@ -1,5 +1,0 @@
-export enum accauntSatus {
-    ACTIVE = "ACTIVE",
-    TEMPORARY_BLOCK = "TEMPORARY_BLOCK",
-    PERMANETLY_BLOCK = "PERMANETLY_BLOCK"
-}

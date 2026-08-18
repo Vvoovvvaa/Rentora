@@ -1,24 +1,31 @@
+import { CloudinaryDestroyResult } from '@app/common-rentora/interfaces';
 import { Injectable, BadRequestException } from '@nestjs/common';
-import { v2 as cloudinary, UploadApiResponse, UploadApiErrorResponse } from 'cloudinary';
+import { v2 as cloudinary, UploadApiResponse } from 'cloudinary';
 import { Readable } from 'stream';
 
 @Injectable()
 export class UploadService {
-  async uploadImage(
-    file: Express.Multer.File,
-  ): Promise<UploadApiResponse | UploadApiErrorResponse> {
+  uploadImage(file: Express.Multer.File): Promise<UploadApiResponse> {
     if (!file || !file.buffer) {
       throw new BadRequestException('Файл не передан');
     }
 
-    return new Promise((resolve, reject) => {
+    return new Promise<UploadApiResponse>((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         {
           folder: 'rentora',
         },
         (error, result) => {
-          if (error) return reject(error);
-          if (!result) return reject(new Error('Пустой ответ от Cloudinary'));
+          if (error) {
+            reject(new Error(error.message ?? 'Cloudinary upload failed'));
+            return;
+          }
+
+          if (!result) {
+            reject(new Error('Пустой ответ от Cloudinary'));
+            return;
+          }
+
           resolve(result);
         },
       );
@@ -27,7 +34,7 @@ export class UploadService {
     });
   }
 
-  async deleteImage(publicId: string) {
+  async deleteImage(publicId: string): Promise<CloudinaryDestroyResult> {
     return cloudinary.uploader.destroy(publicId);
   }
 }

@@ -1,119 +1,448 @@
-import axios, { AxiosError } from "axios";
-import type { Admin, AuthResponse, ChatMessage, ChatRoom, CompareResponse, Property, PropertyMapBounds, PropertyPriceHistoryEntry, ReportReason, SearchParams, SupportStatus, SupportTicket, SupportTicketType, User } from "@/types/models";
-import { getStoredLocale, t } from "@/lib/i18n";
-import { emitAuthFailure, getAuthFailureKind, USER_TOKEN_KEY } from "@/lib/auth-session";
+import axios from 'axios';
 
-export const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
-export const api = axios.create({ baseURL: API_URL });
+import type {
+  Admin,
+  AuthResponse,
+  ChatMessage,
+  ChatRoom,
+  CompareResponse,
+  Property,
+  PropertyMapBounds,
+  PropertyPriceHistoryEntry,
+  ReportReason,
+  SearchParams,
+  SupportStatus,
+  SupportTicket,
+  SupportTicketType,
+  User,
+} from '@/types/models';
+
+import { getStoredLocale, t } from '@/lib/i18n';
+
+import {
+  emitAuthFailure,
+  getAuthFailureKind,
+  USER_TOKEN_KEY,
+} from '@/lib/auth-session';
+
+type MessageResponse = {
+  message: string;
+};
+
+type ApiErrorResponse = {
+  message?: string | string[];
+};
+
+export const API_URL =
+  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+
+export const api = axios.create({
+  baseURL: API_URL,
+});
+
 api.interceptors.request.use((config) => {
-  if (typeof window !== "undefined") {
+  if (typeof window !== 'undefined') {
     const token = localStorage.getItem(USER_TOKEN_KEY);
-    if (token) config.headers.Authorization = `Bearer ${token}`;
-    config.headers.set("Accept-Language", getStoredLocale());
+
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    config.headers.set('Accept-Language', getStoredLocale());
   }
+
   return config;
 });
+
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (typeof window !== "undefined") {
-      const requestUrl = String(error.config?.url || "");
-      const isPublicAuthRequest = requestUrl.startsWith("/auth/");
+
+  (error: unknown) => {
+    if (typeof window !== 'undefined') {
+      const requestUrl = axios.isAxiosError(error)
+        ? String(error.config?.url ?? '')
+        : '';
+
+      const isPublicAuthRequest = requestUrl.startsWith('/auth/');
+
       const failure = isPublicAuthRequest ? null : getAuthFailureKind(error);
-      if (failure && localStorage.getItem(USER_TOKEN_KEY)) emitAuthFailure(failure);
+
+      if (failure && localStorage.getItem(USER_TOKEN_KEY)) {
+        emitAuthFailure(failure);
+      }
     }
-    return Promise.reject(error);
+
+    const rejectionError =
+      error instanceof Error ? error : new Error('Unknown API error');
+
+    return Promise.reject(rejectionError);
   },
 );
-// Admin API has its own server and accepts only tokens with payload.type === "ADMIN".
-// The default path is proxied by next.config.ts to avoid browser CORS assumptions.
-export const adminApiClient = axios.create({ baseURL: process.env.NEXT_PUBLIC_ADMIN_API_URL || "/admin-api" });
+
+// Admin API has its own server and accepts only tokens
+// with payload.type === "ADMIN".
+//
+// The default path is proxied by next.config.ts
+// to avoid browser CORS assumptions.
+export const adminApiClient = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_ADMIN_API_URL || '/admin-api',
+});
+
 adminApiClient.interceptors.request.use((config) => {
-  if (typeof window !== "undefined") {
-    const token = localStorage.getItem("rentora_admin_token");
-    if (token) config.headers.Authorization = `Bearer ${token}`;
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem('rentora_admin_token');
+
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
   }
+
   return config;
 });
-export function apiMessage(error: unknown) {
-  const payload = (error as AxiosError<{ message?: string | string[] }>).response?.data;
-  const message = payload?.message;
-  if (!message && (error as AxiosError).request) return t("errors.network");
-  if (Array.isArray(message)) return message[0];
-  if (message) return message;
-  if ((error as AxiosError).request) return "We couldn’t reach Rentora. Check that the API is running.";
-  return "Something went wrong. Please try again.";
+
+export function apiMessage(error: unknown): string {
+  if (!axios.isAxiosError<ApiErrorResponse>(error)) {
+    return 'Something went wrong. Please try again.';
+  }
+
+  const message = error.response?.data?.message;
+
+  if (!message && error.request) {
+    return t('errors.network');
+  }
+
+  if (Array.isArray(message)) {
+    return message[0] || 'Something went wrong. Please try again.';
+  }
+
+  if (message) {
+    return message;
+  }
+
+  if (error.request) {
+    return 'We couldn’t reach Rentora. Check that the API is running.';
+  }
+
+  return 'Something went wrong. Please try again.';
 }
+
 export const authApi = {
-  login: (data: { gmail: string; password: string }) => api.post<AuthResponse>("/auth/login", data).then(r => r.data),
-  register: (data: { name: string; phone: string; age: number; gmail: string; password: string }) => api.post<AuthResponse>("/auth/register", data).then(r => r.data),
-  sendCode: (email: string) => api.post("/auth/sendCode", { email }).then(r => r.data),
-  verify: (data: { gmail: string; code: string }) => api.post("/auth/Verify", data).then(r => r.data),
-  forgot: (gmail: string) => api.post("/auth/forget", { gmail }).then(r => r.data),
-  newPassword: (data: { code: string; newPassword: string }) => api.post("/auth/NewPassword", data).then(r => r.data),
-  logout: () => api.post<{ message: string }>("/auth/logout").then(r => r.data),
+  login: (data: { gmail: string; password: string }) =>
+    api
+      .post<AuthResponse>('/auth/login', data)
+      .then((response) => response.data),
+
+  register: (data: {
+    name: string;
+    phone: string;
+    age: number;
+    gmail: string;
+    password: string;
+  }) =>
+    api
+      .post<AuthResponse>('/auth/register', data)
+      .then((response) => response.data),
+
+  sendCode: (email: string) =>
+    api
+      .post<MessageResponse>('/auth/sendCode', {
+        email,
+      })
+      .then((response) => response.data),
+
+  verify: (data: { gmail: string; code: string }) =>
+    api
+      .post<MessageResponse>('/auth/Verify', data)
+      .then((response) => response.data),
+
+  forgot: (gmail: string) =>
+    api
+      .post<MessageResponse>('/auth/forget', {
+        gmail,
+      })
+      .then((response) => response.data),
+
+  newPassword: (data: { code: string; newPassword: string }) =>
+    api
+      .post<MessageResponse>('/auth/NewPassword', data)
+      .then((response) => response.data),
+
+  logout: () =>
+    api.post<MessageResponse>('/auth/logout').then((response) => response.data),
 };
+
 export const propertiesApi = {
-  all: () => api.get<Property[]>("/properties").then(r => r.data),
-  map: (bounds: PropertyMapBounds, filters: SearchParams = {}) => api.get<Property[]>("/properties/map", { params: { ...bounds, ...filters } }).then(r => r.data),
-  myMap: (bounds: PropertyMapBounds, filters: SearchParams = {}) => api.get<Property[]>("/properties/my/map", { params: { ...bounds, ...filters } }).then(r => r.data),
-  one: (id: string | number) => api.post<Property>(`/properties/find/${id}`).then(r => r.data),
-  priceHistory: (id: string | number) => api.get<PropertyPriceHistoryEntry[]>(`/properties/${id}/price-history`).then(r => r.data),
-  search: (params: SearchParams) => api.get<Property[]>("/search", { params }).then(r => r.data),
-  mine: () => api.get<Property[]>("/properties/my").then(r => r.data),
-  create: (data: FormData) => api.post<Property>("/properties/create", data).then(r => r.data),
-  update: (id: number, data: Partial<Property>) => api.patch<Property>(`/properties/${id}`, data).then(r => r.data),
-  archive: (id: number) => api.post(`/properties/archive/${id}`).then(r => r.data),
-  restore: (id: number) => api.post<{ message: string }>(`/properties/restore/${id}`).then(r => r.data),
-  compare: (firstId: number, secondId: number) => api.post<CompareResponse>(`/properties/comapre/${firstId}/${secondId}`).then(r => r.data),
-  report: (propertyId: number, data: { report: ReportReason; description: string }) => api.post<{ message: string }>(`/properties/report/${propertyId}`, data).then(r => r.data),
+  all: () =>
+    api.get<Property[]>('/properties').then((response) => response.data),
+
+  map: (bounds: PropertyMapBounds, filters: SearchParams = {}) =>
+    api
+      .get<Property[]>('/properties/map', {
+        params: {
+          ...bounds,
+          ...filters,
+        },
+      })
+      .then((response) => response.data),
+
+  myMap: (bounds: PropertyMapBounds, filters: SearchParams = {}) =>
+    api
+      .get<Property[]>('/properties/my/map', {
+        params: {
+          ...bounds,
+          ...filters,
+        },
+      })
+      .then((response) => response.data),
+
+  one: (id: string | number) =>
+    api
+      .post<Property>(`/properties/find/${id}`)
+      .then((response) => response.data),
+
+  priceHistory: (id: string | number) =>
+    api
+      .get<PropertyPriceHistoryEntry[]>(`/properties/${id}/price-history`)
+      .then((response) => response.data),
+
+  search: (params: SearchParams) =>
+    api
+      .get<Property[]>('/search', {
+        params,
+      })
+      .then((response) => response.data),
+
+  mine: () =>
+    api.get<Property[]>('/properties/my').then((response) => response.data),
+
+  create: (data: FormData) =>
+    api
+      .post<Property>('/properties/create', data)
+      .then((response) => response.data),
+
+  update: (id: number, data: Partial<Property>) =>
+    api
+      .patch<Property>(`/properties/${id}`, data)
+      .then((response) => response.data),
+
+  archive: (id: number) =>
+    api
+      .post<MessageResponse>(`/properties/archive/${id}`)
+      .then((response) => response.data),
+
+  restore: (id: number) =>
+    api
+      .post<MessageResponse>(`/properties/restore/${id}`)
+      .then((response) => response.data),
+
+  compare: (firstId: number, secondId: number) =>
+    api
+      .post<CompareResponse>(`/properties/comapre/${firstId}/${secondId}`)
+      .then((response) => response.data),
+
+  report: (
+    propertyId: number,
+    data: {
+      report: ReportReason;
+      description: string;
+    },
+  ) =>
+    api
+      .post<MessageResponse>(`/properties/report/${propertyId}`, data)
+      .then((response) => response.data),
 };
+
 export const userApi = {
-  me: () => api.get<User>("/user/me").then(r => r.data),
-  update: (data: FormData) => api.post<User>("/user/change", data).then(r => r.data),
-  favorites: () => api.get<Array<{ property: Property }>>("/user/fav").then(r => r.data),
-  toggleFavorite: (id: number) => api.post<{ status: "added" | "removed" }>(`/user/fav/${id}`).then(r => r.data),
+  me: () => api.get<User>('/user/me').then((response) => response.data),
+
+  update: (data: FormData) =>
+    api.post<User>('/user/change', data).then((response) => response.data),
+
+  favorites: () =>
+    api
+      .get<Array<{ property: Property }>>('/user/fav')
+      .then((response) => response.data),
+
+  toggleFavorite: (id: number) =>
+    api
+      .post<{
+        status: 'added' | 'removed';
+      }>(`/user/fav/${id}`)
+      .then((response) => response.data),
 };
+
 export const chatApi = {
-  rooms: () => api.get<ChatRoom[]>("/chat/rooms").then(r => r.data),
-  createRoom: (propertyId: number) => api.post<ChatRoom>("/chat/room", { propertyId }).then(r => r.data),
-  messages: (roomId: number) => api.get<ChatMessage[]>(`/chat/${roomId}/messages`).then(r => r.data),
+  rooms: () =>
+    api.get<ChatRoom[]>('/chat/rooms').then((response) => response.data),
+
+  createRoom: (propertyId: number) =>
+    api
+      .post<ChatRoom>('/chat/room', {
+        propertyId,
+      })
+      .then((response) => response.data),
+
+  messages: (roomId: number) =>
+    api
+      .get<ChatMessage[]>(`/chat/${roomId}/messages`)
+      .then((response) => response.data),
 };
+
 export const supportApi = {
-  create: (data: { ticket: SupportTicketType; subject: string; message: string }) => api.post<{ message: string }>("/support/create", data).then(r => r.data),
-  mine: () => api.get<SupportTicket[]>("/support").then(r => r.data),
-  one: (id: number) => api.get<SupportTicket>(`/support/${id}`).then(r => r.data),
-  cancel: (id: number) => api.post<{ message: string }>(`/support/${id}`).then(r => r.data),
+  create: (data: {
+    ticket: SupportTicketType;
+    subject: string;
+    message: string;
+  }) =>
+    api
+      .post<MessageResponse>('/support/create', data)
+      .then((response) => response.data),
+
+  mine: () =>
+    api.get<SupportTicket[]>('/support').then((response) => response.data),
+
+  one: (id: number) =>
+    api.get<SupportTicket>(`/support/${id}`).then((response) => response.data),
+
+  cancel: (id: number) =>
+    api
+      .post<MessageResponse>(`/support/${id}`)
+      .then((response) => response.data),
 };
+
 export const adminAuthApi = {
-  login: (data: { gmail: string; password: string }) => adminApiClient.post<{ accessToken: string }>("/admin-auth/login", data).then(r => r.data),
+  login: (data: { gmail: string; password: string }) =>
+    adminApiClient
+      .post<{
+        accessToken: string;
+      }>('/admin-auth/login', data)
+      .then((response) => response.data),
 };
+
 export const adminUsersApi = {
-  all: () => adminApiClient.get<User[]>("/admins/users").then(r => r.data),
-  one: (id: number) => adminApiClient.post<User>(`/admins/find/${id}`).then(r => r.data),
-  search: (data: { name?: string; gmail?: string; phone?: string }) => adminApiClient.post<User[]>("/admins/search", data).then(r => r.data),
-  block: (id: number) => adminApiClient.post<{ message: string }>(`/admins/block/${id}`).then(r => r.data),
-  unblock: (id: number) => adminApiClient.post<{ message: string }>(`/admins/unBlock/${id}`).then(r => r.data),
-  me: () => adminApiClient.get<Admin>("/admins/me").then(r => r.data),
-  admins: () => adminApiClient.get<Admin[]>("/admins/all-admins").then(r => r.data),
-  oneAdmin: (id: number) => adminApiClient.post<Admin>(`/admins/admin/${id}`).then(r => r.data),
-  deleteAdmin: (id: number) => adminApiClient.post<{ message: string }>(`/admins/delete-admin/${id}`).then(r => r.data),
+  all: () =>
+    adminApiClient
+      .get<User[]>('/admins/users')
+      .then((response) => response.data),
+
+  one: (id: number) =>
+    adminApiClient
+      .post<User>(`/admins/find/${id}`)
+      .then((response) => response.data),
+
+  search: (data: { name?: string; gmail?: string; phone?: string }) =>
+    adminApiClient
+      .post<User[]>('/admins/search', data)
+      .then((response) => response.data),
+
+  block: (id: number) =>
+    adminApiClient
+      .post<MessageResponse>(`/admins/block/${id}`)
+      .then((response) => response.data),
+
+  unblock: (id: number) =>
+    adminApiClient
+      .post<MessageResponse>(`/admins/unBlock/${id}`)
+      .then((response) => response.data),
+
+  me: () =>
+    adminApiClient.get<Admin>('/admins/me').then((response) => response.data),
+
+  admins: () =>
+    adminApiClient
+      .get<Admin[]>('/admins/all-admins')
+      .then((response) => response.data),
+
+  oneAdmin: (id: number) =>
+    adminApiClient
+      .post<Admin>(`/admins/admin/${id}`)
+      .then((response) => response.data),
+
+  deleteAdmin: (id: number) =>
+    adminApiClient
+      .post<MessageResponse>(`/admins/delete-admin/${id}`)
+      .then((response) => response.data),
 };
+
 export const adminPropertiesApi = {
-  all: () => adminApiClient.get<Property[]>("/admins-properties").then(r => r.data),
-  one: (id: number) => adminApiClient.post<Property>(`/admins-properties/${id}`).then(r => r.data),
-  pending: () => adminApiClient.get<Property[]>("/admins-properties/pending").then(r => r.data),
-  accept: (id: number) => adminApiClient.post<{ message: string }>(`/admins-properties/accept/${id}`).then(r => r.data),
-  reject: (id: number) => adminApiClient.post<{ message: string }>(`/admins-properties/reject/${id}`).then(r => r.data),
-  archive: (id: number) => adminApiClient.post<{ message: string }>(`/admins-properties/archive/${id}`).then(r => r.data),
-  restore: (id: number) => adminApiClient.post<{ message: string }>(`/admins-properties/resotre/${id}`).then(r => r.data),
-  delete: (id: number) => adminApiClient.delete<{ message: string }>(`/admins-properties/delete/${id}`).then(r => r.data),
+  all: () =>
+    adminApiClient
+      .get<Property[]>('/admins-properties')
+      .then((response) => response.data),
+
+  one: (id: number) =>
+    adminApiClient
+      .post<Property>(`/admins-properties/${id}`)
+      .then((response) => response.data),
+
+  pending: () =>
+    adminApiClient
+      .get<Property[]>('/admins-properties/pending')
+      .then((response) => response.data),
+
+  accept: (id: number) =>
+    adminApiClient
+      .post<MessageResponse>(`/admins-properties/accept/${id}`)
+      .then((response) => response.data),
+
+  reject: (id: number) =>
+    adminApiClient
+      .post<MessageResponse>(`/admins-properties/reject/${id}`)
+      .then((response) => response.data),
+
+  archive: (id: number) =>
+    adminApiClient
+      .post<MessageResponse>(`/admins-properties/archive/${id}`)
+      .then((response) => response.data),
+
+  restore: (id: number) =>
+    adminApiClient
+      .post<MessageResponse>(`/admins-properties/resotre/${id}`)
+      .then((response) => response.data),
+
+  delete: (id: number) =>
+    adminApiClient
+      .delete<MessageResponse>(`/admins-properties/delete/${id}`)
+      .then((response) => response.data),
 };
+
 export const adminSupportApi = {
-  all: () => adminApiClient.get<SupportTicket[]>("/support-admin").then(r => r.data),
-  byStatus: (status: SupportStatus) => adminApiClient.get<SupportTicket[]>("/support-admin/status", { params: { status } }).then(r => r.data),
-  one: (id: number) => adminApiClient.post<SupportTicket>(`/support-admin/${id}`).then(r => r.data),
-  accept: (id: number) => adminApiClient.post<{ message: string; support: SupportTicket }>(`/support-admin/accept/${id}`).then(r => r.data),
-  close: (id: number) => adminApiClient.post<{ message: string }>(`/support-admin/close/${id}`).then(r => r.data),
-  respond: (id: number, message: string) => adminApiClient.post<{ message: string }>(`/support-admin/response/${id}`, { message }).then(r => r.data),
+  all: () =>
+    adminApiClient
+      .get<SupportTicket[]>('/support-admin')
+      .then((response) => response.data),
+
+  byStatus: (status: SupportStatus) =>
+    adminApiClient
+      .get<SupportTicket[]>('/support-admin/status', {
+        params: {
+          status,
+        },
+      })
+      .then((response) => response.data),
+
+  one: (id: number) =>
+    adminApiClient
+      .post<SupportTicket>(`/support-admin/${id}`)
+      .then((response) => response.data),
+
+  accept: (id: number) =>
+    adminApiClient
+      .post<{
+        message: string;
+        support: SupportTicket;
+      }>(`/support-admin/accept/${id}`)
+      .then((response) => response.data),
+
+  close: (id: number) =>
+    adminApiClient
+      .post<MessageResponse>(`/support-admin/close/${id}`)
+      .then((response) => response.data),
+
+  respond: (id: number, message: string) =>
+    adminApiClient
+      .post<MessageResponse>(`/support-admin/response/${id}`, {
+        message,
+      })
+      .then((response) => response.data),
 };

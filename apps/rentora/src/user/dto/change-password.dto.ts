@@ -1,11 +1,10 @@
-import { IsNotEmpty, IsString, IsStrongPassword, isStrongPassword } from "class-validator";
+import { IsNotEmpty, IsStrongPassword } from 'class-validator';
 
 export class changePasswordDto {
+  @IsNotEmpty()
+  Oldpassword: string;
 
-    @IsNotEmpty()
-    Oldpassword: string
-
-    @IsStrongPassword()
-    @IsNotEmpty()
-    NewPassword: string
+  @IsStrongPassword()
+  @IsNotEmpty()
+  NewPassword: string;
 }

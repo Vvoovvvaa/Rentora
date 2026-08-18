@@ -1,19 +1,19 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 
-const adminApiUrl = process.env.ADMIN_API_URL || "http://localhost:2020";
+const adminApiUrl = process.env.ADMIN_API_URL || 'http://localhost:2020';
 
 const nextConfig: NextConfig = {
-  async rewrites() {
-    return [
+  rewrites() {
+    return Promise.resolve([
       {
-        source: "/admin-api",
+        source: '/admin-api',
         destination: `${adminApiUrl}/`,
       },
       {
-        source: "/admin-api/:path*",
+        source: '/admin-api/:path*',
         destination: `${adminApiUrl}/:path*`,
       },
-    ];
+    ]);
   },
 };
 

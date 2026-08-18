@@ -1,2 +1,2 @@
-export * from './random-code'
-export * from './photo-validator'
+export * from './random-code';
+export * from './photo-validator';

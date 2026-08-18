@@ -4,12 +4,29 @@ import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-
 import { AuthModule } from './auth/auth.module';
 import { validationSchema } from '@app/common-rentora/validation';
-import { cloudinaryConfig, dbconfig, jwtconfig, smtpconfig } from '@app/common-rentora/configs';
+import {
+  cloudinaryConfig,
+  dbconfig,
+  jwtconfig,
+  smtpconfig,
+} from '@app/common-rentora/configs';
 import { IDbcongif } from '@app/common-rentora/models';
-import { Admin, AdminSecretcode, Favorites, Property, PropertyImage, Report, SecretCode, Support, User, UserImage, UserSecurity } from '@app/common-rentora/database/entity';
+import {
+  Admin,
+  AdminSecretcode,
+  Favorites,
+  Property,
+  PropertyImage,
+  PropertyViews,
+  Report,
+  SecretCode,
+  Support,
+  User,
+  UserImage,
+  UserSecurity,
+} from '@app/common-rentora/database/entity';
 import { EmailModule } from '@app/common-rentora/smtp';
 import { PropertiesModule } from './properties/properties.module';
 import { SearchModule } from './search/search.module';
@@ -40,11 +57,8 @@ import { RedisModule } from '@app/common-rentora/redis/redis.module';
         watch: true,
       },
 
-      resolvers: [
-        AcceptLanguageResolver,
-      ],
+      resolvers: [AcceptLanguageResolver],
     }),
-
 
     ConfigModule.forRoot({
       isGlobal: true,
@@ -56,7 +70,7 @@ import { RedisModule } from '@app/common-rentora/redis/redis.module';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
-        const dbconfig: IDbcongif = configService.get("DBCONFIG") as IDbcongif;
+        const dbconfig: IDbcongif = configService.get('DBCONFIG') as IDbcongif;
 
         return {
           type: 'postgres',
@@ -65,17 +79,30 @@ import { RedisModule } from '@app/common-rentora/redis/redis.module';
           username: dbconfig.POSTGRES_USER,
           password: dbconfig.POSTGRES_PASSWORD,
           database: dbconfig.POSTGRES_DB,
-          entities: [User, UserSecurity, SecretCode, Property, PropertyImage, UserImage, Favorites, Report, Admin, AdminSecretcode, Support, PropertyPriceHistory],
+          entities: [
+            User,
+            UserSecurity,
+            SecretCode,
+            Property,
+            PropertyImage,
+            UserImage,
+            Favorites,
+            Report,
+            Admin,
+            PropertyViews,
+            AdminSecretcode,
+            Support,
+            PropertyPriceHistory,
+          ],
           autoLoadEntities: true,
           synchronize: true,
           // dropSchema: true,
         };
       },
     }),
-
   ],
 
   controllers: [AppController],
-  providers: [AppService,],
+  providers: [AppService],
 })
 export class AppModule {}

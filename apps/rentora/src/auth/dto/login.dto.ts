@@ -1,9 +1,9 @@
-import { IsEmail, IsString } from "class-validator"
+import { IsEmail, IsString } from 'class-validator';
 
-export class LoginDto{
-    @IsEmail()
-    gmail:string
+export class LoginDto {
+  @IsEmail()
+  gmail: string;
 
-    @IsString()
-    password:string
+  @IsString()
+  password: string;
 }

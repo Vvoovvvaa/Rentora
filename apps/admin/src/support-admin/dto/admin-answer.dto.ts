@@ -1,7 +1,7 @@
-import { IsNotEmpty, IsString } from "class-validator";
+import { IsNotEmpty, IsString } from 'class-validator';
 
-export class adminAnswerDto{
-    @IsNotEmpty()
-    @IsString()
-    message: string
+export class adminAnswerDto {
+  @IsNotEmpty()
+  @IsString()
+  message: string;
 }

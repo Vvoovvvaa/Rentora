@@ -4,10 +4,10 @@ import { SearchDto } from './dto/search.dto';
 
 @Controller('search')
 export class SearchController {
-    constructor(private readonly searchService: SearchService){}
+  constructor(private readonly searchService: SearchService) {}
 
-    @Get()
-    searchProperties(@Query() dto: SearchDto){
-        return this.searchService.searchProperties(dto)
-    }
+  @Get()
+  searchProperties(@Query() dto: SearchDto) {
+    return this.searchService.searchProperties(dto);
+  }
 }
