@@ -1,6 +1,7 @@
 import Joi from 'joi';
 
 export const validationSchema = Joi.object({
+  
   JWT_SECRET1: Joi.string().required(),
   JWT_SECRET2: Joi.string().required(),
 
@@ -24,4 +25,12 @@ export const validationSchema = Joi.object({
   CLOUDINARY_CLOUD_NAME: Joi.string().required(),
   CLOUDINARY_API_KEY: Joi.string().required(),
   CLOUDINARY_API_SECRET: Joi.string().required(),
+
+  SUPER_ADMIN: Joi.string().required(),
+
+  OPENAI_API_KEY: Joi.string().required(),
+  OPENAI_MODEL: Joi.string().required()
+
+
 });
+

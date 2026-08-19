@@ -1,16 +1,18 @@
-import { Column, Entity, JoinColumn, OneToMany, OneToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne } from 'typeorm';
 import { Base } from './base';
 import { userRoles } from '../../enums';
 import { UserSecurity } from './user-security';
 import { accauntSatus } from '../../enums/accaunt-status';
 import { EmailStatusEnum } from '../../enums/email-status';
-import { SecretCode } from './secretCode';
+import { SecretCode } from './secret-code';
 import { Property } from './property';
 import { UserImage } from './user-images';
 import { Favorites } from './favorites';
 import { Report } from './report';
 import { Support } from './support';
 import { PropertyViews } from './property-views';
+import { ChatRoom } from './chat-room';
+import { Message } from './message';
 
 @Entity('users')
 export class User extends Base {
@@ -30,6 +32,7 @@ export class User extends Base {
     type: 'enum',
     enum: EmailStatusEnum,
     default: EmailStatusEnum.NOT_VERIFIED,
+    name: "gmail_status"
   })
   gmailStatus: EmailStatusEnum;
 
@@ -44,7 +47,7 @@ export class User extends Base {
   })
   userRole: userRoles;
 
-  @Column({ type: 'enum', enum: accauntSatus, default: accauntSatus.ACTIVE })
+  @Column({ type: 'enum', enum: accauntSatus, default: accauntSatus.ACTIVE, name: "accaunt_status" })
   accauntStatus: accauntSatus;
 
   @OneToOne(() => UserSecurity, (security) => security.user)
@@ -77,4 +80,17 @@ export class User extends Base {
     onDelete: 'CASCADE',
   })
   views: PropertyViews[];
+
+  @ManyToOne(() => ChatRoom, chatrooms => chatrooms.owner)
+  ownerChatRooms: ChatRoom
+
+  @ManyToOne(() => ChatRoom, chatrooms => chatrooms.client)
+  clientChatRooms: ChatRoom
+
+  @OneToMany(() => Message, message => message.user)
+  sender: Message
+
 }
+
+
+

@@ -397,13 +397,19 @@ export class AuthService {
       return { message: this.t('auth.PASSWORD_CHANGED') };
     }
   }
-
   async logout(token: string) {
-    const payload = await this.jwtservice.verifyAsync<JwtPayload>(token, {
-      secret: process.env.JWT_SECRET1,
-    });
+    const payload =
+      await this.jwtservice.verifyAsync<JwtPayload>(
+        token,
+        {
+          secret:
+            this.configService.getOrThrow<string>(
+              'JWT_SECRET1',
+            ),
+        },
+      );
 
-    if (!payload.jti) {
+    if (!payload.jti || !payload.exp) {
       throw new UnauthorizedException('Invalid token');
     }
 
@@ -411,7 +417,11 @@ export class AuthService {
     const ttl = payload.exp - now;
 
     if (ttl > 0) {
-      await this.redisservice.set(`blacklist:token:${payload.jti}`, '1', ttl);
+      await this.redisservice.set(
+        `blacklist:token:${payload.jti}`,
+        '1',
+        ttl,
+      );
     }
 
     return {

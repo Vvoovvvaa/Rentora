@@ -19,6 +19,7 @@ import { Favorites } from './favorites';
 import { Report } from './report';
 import { PropertyPriceHistory } from './price-history';
 import { PropertyViews } from './property-views';
+import { ChatRoom } from './chat-room';
 
 @Entity('property')
 export class Property extends Base {
@@ -82,7 +83,7 @@ export class Property extends Base {
   @Column({ nullable: true })
   floor: number;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, name: "total_floors" })
   totalFloors: number;
 
   @Column({
@@ -90,10 +91,11 @@ export class Property extends Base {
     precision: 4,
     scale: 2,
     nullable: true,
+    name: "celling_heinght"
   })
   ceilingHeight: number;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, name: "construction_year" })
   constructionYear: number;
 
   @Column({
@@ -107,6 +109,7 @@ export class Property extends Base {
     type: 'enum',
     enum: BuildingType,
     nullable: true,
+    name: "building_type"
   })
   buildingType: BuildingType;
 
@@ -157,7 +160,7 @@ export class Property extends Base {
   favorites: Favorites[];
 
   @OneToMany(() => Report, (report) => report.property, { onDelete: 'CASCADE' })
-  report: Report;
+  report: Report[];
 
   @OneToMany(
     () => PropertyPriceHistory,
@@ -170,4 +173,7 @@ export class Property extends Base {
     onDelete: 'CASCADE',
   })
   views: PropertyViews[];
+
+  @OneToMany(() => ChatRoom, chatroom => chatroom.property)
+  chatRooms: ChatRoom[]
 }

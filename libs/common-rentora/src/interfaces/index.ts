@@ -5,3 +5,4 @@ export * from './admin-auth-interface';
 export * from './auth-socket-interface';
 export * from './ws-payload-interface';
 export * from './jwt-config-interface';
+export * from './ai-search-property-interface'

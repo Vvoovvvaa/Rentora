@@ -1,6 +1,6 @@
 export * from './user';
 export * from './base';
-export * from './secretCode';
+export * from './secret-code';
 export * from './user-security';
 export * from '../../enums/email-status';
 export * from './property';
@@ -12,5 +12,5 @@ export * from './message';
 export * from './report';
 export * from './support';
 export * from './admin';
-export * from './adminSecretCode';
+export * from './admin-secret-code';
 export * from './property-views';

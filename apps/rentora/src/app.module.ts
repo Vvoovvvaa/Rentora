@@ -37,6 +37,7 @@ import { I18nModule, AcceptLanguageResolver } from 'nestjs-i18n';
 import path from 'path';
 import { PropertyPriceHistory } from '@app/common-rentora/database/entity/price-history';
 import { RedisModule } from '@app/common-rentora/redis/redis.module';
+import { AiModule } from './ai/ai.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { RedisModule } from '@app/common-rentora/redis/redis.module';
     ChatModule,
     SupportModule,
     RedisModule,
+    AiModule,
 
     I18nModule.forRoot({
       fallbackLanguage: 'en',
@@ -100,6 +102,7 @@ import { RedisModule } from '@app/common-rentora/redis/redis.module';
         };
       },
     }),
+
   ],
 
   controllers: [AppController],

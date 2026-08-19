@@ -1,69 +1,163 @@
 import {
-  ArmeniaCity,
-  PropertyCategory,
-  PropertyCurrency,
-  PropertyFeature,
-  propertyListing,
-  PropertySort,
+    ArmeniaCity,
+    BuildingType,
+    PropertyCategory,
+    PropertyCondition,
+    PropertyCurrency,
+    PropertyFeature,
+    propertyListing,
+    PropertySort,
 } from '@app/common-rentora/enums';
-import { Type } from 'class-transformer';
-import { IsEnum, IsNumber, IsOptional, Min } from 'class-validator';
+
+import {
+    Transform,
+    Type,
+} from 'class-transformer';
+
+import {
+    IsArray,
+    IsEnum,
+    IsNumber,
+    IsOptional,
+    Min,
+} from 'class-validator';
 
 export class SearchDto {
-  @IsEnum(ArmeniaCity)
-  @IsOptional()
-  city?: ArmeniaCity;
+    @IsOptional()
+    @IsEnum(ArmeniaCity)
+    city?: ArmeniaCity;
 
-  @IsEnum(PropertyCategory)
-  @IsOptional()
-  category?: PropertyCategory;
+    @IsOptional()
+    @IsEnum(PropertyCategory)
+    category?: PropertyCategory;
 
-  @Type(() => Number)
-  @IsOptional()
-  @IsNumber()
-  @Min(1)
-  minPrice?: number;
+    @IsOptional()
+    @IsEnum(propertyListing)
+    listing?: propertyListing;
 
-  @Type(() => Number)
-  @IsOptional()
-  @IsNumber()
-  maxPrice?: number;
+    @IsOptional()
+    @IsEnum(PropertyCurrency)
+    currency?: PropertyCurrency;
 
-  @Type(() => Number)
-  @IsOptional()
-  @IsNumber()
-  rooms?: number;
+    @Type(() => Number)
+    @IsOptional()
+    @IsNumber()
+    @Min(0)
+    minPrice?: number;
 
-  @Type(() => Number)
-  @IsOptional()
-  @IsNumber()
-  area?: number;
+    @Type(() => Number)
+    @IsOptional()
+    @IsNumber()
+    @Min(0)
+    maxPrice?: number;
 
-  @IsEnum(PropertySort)
-  @IsOptional()
-  sort: PropertySort;
+    @Type(() => Number)
+    @IsOptional()
+    @IsNumber()
+    @Min(0)
+    rooms?: number;
 
-  @IsOptional()
-  @IsNumber()
-  bedrooms: number;
+    @Type(() => Number)
+    @IsOptional()
+    @IsNumber()
+    @Min(0)
+    bedrooms?: number;
 
-  @IsOptional()
-  @IsNumber()
-  floor: number;
+    @Type(() => Number)
+    @IsOptional()
+    @IsNumber()
+    @Min(0)
+    bathrooms?: number;
 
-  @IsOptional()
-  @IsNumber()
-  constructionYear: number;
+    // Старый точный фильтр
+    @Type(() => Number)
+    @IsOptional()
+    @IsNumber()
+    @Min(0)
+    area?: number;
 
-  @IsEnum(PropertyFeature)
-  @IsOptional()
-  features: PropertyFeature;
+    @Type(() => Number)
+    @IsOptional()
+    @IsNumber()
+    @Min(0)
+    minArea?: number;
 
-  @IsEnum(PropertyCurrency)
-  @IsOptional()
-  currency: PropertyCurrency;
+    @Type(() => Number)
+    @IsOptional()
+    @IsNumber()
+    @Min(0)
+    maxArea?: number;
 
-  @IsEnum(propertyListing)
-  @IsOptional()
-  listing?: propertyListing;
+    // Старый точный фильтр
+    @Type(() => Number)
+    @IsOptional()
+    @IsNumber()
+    @Min(0)
+    floor?: number;
+
+    @Type(() => Number)
+    @IsOptional()
+    @IsNumber()
+    @Min(0)
+    minFloor?: number;
+
+    @Type(() => Number)
+    @IsOptional()
+    @IsNumber()
+    @Min(0)
+    maxFloor?: number;
+
+    // Старый точный фильтр
+    @Type(() => Number)
+    @IsOptional()
+    @IsNumber()
+    @Min(0)
+    constructionYear?: number;
+
+    @Type(() => Number)
+    @IsOptional()
+    @IsNumber()
+    @Min(0)
+    minConstructionYear?: number;
+
+    @Type(() => Number)
+    @IsOptional()
+    @IsNumber()
+    @Min(0)
+    maxConstructionYear?: number;
+
+    @IsOptional()
+    @IsEnum(PropertyCondition)
+    condition?: PropertyCondition;
+
+    @IsOptional()
+    @IsEnum(BuildingType)
+    buildingType?: BuildingType;
+
+
+    //For AI
+    @Transform(({ value }) => {
+        if (value === undefined || value === null) {
+            return value;
+        }
+
+        if (Array.isArray(value)) {
+            return value;
+        }
+
+        return String(value)
+            .split(',')
+            .map((item) => item.trim())
+            .filter(Boolean);
+    })
+    @IsOptional()
+    @IsArray()
+    @IsEnum(PropertyFeature, {
+        each: true,
+    })
+    features?: PropertyFeature[];
+
+    @IsOptional()
+    @IsEnum(PropertySort)
+    sort?: PropertySort;
 }

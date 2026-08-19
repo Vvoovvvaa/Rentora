@@ -11,6 +11,6 @@ export class AdminSecretcode extends Base {
   @JoinColumn({ name: 'admin_id' })
   admin: Admin;
 
-  @Column({ type: 'timestamp' })
+  @Column({ type: 'timestamp', name: "expires_at" })
   expiresAt: Date;
 }

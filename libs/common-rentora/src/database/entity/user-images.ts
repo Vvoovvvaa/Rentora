@@ -10,7 +10,7 @@ export class UserImage extends Base {
   @Column()
   size: number;
 
-  @Column()
+  @Column({name: 'public_id'})
   publicId: string;
 
   @OneToOne(() => User, (user) => user.image, { onDelete: 'CASCADE' })

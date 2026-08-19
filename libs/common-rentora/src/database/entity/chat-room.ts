@@ -1,14 +1,39 @@
-import { Entity, Column } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  JoinColumn,
+  Unique,
+  OneToMany,
+} from 'typeorm';
+
+import { User } from './user';
+import { Property } from './property';
+import { Message } from './message';
 import { Base } from './base';
 
-@Entity('chat_room')
-export class ChatRoom extends Base {
-  @Column()
-  propertyId: number;
+@Entity('chat-room')
+export class ChatRoom extends Base{
 
-  @Column()
-  ownerId: number;
+  @ManyToOne(() => Property, (property) => property.chatRooms, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'propertyId' })
+  property: Property;
 
-  @Column()
-  clientId: number;
+  @ManyToOne(() => User, (user) => user.ownerChatRooms, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'ownerId' })
+  owner: User;
+
+  @ManyToOne(() => User, (user) => user.clientChatRooms, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'clientId' })
+  client: User;
+
+  @OneToMany(() => Message,message => message.chatRomms )
+  message: Message
+
 }
