@@ -145,14 +145,14 @@ export function RentoraAiPanel() {
         type="button"
         aria-label={copy.close}
         onClick={closePanel}
-        className="fixed inset-0 z-[60] bg-[#1d1713]/35 backdrop-blur-[2px] sm:hidden"
+        className="rentora-ai-backdrop fixed inset-0 z-[60] bg-[#1d1713]/35 backdrop-blur-[2px] sm:hidden"
       />
 
       <aside
         role="dialog"
         aria-modal="true"
         aria-label="Rentora AI"
-        className="fixed inset-x-3 bottom-3 top-[86px] z-[70] flex overflow-hidden rounded-[30px] border border-[#ead9c5] bg-[#fbf8f3] shadow-[0_30px_90px_rgba(34,24,17,.38)] sm:inset-auto sm:bottom-6 sm:right-6 sm:top-auto sm:h-[72vh] sm:max-h-[720px] sm:min-h-[520px] sm:w-[430px]"
+        className="rentora-ai-panel fixed inset-x-3 bottom-3 top-[86px] z-[70] flex overflow-hidden rounded-[30px] border border-[#ead9c5] bg-[#fbf8f3] shadow-[0_30px_90px_rgba(34,24,17,.38)] sm:inset-auto sm:bottom-6 sm:right-6 sm:top-auto sm:h-[72vh] sm:max-h-[720px] sm:min-h-[520px] sm:w-[430px]"
       >
         <div className="flex min-h-0 w-full flex-col">
           <header className="flex flex-none items-center justify-between gap-4 border-b border-[#eadfd3] bg-[#fffdf9]/95 px-5 py-4 backdrop-blur-xl">

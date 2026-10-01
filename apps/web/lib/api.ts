@@ -38,9 +38,93 @@ type ApiErrorResponse = {
   message?: string | string[];
 };
 
-export const API_URL =
-  process.env.NEXT_PUBLIC_API_URL ||
-  "http://localhost:3000";
+type ChatRoomApiResponse = {
+  id: number;
+  propertyId?: number | null;
+  ownerId?: number | null;
+  clientId?: number | null;
+  property?: Property | null;
+  owner?: User | null;
+  client?: User | null;
+  createdAt?: string;
+};
+
+function normalizeChatRoom(
+  room: ChatRoomApiResponse,
+): ChatRoom {
+  const propertyId =
+    room.propertyId ??
+    room.property?.id;
+
+  const ownerId =
+    room.ownerId ??
+    room.owner?.id;
+
+  const clientId =
+    room.clientId ??
+    room.client?.id;
+
+  if (
+    typeof propertyId !== "number" ||
+    !Number.isFinite(propertyId) ||
+    typeof ownerId !== "number" ||
+    !Number.isFinite(ownerId) ||
+    typeof clientId !== "number" ||
+    !Number.isFinite(clientId)
+  ) {
+    throw new Error(
+      "Invalid chat room response from API",
+    );
+  }
+
+  return {
+    id: room.id,
+    propertyId,
+    ownerId,
+    clientId,
+    property:
+      room.property ?? undefined,
+    owner:
+      room.owner ?? undefined,
+    client:
+      room.client ?? undefined,
+    createdAt: room.createdAt,
+  };
+}
+
+// Keep HTTP requests same-origin. Next.js proxies /api to the Nest server in
+// next.config.ts, so a LAN visitor never tries to call its own localhost.
+export const API_URL = "/api";
+
+export function getSocketServerUrl(): string {
+  const configured = process.env.NEXT_PUBLIC_SOCKET_URL;
+
+  if (typeof window === "undefined") {
+    return configured || "http://localhost:2000";
+  }
+
+  if (!configured) {
+    return `${window.location.protocol}//${window.location.hostname}:2000`;
+  }
+
+  try {
+    const socketUrl = new URL(configured);
+    const currentHost = window.location.hostname;
+    const configuredIsLocal =
+      socketUrl.hostname === "localhost" ||
+      socketUrl.hostname === "127.0.0.1";
+    const currentIsLocal =
+      currentHost === "localhost" || currentHost === "127.0.0.1";
+
+    if (configuredIsLocal && !currentIsLocal) {
+      socketUrl.hostname = currentHost;
+    }
+
+    return socketUrl.origin;
+  } catch {
+    return window.location.origin;
+  }
+}
 
 export const api = axios.create({
   baseURL: API_URL,
@@ -322,14 +406,29 @@ export const propertiesApi = {
 
   one: (
     id: string | number,
-  ) =>
-    api
+  ) => {
+    const propertyId =
+      Number(id);
+
+    if (
+      !Number.isFinite(propertyId) ||
+      propertyId <= 0
+    ) {
+      return Promise.reject(
+        new Error(
+          "Invalid property id",
+        ),
+      );
+    }
+
+    return api
       .post<Property>(
-        `/properties/find/${id}`,
+        `/properties/find/${propertyId}`,
       )
       .then(
         (response) => response.data,
-      ),
+      );
+  },
 
   priceHistory: (
     id: string | number,
@@ -529,25 +628,31 @@ export const aiApi = {
 export const chatApi = {
   rooms: () =>
     api
-      .get<ChatRoom[]>(
+      .get<ChatRoomApiResponse[]>(
         "/chat/rooms",
       )
       .then(
-        (response) => response.data,
+        (response) =>
+          response.data.map(
+            normalizeChatRoom,
+          ),
       ),
 
   createRoom: (
     propertyId: number,
   ) =>
     api
-      .post<ChatRoom>(
+      .post<ChatRoomApiResponse>(
         "/chat/room",
         {
           propertyId,
         },
       )
       .then(
-        (response) => response.data,
+        (response) =>
+          normalizeChatRoom(
+            response.data,
+          ),
       ),
 
   messages: (

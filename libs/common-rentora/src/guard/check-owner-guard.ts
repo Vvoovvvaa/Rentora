@@ -3,16 +3,18 @@ import {
   ExecutionContext,
   ForbiddenException,
   Injectable,
+  UnauthorizedException,
 } from '@nestjs/common';
-import { userRoles } from '../enums';
-import { Repository } from 'typeorm';
-import { Property } from '../database/entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Request } from 'express';
+import { Repository } from 'typeorm';
+
+import { userRoles } from '../enums';
+import { Property } from '../database/entity';
 import { AuthUserPayload } from '../interfaces';
 
 type AuthRequest = Request & {
-  user: AuthUserPayload;
+  user?: AuthUserPayload;
 };
 
 @Injectable()
@@ -27,7 +29,24 @@ export class OwnerCheckGuard implements CanActivate {
 
     const user = request.user;
 
-    const propertyId = Number(request.params.id);
+    if (!user) {
+      throw new UnauthorizedException('Unauthorized');
+    }
+
+    const rawPropertyId =
+      request.params.propertyId ??
+      request.params.id;
+
+    const propertyId = Number(rawPropertyId);
+
+    if (
+      !Number.isInteger(propertyId) ||
+      propertyId <= 0
+    ) {
+      throw new ForbiddenException(
+        'Invalid property id',
+      );
+    }
 
     const property = await this.propertyRepo.findOne({
       where: {
@@ -39,7 +58,9 @@ export class OwnerCheckGuard implements CanActivate {
     });
 
     if (!property) {
-      throw new ForbiddenException('Property not found');
+      throw new ForbiddenException(
+        'Property not found',
+      );
     }
 
     if (user.role === userRoles.ADMIN) {
@@ -50,6 +71,8 @@ export class OwnerCheckGuard implements CanActivate {
       return true;
     }
 
-    throw new ForbiddenException('You cannot access this resource');
+    throw new ForbiddenException(
+      'You cannot access this resource',
+    );
   }
 }

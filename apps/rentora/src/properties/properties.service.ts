@@ -53,7 +53,7 @@ export class PropertiesService {
     private readonly senderservice: SenderService,
 
     private readonly i18n: I18nService,
-  ) {}
+  ) { }
 
   private t(key: string, args?: Record<string, any>): string {
     return this.i18n.t(key, {
@@ -207,9 +207,16 @@ export class PropertiesService {
       );
     }
 
-    property.view++;
+    property.view += 1;
 
     await this.propertyRepo.save(property);
+
+    const propertyView = this.propertyViews.create({
+      property: property,
+    });
+
+    await this.propertyViews.save(propertyView);
+
     return property;
   }
 

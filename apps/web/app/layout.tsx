@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import "./home.css";
+import "./responsive.css";
+import "./home-refinement.css";
+import "./system-polish.css";
 
 export const metadata: Metadata = {
   title: "Rentora — find a place you’ll love",

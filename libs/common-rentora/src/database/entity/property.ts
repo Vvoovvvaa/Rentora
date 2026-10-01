@@ -20,6 +20,7 @@ import { Report } from './report';
 import { PropertyPriceHistory } from './price-history';
 import { PropertyViews } from './property-views';
 import { ChatRoom } from './chat-room';
+import { PropertyAnalytic } from './analytik';
 
 @Entity('property')
 export class Property extends Base {
@@ -167,7 +168,7 @@ export class Property extends Base {
     (price_history) => price_history.property,
     { onDelete: 'CASCADE' },
   )
-  price_history: PropertyPriceHistory;
+  price_history: PropertyPriceHistory[];
 
   @OneToMany(() => PropertyViews, (views) => views.property, {
     onDelete: 'CASCADE',
@@ -176,4 +177,7 @@ export class Property extends Base {
 
   @OneToMany(() => ChatRoom, chatroom => chatroom.property)
   chatRooms: ChatRoom[]
+
+  @OneToMany(() => PropertyAnalytic, analytic => analytic.property, {onDelete: 'CASCADE'})
+  analytic: PropertyAnalytic[]
 }

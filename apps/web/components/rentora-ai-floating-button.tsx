@@ -36,6 +36,7 @@ export function RentoraAiFloatingButton() {
     getRentoraAiCopy(locale);
 
   const hidden =
+    pathname === "/" ||
     HIDDEN_PATHS.some(
       (path) =>
         pathname === path ||
@@ -43,6 +44,20 @@ export function RentoraAiFloatingButton() {
           `${path}/`,
         ),
     );
+
+  const isMapWorkspace =
+    pathname === "/map" ||
+    pathname === "/my-properties/map";
+
+  // Long, action-heavy mobile workspaces need unobstructed controls. The
+  // assistant remains available in the header-free discovery flows and on
+  // every one of these routes at tablet/desktop widths.
+  const isDenseMobileWorkspace =
+    pathname === "/search" ||
+    pathname === "/messages" ||
+    pathname === "/profile" ||
+    pathname.startsWith("/properties/") ||
+    pathname.startsWith("/my-properties");
 
   if (
     hidden ||
@@ -56,7 +71,7 @@ export function RentoraAiFloatingButton() {
       type="button"
       onClick={openPanel}
       aria-label={copy.askAi}
-      className="group fixed bottom-5 right-4 z-50 flex h-14 items-center gap-2 rounded-full border border-[#e6c99f]/40 bg-[#3e3026] px-4 text-[#f5d8ae] shadow-[0_16px_45px_rgba(39,27,19,.28)] transition duration-300 hover:-translate-y-1 hover:bg-[#4c392b] hover:shadow-[0_20px_55px_rgba(39,27,19,.36)] sm:bottom-6 sm:right-6 sm:px-5"
+      className={`rentora-ai-fab ${isMapWorkspace ? "map-ai-fab" : ""} ${isDenseMobileWorkspace ? "mobile-hidden-ai" : ""} group fixed bottom-5 right-4 z-50 flex h-14 items-center gap-2 rounded-full border border-[#e6c99f]/40 bg-[#3e3026] px-4 text-[#f5d8ae] shadow-[0_16px_45px_rgba(39,27,19,.28)] transition duration-300 hover:-translate-y-1 hover:bg-[#4c392b] hover:shadow-[0_20px_55px_rgba(39,27,19,.36)] sm:bottom-6 sm:right-6 sm:px-5`}
     >
       <span className="grid h-8 w-8 place-items-center rounded-full bg-[#f0d0a2]/12 transition group-hover:bg-[#f0d0a2]/20">
         <Sparkles

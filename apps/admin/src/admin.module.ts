@@ -16,6 +16,7 @@ import { SupportAdminModule } from './support-admin/support.module';
 import { I18nModule, AcceptLanguageResolver } from 'nestjs-i18n';
 import path from 'path';
 import { RedisModule } from '@app/common-rentora/redis/redis.module';
+import { ChatModule } from 'apps/rentora/src/chat/chat.module';
 
 @Module({
   imports: [
@@ -62,6 +63,7 @@ import { RedisModule } from '@app/common-rentora/redis/redis.module';
     AdminsPropertiesModule,
     SupportAdminModule,
     RedisModule,
+    ChatModule,
   ],
 
   controllers: [AdminController],

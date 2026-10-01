@@ -193,13 +193,26 @@ export const geocodingService: GeocodingService = {
   },
 };
 
-export function hasValidCoordinates(
-  value?: { latitude?: number | null; longitude?: number | null } | null,
-) {
-  return (
-    Number.isFinite(value?.latitude) &&
-    Number.isFinite(value?.longitude) &&
-    Math.abs(Number(value?.latitude)) <= 90 &&
-    Math.abs(Number(value?.longitude)) <= 180
-  );
+type CoordinateInput = {
+  latitude?: number | string | null;
+  longitude?: number | string | null;
+};
+
+/**
+ * Normalizes API coordinates once before any map receives them. Invalid or missing
+ * values deliberately return null: markers must never be moved to a city fallback.
+ */
+export function getValidCoordinates(value?: CoordinateInput | null): GeocodingCoordinates | null {
+  const latitude = Number(value?.latitude);
+  const longitude = Number(value?.longitude);
+
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return null;
+  if (latitude < -90 || latitude > 90) return null;
+  if (longitude < -180 || longitude > 180) return null;
+
+  return { latitude, longitude };
+}
+
+export function hasValidCoordinates(value?: CoordinateInput | null) {
+  return getValidCoordinates(value) !== null;
 }

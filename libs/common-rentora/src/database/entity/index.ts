@@ -14,3 +14,4 @@ export * from './support';
 export * from './admin';
 export * from './admin-secret-code';
 export * from './property-views';
+export * from './analytik'

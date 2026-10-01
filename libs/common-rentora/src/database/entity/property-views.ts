@@ -8,6 +8,7 @@ export class PropertyViews extends Base {
   @ManyToOne(() => Property, (prop) => prop.views, { onDelete: 'CASCADE' })
   property: Property;
 
-  @ManyToOne(() => User, (user) => user.views, { onDelete: 'CASCADE' })
+  @ManyToOne(() => User, (user) => user.views, { onDelete: 'CASCADE', nullable: true })
   user: User;
+
 }

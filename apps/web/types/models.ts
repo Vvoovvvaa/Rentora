@@ -360,6 +360,9 @@ export interface ChatRoom {
   propertyId: number;
   ownerId: number;
   clientId: number;
+  property?: Property;
+  owner?: User;
+  client?: User;
   createdAt?: string;
 }
 
@@ -450,4 +453,42 @@ export interface SearchParams {
   floor?: number;
   constructionYear?: number;
   features?: PropertyFeature;
+}
+
+/*
+ * ============================================================
+ * Property Analytics
+ * ============================================================
+ */
+
+export interface PropertyAnalyticsPeriod {
+  today: number;
+  week: number;
+  month: number;
+  total: number;
+}
+
+export interface PropertyAnalyticsConversion {
+  favorite: number;
+  chat: number;
+}
+
+export interface PropertyAnalyticsChartPoint {
+  date: string;
+  views: number;
+}
+
+export interface PropertyAnalytics {
+  views: PropertyAnalyticsPeriod;
+  favorites: PropertyAnalyticsPeriod;
+  chats: PropertyAnalyticsPeriod;
+
+  conversion: {
+    today: PropertyAnalyticsConversion;
+    week: PropertyAnalyticsConversion;
+    month: PropertyAnalyticsConversion;
+    total: PropertyAnalyticsConversion;
+  };
+
+  chart: PropertyAnalyticsChartPoint[];
 }

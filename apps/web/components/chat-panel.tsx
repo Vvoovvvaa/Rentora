@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ArrowLeft, ArrowUpRight, CircleDot, ImageOff, MessageCircle, Send, UserRound } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
-import { API_URL, apiMessage, chatApi, propertiesApi } from "@/lib/api";
+import { apiMessage, chatApi, getSocketServerUrl, propertiesApi } from "@/lib/api";
 import { useAuth } from "@/context/auth-context";
 import type { ChatMessage, ChatRoom, Property } from "@/types/models";
 import { useI18n } from "@/context/i18n-context";
@@ -71,7 +71,7 @@ export function ChatPanel({ selectedRoomId }: { selectedRoomId?: number }) {
     chatApi.messages(active).then((items) => { if (mounted) setMessages(items); }).catch((reason) => mounted && setError(apiMessage(reason)));
     const unreadTimer = window.setTimeout(() => setUnread((current) => ({ ...current, [active]: 0 })), 0);
     const token = localStorage.getItem("rentora_token");
-    const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL || API_URL, { auth: { token } });
+    const socket = io(getSocketServerUrl(), { auth: { token } });
     socketRef.current = socket;
     socket.emit("joinRoom", active);
     const onMessage = (message: ChatMessage) => {

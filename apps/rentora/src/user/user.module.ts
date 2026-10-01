@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import {
   Favorites,
   Property,
+  PropertyAnalytic,
   User,
   UserImage,
   UserSecurity,
@@ -11,6 +12,7 @@ import {
 import { UserService } from './user.service';
 import { UploadService } from '../upload/upload.service';
 import { EmailModule } from '@app/common-rentora/smtp';
+import { AnalyticModule } from '../analytic/analytic.module';
 
 @Module({
   imports: [
@@ -21,7 +23,7 @@ import { EmailModule } from '@app/common-rentora/smtp';
       Favorites,
       Property,
     ]),
-    EmailModule,
+    EmailModule,AnalyticModule
   ],
   controllers: [UserController],
   providers: [UserService, UploadService],

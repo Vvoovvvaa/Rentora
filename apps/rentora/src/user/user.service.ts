@@ -18,6 +18,7 @@ import { changePasswordDto } from './dto/change-password.dto';
 import { SenderService } from '@app/common-rentora/smtp';
 import { ChangeGmailDto } from './dto/change-gmail.dto';
 import { I18nContext, I18nService } from 'nestjs-i18n';
+import { AnalyticService } from '../analytic/analytic.service';
 
 @Injectable()
 export class UserService {
@@ -40,6 +41,7 @@ export class UserService {
     private readonly uploadservice: UploadService,
     private readonly senderservice: SenderService,
     private readonly i18n: I18nService,
+    private readonly analyticservice: AnalyticService
   ) {}
 
   private t(key: string, args?: Record<string, any>): string {
@@ -240,6 +242,8 @@ export class UserService {
     });
 
     await this.favoritesRepo.save(newFavorite);
+
+    await this.analyticservice.addFavorite(propertyId)
 
     return {
       status: 'added',

@@ -1,0 +1,771 @@
+/*
+ * Responsive system for the user-facing Rentora app.
+ * Layout-specific desktop rules remain close to their components; this file
+ * coordinates the shared mobile and tablet behavior in one predictable place.
+ */
+
+:root {
+  --mobile-gutter: 16px;
+}
+
+html,
+body {
+  max-width: 100%;
+}
+
+body[data-mobile-menu-open="true"] {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+body[data-mobile-menu-open="true"] .rentora-ai-fab,
+body[data-mobile-menu-open="true"] .compare-bar {
+  opacity: 0;
+  pointer-events: none;
+}
+
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+}
+
+button,
+a,
+input,
+textarea,
+select,
+.custom-select,
+.field,
+.property-search-panel,
+.map-filter-panel {
+  min-width: 0;
+}
+
+input,
+textarea,
+select {
+  max-width: 100%;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 3px solid rgba(167, 125, 84, 0.38);
+  outline-offset: 2px;
+}
+
+/* The hamburger opens a true viewport-aware navigation sheet rather than
+ * pushing page content below the header. */
+.mobile-navigation-backdrop {
+  position: fixed;
+  z-index: 29;
+  inset: 88px 0 0;
+  overflow-y: auto;
+  background: rgba(37, 28, 22, 0.38);
+  padding: 12px 0 max(20px, env(safe-area-inset-bottom));
+  backdrop-filter: blur(5px);
+  animation: mobile-nav-fade 0.18s ease-out both;
+}
+
+.mobile-navigation-sheet {
+  display: grid;
+  gap: 4px;
+  min-height: min(520px, calc(100dvh - 112px));
+  border: 1px solid #e5d9cd;
+  border-radius: 22px;
+  background: #fffdf9;
+  padding-top: 12px;
+  padding-bottom: 16px;
+  box-shadow: 0 22px 52px rgba(42, 30, 20, 0.24);
+  animation: mobile-nav-sheet 0.2s ease-out both;
+}
+
+.mobile-navigation-sheet-head {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 5px;
+  border-bottom: 1px solid #eee5da;
+  padding: 0 4px 12px;
+  color: #8d735c;
+  font-size: 0.66rem;
+  font-weight: 850;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.mobile-navigation-sheet .nav-link {
+  min-height: 46px;
+}
+
+.mobile-navigation-sheet .language-selector-mobile {
+  margin: 0;
+}
+
+@keyframes mobile-nav-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes mobile-nav-sheet {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Tablet: keep real content widths but let action rows and cards wrap before
+ * compressed labels turn into unreadable controls. */
+@media (max-width: 1023px) {
+  .shell {
+    padding-inline: 20px;
+  }
+
+  .home-section-intro,
+  .page-heading,
+  .search-results-header,
+  .support-section-heading,
+  .property-location-heading {
+    min-width: 0;
+  }
+
+  .property-card-actions,
+  .owner-intro-actions,
+  .profile-save-area > div:last-child {
+    flex-wrap: wrap;
+  }
+
+  .gallery-lightbox-panel,
+  .report-dialog,
+  .support-ticket-dialog,
+  .admin-support-dialog {
+    max-height: calc(100dvh - 32px);
+  }
+}
+
+@media (max-width: 767px) {
+  .shell {
+    padding-inline: var(--mobile-gutter);
+  }
+
+  /* iOS zoom prevention and consistent full-width touch fields. */
+  input,
+  textarea,
+  select,
+  .custom-select-trigger,
+  .location-search-input input,
+  .chat-composer textarea {
+    font-size: 16px;
+  }
+
+  .field,
+  .custom-select-trigger,
+  .location-search-input,
+  .property-search-submit,
+  .property-search-advanced-toggle,
+  .btn-primary,
+  .btn-secondary {
+    min-height: 44px;
+  }
+
+  .page-space {
+    padding-top: 32px;
+    padding-bottom: 52px;
+  }
+
+  .eyebrow {
+    letter-spacing: 0.11em;
+  }
+
+  html[lang="am"] .eyebrow {
+    letter-spacing: 0;
+  }
+
+  /* Header and footer */
+  header > .shell {
+    min-height: 72px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+
+  .mobile-navigation-backdrop {
+    inset: 72px 0 0;
+  }
+
+  .mobile-navigation-sheet {
+    min-height: min(500px, calc(100dvh - 92px));
+    border-radius: 20px;
+  }
+
+  footer .shell {
+    align-items: flex-start;
+  }
+
+  footer .shell > div {
+    flex-wrap: wrap;
+    gap: 12px 18px;
+  }
+
+  /* Home and catalogue cards */
+  .home-hero .hero-content {
+    padding-top: 52px;
+    padding-bottom: 58px;
+  }
+
+  .hero-editorial-grid {
+    width: 100%;
+    min-width: 0;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .home-hero h1 {
+    max-width: 11.5ch;
+    font-size: clamp(2.45rem, 11vw, 3.45rem) !important;
+    line-height: 1.04;
+  }
+
+  .home-hero p.text-lg {
+    font-size: 1rem;
+    line-height: 1.65;
+  }
+
+  .home-section-intro {
+    align-items: flex-start;
+  }
+
+  .home-listing-cta,
+  .home-story-dialog,
+  .support-hero,
+  .owner-workspace-hero {
+    border-radius: 20px;
+  }
+
+  .listing-grid {
+    gap: 16px;
+    margin-top: 24px;
+  }
+
+  .listing-grid > article {
+    min-width: 0;
+  }
+
+  .listing-grid > article > div,
+  .listing-grid > article > a {
+    min-width: 0;
+  }
+
+  .group.relative > .absolute.right-4.top-4 {
+    right: 12px;
+    top: 12px;
+    gap: 7px;
+  }
+
+  .group.relative > .absolute.right-4.top-4 > button {
+    height: 42px;
+    width: 42px;
+  }
+
+  /* Search: no desktop columns, chips wrap, and filters remain a deliberate
+   * section instead of becoming a narrow control strip. */
+  .search-page {
+    padding-bottom: 76px;
+  }
+
+  .search-hero,
+  .search-hero-filters .property-search-panel {
+    border-radius: 20px;
+  }
+
+  .search-hero-filters {
+    margin-bottom: -28px;
+  }
+
+  .property-search-primary,
+  .property-search-secondary,
+  .property-search-advanced-grid {
+    gap: 10px;
+  }
+
+  .property-search-number span {
+    font-size: 0.68rem;
+  }
+
+  .active-filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .active-filters > span,
+  .active-filters button {
+    max-width: 100%;
+  }
+
+  .active-filters button {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .search-results-header,
+  .search-sort-control {
+    width: 100%;
+  }
+
+  .search-sort-control .custom-select-menu {
+    right: 0;
+    left: auto;
+  }
+
+  /* Detail page and gallery */
+  .back-link {
+    margin-bottom: 16px;
+  }
+
+  .gallery {
+    border-radius: 20px;
+  }
+
+  .gallery-stage {
+    aspect-ratio: 4 / 3;
+  }
+
+  .gallery-thumbnails {
+    padding: 10px;
+  }
+
+  .gallery-thumb {
+    height: 46px;
+    width: 58px;
+  }
+
+  .gallery-lightbox {
+    padding: 12px;
+  }
+
+  .gallery-lightbox-panel {
+    max-height: calc(100dvh - 24px);
+    border-radius: 18px;
+    padding: 12px;
+  }
+
+  .property-summary-topline {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .property-summary h1 {
+    overflow-wrap: anywhere;
+  }
+
+  .property-address {
+    overflow-wrap: anywhere;
+  }
+
+  .property-owner-actions,
+  .property-owner-footer {
+    padding-bottom: 20px;
+  }
+
+  .property-message-button,
+  .property-call-button,
+  .property-secondary-actions button {
+    min-height: 48px;
+  }
+
+  .property-secondary-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .highlights-grid,
+  .characteristics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .highlight-chip,
+  .characteristic-item {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .property-location-map {
+    height: min(56vw, 290px);
+    min-height: 230px;
+  }
+
+  /* Create/edit forms and location search */
+  .create-property-layout {
+    gap: 22px;
+    margin-top: 25px;
+  }
+
+  .create-section {
+    padding: 20px;
+  }
+
+  .section-heading {
+    margin-bottom: 18px;
+  }
+
+  .photo-preview-grid {
+    gap: 8px;
+  }
+
+  .location-picker-map {
+    height: clamp(250px, 66vw, 320px);
+  }
+
+  .location-suggestions {
+    max-height: min(48dvh, 330px);
+    overflow-y: auto;
+  }
+
+  .condition-card {
+    min-height: 44px;
+  }
+
+  /* My properties / profile / support */
+  .owner-intro-actions,
+  .owner-intro-actions > * {
+    min-width: 0;
+  }
+
+  .owner-summary-row {
+    gap: 6px;
+  }
+
+  .owner-summary-row span {
+    max-width: 100%;
+  }
+
+  .owner-property-actions {
+    gap: 8px;
+  }
+
+  .profile-photo-action {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .support-ticket-card,
+  .support-ticket-copy,
+  .support-ticket-end {
+    min-width: 0;
+  }
+
+  .support-ticket-dialog,
+  .report-dialog,
+  .owner-confirm-dialog {
+    width: calc(100% - 24px);
+    max-height: calc(100dvh - 24px);
+    border-radius: 18px;
+    padding: 19px;
+  }
+
+  .dialog-backdrop,
+  .support-dialog-backdrop,
+  .owner-confirm-backdrop {
+    padding: 12px;
+  }
+
+  .dialog-actions,
+  .support-ticket-dialog footer,
+  .owner-confirm-dialog > div {
+    gap: 10px;
+  }
+
+  /* Compare stays compact, safely above phone browser chrome. */
+  .compare-bar.compare-bar {
+    right: 10px;
+    bottom: max(10px, env(safe-area-inset-bottom));
+    left: 10px;
+  }
+
+  .compare-bar .compare-bar-inner {
+    border-radius: 18px;
+    padding: 9px;
+  }
+
+  .compare-bar .compare-selection-list {
+    gap: 5px;
+  }
+
+  .compare-bar .compare-selection strong {
+    font-size: 0.64rem;
+  }
+
+  .compare-page .compare-table-scroll,
+  .compare-page .comparison-matrix + * {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Mobile messenger: composer uses safe space so it remains reachable above
+   * browser UI and the selected conversation never leaks horizontally. */
+  .messages-page .chat-shell {
+    height: calc(100dvh - 72px);
+  }
+
+  .chat-main-header,
+  .chat-header-identity {
+    min-width: 0;
+  }
+
+  .chat-main-header {
+    gap: 10px;
+  }
+
+  .chat-property-link {
+    flex: none;
+  }
+
+  .chat-composer {
+    padding-bottom: max(11px, env(safe-area-inset-bottom));
+  }
+
+  .chat-composer textarea {
+    min-width: 0;
+    max-height: min(28dvh, 160px);
+  }
+
+  .chat-bubble,
+  .chat-bubble p {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  /* AI must not compete with a compare bar or map controls. */
+  .rentora-ai-fab {
+    right: 12px;
+    bottom: max(78px, calc(env(safe-area-inset-bottom) + 64px));
+    height: 48px;
+    padding: 0 13px;
+  }
+
+  .rentora-ai-fab.map-ai-fab {
+    right: 14px !important;
+    bottom: 88px !important;
+  }
+
+  .rentora-ai-fab:not(.map-ai-fab) {
+    bottom: max(78px, calc(env(safe-area-inset-bottom) + 64px));
+  }
+
+  .rentora-ai-fab span:last-child {
+    display: none;
+  }
+
+  /* A real phone-first AI sheet: it starts below the compact header, leaves
+   * room for the browser safe area, and does not pretend to be a desktop popover. */
+  .rentora-ai-panel {
+    inset: 80px 10px max(10px, env(safe-area-inset-bottom));
+    border-radius: 22px;
+  }
+
+  .rentora-ai-panel header {
+    padding: 14px 16px;
+  }
+
+  .rentora-ai-panel form {
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+  }
+
+  /* Keep the hero AI field clear, legible and separate from the primary
+   * property search. The floating entry point is intentionally hidden on
+   * home because this embedded entry point is already available there. */
+  .home-hero .hero-content {
+    min-height: auto;
+  }
+
+  .home-hero .hero-editorial-grid {
+    gap: 28px;
+  }
+
+  .home-hero .hero-search {
+    margin-top: 20px;
+  }
+
+  .home-hero .hero-search .custom-select-trigger,
+  .home-hero .hero-search .btn-primary {
+    min-height: 52px;
+  }
+
+  /* Auth screens should scroll naturally with the on-screen keyboard rather
+   * than trapping a tall desktop card in a fixed viewport. */
+  .auth-page {
+    min-height: 100dvh;
+  }
+
+  .auth-page .shell {
+    align-items: flex-start;
+    min-height: 100dvh;
+    padding-top: 28px;
+    padding-bottom: max(28px, env(safe-area-inset-bottom));
+  }
+
+  .auth-card {
+    width: 100%;
+    max-width: 100%;
+    margin-block: 0;
+  }
+
+  .auth-card form,
+  .auth-card .auth-actions {
+    gap: 13px;
+  }
+
+  /* Map remains map-first on a phone. The list is an explicit tab, not an
+   * invisible desktop sidebar competing with the canvas. */
+  .map-search-header {
+    align-items: flex-start;
+    gap: 14px;
+    padding: 16px var(--mobile-gutter) 12px;
+  }
+
+  .map-search-title h1 {
+    font-size: clamp(1.7rem, 8vw, 2.2rem);
+  }
+
+  .map-filter-link {
+    min-height: 44px;
+    flex: none;
+  }
+
+  .map-filter-popover {
+    z-index: 54;
+    top: 72px;
+    right: 10px;
+    left: 10px;
+    max-height: min(72dvh, 610px);
+    overflow-y: auto;
+  }
+
+  .map-mobile-tabs {
+    padding-inline: var(--mobile-gutter);
+  }
+
+  .map-search-workspace {
+    min-height: calc(100dvh - 178px);
+  }
+
+  /* Footer becomes a deliberate, comfortably spaced final section instead
+   * of a desktop row wrapped by chance. */
+  footer .shell {
+    gap: 20px;
+    padding-top: 34px;
+    padding-bottom: max(34px, calc(24px + env(safe-area-inset-bottom)));
+  }
+
+  footer .shell > p {
+    max-width: 31ch;
+    margin: 0;
+    line-height: 1.6;
+  }
+
+  footer .shell > div {
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 16px;
+  }
+
+  footer .shell > div a {
+    min-height: 40px;
+    align-items: center;
+  }
+}
+
+@media (max-width: 520px) {
+  .home-hero h1 {
+    max-width: 100%;
+  }
+
+  .home-story-city-grid,
+  .property-facts,
+  .highlights-grid,
+  .characteristics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .property-facts > div,
+  .property-facts > div:first-child,
+  .property-facts > div:last-child {
+    min-height: 58px;
+  }
+
+  .property-secondary-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .property-search-panel {
+    padding: 12px;
+  }
+
+  .map-filter-grid,
+  .map-filter-panel-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .map-filter-popover {
+    right: 8px;
+    left: 8px;
+  }
+
+  .map-selected-preview {
+    bottom: max(10px, env(safe-area-inset-bottom));
+  }
+
+  .owner-intro-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .owner-property-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .owner-property-actions .owner-archive-action,
+  .owner-property-actions .owner-restore-action {
+    grid-column: auto;
+  }
+
+  .profile-save-area > div:last-child,
+  .support-compose-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-save-area > div:last-child {
+    display: grid;
+  }
+
+  .auth-page .shell {
+    min-height: calc(100dvh - 72px);
+    padding-top: 24px;
+    padding-bottom: 24px;
+  }
+
+  .auth-card {
+    border-radius: 22px;
+    padding: 22px !important;
+  }
+
+  .auth-logo {
+    margin-bottom: 20px;
+  }
+
+  .dialog-header h2,
+  .support-ticket-dialog h2 {
+    font-size: 1.28rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mobile-navigation-backdrop,
+  .mobile-navigation-sheet {
+    animation: none;
+  }
+}

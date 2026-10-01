@@ -3,7 +3,6 @@ import {
   ForbiddenException,
   Injectable,
 } from '@nestjs/common';
-
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { I18nContext, I18nService } from 'nestjs-i18n';
@@ -13,6 +12,8 @@ import {
   Message,
   Property,
 } from '@app/common-rentora/database/entity';
+
+import { AnalyticService } from '../analytic/analytic.service';
 
 @Injectable()
 export class ChatService {
@@ -27,12 +28,10 @@ export class ChatService {
     private readonly propertyRepository: Repository<Property>,
 
     private readonly i18n: I18nService,
+    private readonly analyticService: AnalyticService,
   ) {}
 
-  private t(
-    key: string,
-    args?: Record<string, any>,
-  ): string {
+  private t(key: string, args?: Record<string, any>): string {
     return this.i18n.t(key, {
       lang: I18nContext.current()?.lang || 'en',
       args,
@@ -44,8 +43,7 @@ export class ChatService {
     senderId: number;
     text: string;
   }) {
-    const message =
-      this.messageRepository.create(data);
+    const message = this.messageRepository.create(data);
 
     return this.messageRepository.save(message);
   }
@@ -53,9 +51,10 @@ export class ChatService {
   async getMessages(roomId: number) {
     return this.messageRepository.find({
       where: {
-        chatRomms: {id: roomId},
+        chatRomms: {
+          id: roomId,
+        },
       },
-
       order: {
         createdAt: 'ASC',
       },
@@ -66,16 +65,14 @@ export class ChatService {
     propertyId: number;
     clientId: number;
   }) {
-    const property =
-      await this.propertyRepository.findOne({
-        where: {
-          id: data.propertyId,
-        },
-
-        relations: {
-          owner: true,
-        },
-      });
+    const property = await this.propertyRepository.findOne({
+      where: {
+        id: data.propertyId,
+      },
+      relations: {
+        owner: true,
+      },
+    });
 
     if (!property) {
       throw new BadRequestException(
@@ -85,47 +82,43 @@ export class ChatService {
 
     if (property.owner.id === data.clientId) {
       throw new BadRequestException(
-        this.t(
-          'chat.CANNOT_CHAT_WITH_YOURSELF',
-        ),
+        this.t('chat.CANNOT_CHAT_WITH_YOURSELF'),
       );
     }
 
-    const existingRoom =
-      await this.chatRoomRepository.findOne({
-        where: {
-          property: {
-            id: data.propertyId,
-          },
-
-          client: {
-            id: data.clientId,
-          },
+    const existingRoom = await this.chatRoomRepository.findOne({
+      where: {
+        property: {
+          id: data.propertyId,
         },
-
-        relations: {
-          property: true,
-          owner: true,
-          client: true,
+        client: {
+          id: data.clientId,
         },
-      });
+      },
+      relations: {
+        property: true,
+        owner: true,
+        client: true,
+      },
+    });
 
     if (existingRoom) {
       return existingRoom;
     }
 
-    const room =
-      this.chatRoomRepository.create({
-        property,
+    const room = this.chatRoomRepository.create({
+      property,
+      owner: property.owner,
+      client: {
+        id: data.clientId,
+      },
+    });
 
-        owner: property.owner,
+    const savedRoom = await this.chatRoomRepository.save(room);
 
-        client: {
-          id: data.clientId,
-        },
-      });
+    await this.analyticService.addChat(data.propertyId);
 
-    return this.chatRoomRepository.save(room);
+    return savedRoom;
   }
 
   async getUserRooms(userId: number) {
@@ -136,41 +129,33 @@ export class ChatService {
             id: userId,
           },
         },
-
         {
           client: {
             id: userId,
           },
         },
       ],
-
       relations: {
         property: true,
         owner: true,
         client: true,
       },
-
       order: {
         createdAt: 'DESC',
       },
     });
   }
 
-  async checkRoomAccess(
-    roomId: number,
-    userId: number,
-  ) {
-    const room =
-      await this.chatRoomRepository.findOne({
-        where: {
-          id: roomId,
-        },
-
-        relations: {
-          owner: true,
-          client: true,
-        },
-      });
+  async checkRoomAccess(roomId: number, userId: number) {
+    const room = await this.chatRoomRepository.findOne({
+      where: {
+        id: roomId,
+      },
+      relations: {
+        owner: true,
+        client: true,
+      },
+    });
 
     if (!room) {
       throw new BadRequestException(

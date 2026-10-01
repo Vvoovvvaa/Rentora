@@ -4,19 +4,34 @@ import {
   usePathname,
 } from "next/navigation";
 
-import { AuthProvider } from "@/context/auth-context";
-import { CompareProvider } from "@/context/compare-context";
-import { AdminAuthProvider } from "@/context/admin-auth-context";
+import {
+  AuthProvider,
+} from "@/context/auth-context";
+
+import {
+  CompareProvider,
+} from "@/context/compare-context";
+
+import {
+  AdminAuthProvider,
+} from "@/context/admin-auth-context";
 
 import {
   I18nProvider,
   useI18n,
 } from "@/context/i18n-context";
 
-import { RentoraAiProvider } from "@/context/rentora-ai-context";
+import {
+  RentoraAiProvider,
+} from "@/context/rentora-ai-context";
 
-import { AppShell } from "./site-chrome";
-import { HomeView } from "./home-view";
+import {
+  AppShell,
+} from "./site-chrome";
+
+import {
+  HomeView,
+} from "./home-view";
 
 import {
   AuthView,
@@ -29,16 +44,45 @@ import {
   ProfileView,
 } from "./views";
 
-import { CompareBar } from "./compare-bar";
-import { CompareView } from "./compare-view";
-import { SearchView } from "./search-view";
-import { MapSearchView } from "./map-search-view";
-import { AdminPanel } from "./admin-panel";
-import { SupportView } from "./support-view";
-import { AccountBlockedPage } from "./account-blocked-page";
+import {
+  CompareBar,
+} from "./compare-bar";
 
-import { RentoraAiPanel } from "./rentora-ai-panel";
-import { RentoraAiFloatingButton } from "./rentora-ai-floating-button";
+import {
+  CompareView,
+} from "./compare-view";
+
+import {
+  SearchView,
+} from "./search-view";
+
+import {
+  MapSearchView,
+} from "./map-search-view";
+
+import {
+  AdminPanel,
+} from "./admin-panel";
+
+import {
+  SupportView,
+} from "./support-view";
+
+import {
+  AccountBlockedPage,
+} from "./account-blocked-page";
+
+import {
+  RentoraAiPanel,
+} from "./rentora-ai-panel";
+
+import {
+  RentoraAiFloatingButton,
+} from "./rentora-ai-floating-button";
+
+import {
+  PropertyAnalyticsView,
+} from "./property-analytics-view";
 
 export function RentoraClient() {
   return (
@@ -70,6 +114,15 @@ function LocalizedRentoraClient() {
       </AdminAuthProvider>
     );
   }
+
+  const isAnalyticsPage =
+    segments[1] ===
+      "my-properties" &&
+    Boolean(
+      segments[2],
+    ) &&
+    segments[3] ===
+      "analytics";
 
   return (
     <AuthProvider>
@@ -105,6 +158,14 @@ function LocalizedRentoraClient() {
               <NeedLogin>
                 <MapSearchView
                   scope="mine"
+                />
+              </NeedLogin>
+            ) : isAnalyticsPage ? (
+              <NeedLogin>
+                <PropertyAnalyticsView
+                  id={
+                    segments[2]
+                  }
                 />
               </NeedLogin>
             ) : path ===

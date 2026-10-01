@@ -1,0 +1,307 @@
+/* Rentora visual foundation: shared tokens and safe cross-page refinements. */
+:root {
+  --rt-canvas: #f7f4ef;
+  --rt-surface: #fffdf9;
+  --rt-surface-muted: #f4ede4;
+  --rt-ink: #30251e;
+  --rt-ink-soft: #675d54;
+  --rt-muted: #897d71;
+  --rt-line: #e5dbd0;
+  --rt-primary: #513f30;
+  --rt-primary-hover: #634b36;
+  --rt-accent: #b4875e;
+  --rt-accent-soft: #f1dfc8;
+  --rt-danger: #a4473f;
+  --rt-radius-sm: 0.75rem;
+  --rt-radius-md: 1rem;
+  --rt-radius-lg: 1.5rem;
+  --rt-shadow-sm: 0 4px 14px rgba(55, 39, 25, 0.05);
+  --rt-shadow-md: 0 14px 34px rgba(55, 39, 25, 0.09);
+  --rt-shadow-float: 0 22px 48px rgba(55, 39, 25, 0.16);
+  --rt-display: clamp(2.6rem, 5vw, 4.65rem);
+  --rt-h1: clamp(2.15rem, 3.8vw, 3.45rem);
+  --rt-h2: clamp(1.6rem, 2.4vw, 2.35rem);
+  --rt-h3: clamp(1.1rem, 1.45vw, 1.35rem);
+  --rt-body: 0.95rem;
+  --rt-small: 0.8125rem;
+  --rt-label: 0.6875rem;
+}
+
+html { background: var(--rt-canvas); }
+body {
+  background: var(--rt-canvas);
+  color: var(--rt-ink);
+  font-family: "Noto Sans Armenian", "Noto Sans", "Segoe UI", Inter, Arial, sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+html[lang="am"] body {
+  font-family: "Noto Sans Armenian", "Noto Sans", "Segoe UI", Arial, sans-serif;
+  letter-spacing: 0;
+}
+
+html[lang="ru"] body { font-family: "Noto Sans", "Segoe UI", Inter, Arial, sans-serif; }
+
+button, input, textarea, select { font-family: inherit; }
+button, a, input, textarea, select { -webkit-tap-highlight-color: transparent; }
+button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+  outline: 3px solid rgba(180, 135, 94, 0.32);
+  outline-offset: 3px;
+}
+
+.shell { width: min(100%, 1280px); padding-inline: clamp(1rem, 2.4vw, 2rem); }
+.page-space { padding-block: clamp(2.75rem, 5vw, 4.5rem) clamp(4.5rem, 7vw, 6.5rem); }
+.eyebrow {
+  color: var(--rt-accent);
+  font-size: var(--rt-label);
+  font-weight: 700;
+  letter-spacing: 0.115em;
+  line-height: 1.25;
+}
+html[lang="am"] .eyebrow { letter-spacing: 0.03em; text-transform: none; }
+
+.page-heading { gap: 1.25rem; }
+.page-heading h1,
+.profile-intro h1,
+.search-page-intro h1 { font-size: var(--rt-h1); font-weight: 700; line-height: 1.08; }
+
+.btn-primary,
+.btn-secondary {
+  min-height: 2.75rem;
+  gap: 0.5rem;
+  border-radius: var(--rt-radius-sm);
+  padding: 0.625rem 0.95rem;
+  font-size: var(--rt-small);
+  font-weight: 650;
+  line-height: 1.2;
+  transition: border-color 180ms ease, background-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+.btn-primary {
+  border-color: var(--rt-primary);
+  background: var(--rt-primary);
+  box-shadow: 0 7px 16px rgba(81, 63, 48, 0.16);
+}
+.btn-primary:hover:not(:disabled) { background: var(--rt-primary-hover); box-shadow: 0 10px 20px rgba(81, 63, 48, 0.22); }
+.btn-secondary { border-color: var(--rt-line); background: var(--rt-surface); color: var(--rt-primary); box-shadow: var(--rt-shadow-sm); }
+.btn-secondary:hover:not(:disabled) { border-color: #cdb89f; background: #fbf4eb; color: #3f2e22; }
+
+.field,
+.profile-field input,
+.profile-phone-field input,
+.chat-composer textarea {
+  min-height: 2.875rem;
+  border-color: #ded2c4;
+  border-radius: var(--rt-radius-sm);
+  background: #fffefa;
+  color: var(--rt-ink);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+.field::placeholder,
+.profile-field input::placeholder,
+.chat-composer textarea::placeholder { color: #aa9d90; opacity: 1; }
+.field:focus,
+.profile-field input:focus,
+.profile-phone-field input:focus,
+.chat-composer textarea:focus { border-color: #b4875e; box-shadow: 0 0 0 4px rgba(180, 135, 94, 0.14); }
+
+.custom-select { min-width: 0; }
+.custom-select-trigger {
+  min-height: 2.875rem;
+  border-color: #ded2c4;
+  border-radius: var(--rt-radius-sm);
+  background: #fffefa;
+  color: var(--rt-ink);
+  font-size: var(--rt-small);
+  font-weight: 600;
+}
+.custom-select-trigger:hover { border-color: #cdb79f; background: #fffdf9; }
+.custom-select-trigger.is-open { border-color: #b4875e; box-shadow: 0 0 0 4px rgba(180, 135, 94, 0.12); }
+.custom-select-trigger > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.custom-select-menu { border-color: var(--rt-line); border-radius: var(--rt-radius-md); box-shadow: var(--rt-shadow-float); }
+.custom-select-option { min-height: 2.5rem; border-radius: 0.625rem; font-size: var(--rt-small); font-weight: 600; }
+
+/* Header: content-sized navigation with locale-safe compression before mobile. */
+header > .shell { gap: clamp(0.75rem, 1.8vw, 1.5rem); }
+.nav-link {
+  min-height: 2.5rem;
+  gap: 0.45rem;
+  padding-inline: clamp(0.55rem, 1vw, 0.8rem);
+  color: #6f6358;
+  font-size: 0.78rem;
+  font-weight: 650;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+.nav-link.is-active { background: var(--rt-primary); color: #fffaf2; box-shadow: 0 5px 13px rgba(81, 63, 48, 0.18); }
+.nav-link:hover { color: var(--rt-primary); }
+.account-menu-trigger { min-height: 2.6rem; border-radius: var(--rt-radius-sm); padding: 0.25rem 0.5rem; font-weight: 650; }
+.account-menu { border-color: var(--rt-line); border-radius: var(--rt-radius-md); box-shadow: var(--rt-shadow-float); }
+
+/* Listing cards share one calm hierarchy regardless of page. */
+.property-card { border: 1px solid rgba(220, 207, 194, 0.78); box-shadow: var(--rt-shadow-sm); }
+.property-card:hover { box-shadow: var(--rt-shadow-md); }
+.property-card img { transition-duration: 420ms !important; }
+.property-card:hover img { transform: scale(1.045) !important; }
+.property-card .property-card-title {
+  min-height: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.34;
+  letter-spacing: -0.025em;
+}
+.property-card .property-card-price { font-size: clamp(1.3rem, 2vw, 1.6rem); font-weight: 700; }
+.property-card .property-card-meta { margin-top: 0.8rem; }
+.property-card .property-card-specs { margin-top: auto; padding-top: 0.95rem; }
+.property-card .property-card-badge { font-weight: 700; letter-spacing: 0.08em; }
+.property-card .property-card-action-button { width: 2.35rem; height: 2.35rem; box-shadow: 0 5px 12px rgba(45, 32, 22, 0.14); }
+.property-card .property-card-action-button:hover { transform: translateY(-1px); }
+
+/* Explore/search keeps the useful hierarchy without making the hero overwhelming. */
+.search-page { padding-top: clamp(1.5rem, 3vw, 2.6rem); }
+.search-hero { border-radius: 1.7rem; padding: clamp(1.5rem, 3vw, 2.5rem) clamp(1.15rem, 3vw, 2.5rem) 0; }
+.search-page-intro h1 { max-width: 16ch; font-size: var(--rt-h1); font-weight: 700; line-height: 1.1; text-wrap: balance; }
+.search-page-intro > p:last-child { max-width: 62ch; font-size: var(--rt-body); }
+.search-hero-count strong { font-weight: 700; }
+.search-hero-filters .property-search-panel { border-radius: 1.1rem; }
+.search-results-header h2 { font-size: var(--rt-h2); font-weight: 700; line-height: 1.14; }
+.search-sort-control { border-radius: var(--rt-radius-sm); }
+
+/* Home keeps its editorial direction while giving the message and product visual equal weight. */
+.rentora-home-hero h1 {
+  max-width: 13.4ch;
+  font-size: clamp(2.6rem, 4.2vw, 4.55rem);
+  font-weight: 700;
+  letter-spacing: -0.052em;
+  line-height: 1.04;
+}
+.rentora-home-hero-intro > p:not(.rentora-home-kicker) { max-width: 56ch; line-height: 1.65; }
+.rentora-home-discovery { border-color: rgba(239, 212, 175, 0.28); box-shadow: 0 14px 28px rgba(12, 8, 5, 0.14); }
+.rentora-home-discovery-tabs button { min-height: 2.5rem; font-weight: 650; }
+html[lang="ru"] .rentora-home-hero h1 { max-width: 15.6ch; font-size: clamp(2.45rem, 3.8vw, 4.15rem); line-height: 1.1; }
+html[lang="am"] .rentora-home-hero h1 { max-width: 18.5ch; font-size: clamp(2.25rem, 3.45vw, 3.8rem); font-weight: 650; letter-spacing: -0.025em; line-height: 1.17; }
+
+/* Profile: fewer competing surfaces and a clearer editing rhythm. */
+.profile-page { padding-block: clamp(2rem, 4vw, 3.5rem) clamp(4rem, 7vw, 6rem); }
+.profile-layout { gap: clamp(1rem, 2.2vw, 1.5rem); }
+.profile-sidebar,
+.profile-settings-card,
+.profile-account-card { border-color: var(--rt-line); box-shadow: var(--rt-shadow-sm); }
+.profile-settings-card { padding: clamp(1.25rem, 3vw, 2rem); }
+.profile-card-heading h2,
+.profile-account-card h2 { font-size: var(--rt-h3); font-weight: 700; }
+.profile-fields { gap: 1rem; margin-top: 1.5rem; }
+.profile-field { gap: 0.45rem; font-size: var(--rt-small); font-weight: 650; }
+.profile-save-area { margin-top: 1.5rem; padding-top: 1.25rem; }
+.profile-navigation a,
+.profile-logout { min-height: 2.65rem; font-weight: 650; }
+
+/* Listing creation: generous enough for fields, not a stack of oversized boxes. */
+.create-property-layout { gap: clamp(1.25rem, 3vw, 2rem); margin-top: clamp(1.5rem, 3vw, 2.5rem); }
+.create-property-sections { gap: 1rem; }
+.create-section { border-color: var(--rt-line); border-radius: var(--rt-radius-lg); padding: clamp(1.15rem, 2.4vw, 1.65rem); box-shadow: var(--rt-shadow-sm); }
+.create-section .section-heading h2 { font-size: var(--rt-h3); font-weight: 700; }
+.create-section .section-heading > p:not(.eyebrow) { max-width: 58ch; color: var(--rt-muted); font-size: var(--rt-small); line-height: 1.55; }
+.create-grid { gap: 1rem; }
+.create-field { font-size: var(--rt-small); font-weight: 650; }
+.create-field > span { margin-bottom: 0.45rem; }
+.create-summary-card { border-color: var(--rt-line); border-radius: var(--rt-radius-lg); box-shadow: var(--rt-shadow-md); }
+
+/* Messages: preserve the messenger workspace, reduce unused visual weight. */
+.messages-page { padding-block: clamp(1rem, 2vw, 1.5rem) clamp(1.5rem, 3vw, 2.5rem); }
+.messages-page .chat-shell { border-color: var(--rt-line); border-radius: var(--rt-radius-lg); box-shadow: var(--rt-shadow-md); }
+.chat-sidebar-head h1 { font-size: 1.35rem; font-weight: 700; }
+.chat-room { min-height: 4rem; }
+.chat-room-title strong { font-weight: 700; }
+.chat-main-header h2 { font-weight: 700; }
+.chat-empty-state { padding: 2rem; }
+.chat-empty-state h2 { font-size: var(--rt-h3); font-weight: 700; }
+.chat-composer { padding: 0.875rem 1rem; }
+.chat-send { min-height: 3rem; border-radius: var(--rt-radius-sm); font-weight: 700; }
+
+/* Floating AI stays discoverable without covering desktop actions. */
+.rentora-ai-fab { right: max(1rem, env(safe-area-inset-right)); bottom: max(1rem, env(safe-area-inset-bottom)); min-height: 3.15rem; }
+.rentora-ai-fab:focus-visible { outline-color: rgba(241, 211, 167, 0.7); }
+
+/* Locale dimensions: preserve density without shrinking meaningful copy. */
+html[lang="ru"] .search-page-intro h1 { max-width: 18ch; letter-spacing: -0.04em; }
+html[lang="am"] .search-page-intro h1 { max-width: 19ch; letter-spacing: -0.025em; line-height: 1.17; }
+html[lang="am"] .profile-intro h1,
+html[lang="am"] .page-heading h1 { line-height: 1.16; letter-spacing: -0.025em; }
+html[lang="am"] .property-card .property-card-title { line-height: 1.42; letter-spacing: -0.012em; }
+html[lang="am"] .chat-room-title strong,
+html[lang="am"] .chat-main-header h2 { letter-spacing: 0; }
+
+@media (max-width: 1350px) and (min-width: 1280px) {
+  header > .shell { gap: 0.7rem; }
+  .nav-link { padding-inline: 0.48rem; font-size: 0.71rem; }
+  .account-menu-trigger > span:nth-child(2) { max-width: 5rem; }
+  header .btn-secondary { padding-inline: 0.7rem; font-size: 0.69rem; }
+  html[lang="am"] .nav-link,
+  html[lang="ru"] .nav-link { font-size: 0.67rem; }
+}
+
+@media (max-width: 1023px) {
+  .shell { padding-inline: 1rem; }
+  .profile-layout { grid-template-columns: 1fr; }
+  .profile-sidebar { position:static; display:grid; grid-template-columns:minmax(0, 0.8fr) minmax(0, 1.2fr); gap: 1rem; }
+  .profile-summary-card { border-bottom: 0; border-right: 1px solid #ede3d8; padding-bottom: 0; }
+  .profile-navigation { align-content:start; grid-template-columns:repeat(2, minmax(0,1fr)); }
+  .profile-logout { grid-column: 1 / -1; }
+  .messages-page .chat-shell { min-height: 570px; }
+  .create-summary-card { position:static; }
+}
+
+@media (max-width: 767px) {
+  .page-space { padding-block: 2.35rem 4.5rem; }
+  .eyebrow { font-size: 0.64rem; letter-spacing: 0.08em; }
+  .search-page { padding-top: 0; }
+  .search-hero { margin-inline: -0.15rem; border-radius: 0 0 1.4rem 1.4rem; padding: 1.75rem 1rem 0; }
+  .search-hero-count { justify-items:start; min-width:0; padding:0; border:0; background:transparent; }
+  .search-hero-filters { margin-top:1.25rem; margin-bottom:-2.25rem; }
+  .search-page .active-filters { margin-top:4rem; }
+  .search-results-section { margin-top: 3.8rem; }
+  .search-results-header { align-items:start; flex-direction:column; }
+  .search-sort-control { width:100%; min-width:0; }
+  .property-card .property-card-title { min-height:0; }
+  .profile-sidebar { display:block; }
+  .profile-summary-card { border-right:0; border-bottom:1px solid #ede3d8; padding-bottom:1rem; }
+  .profile-navigation { grid-template-columns:1fr; }
+  .profile-fields { grid-template-columns:1fr; }
+  .profile-phone-field { grid-column:auto; }
+  .profile-photo-section,
+  .profile-account-card { grid-template-columns:1fr; }
+  .profile-account-card dl { grid-template-columns:1fr; }
+  .profile-account-card dl div { border-left:0; border-top:1px solid #eadfd4; padding:0.75rem 0 0; }
+  .profile-save-area { align-items:stretch; flex-direction:column; }
+  .profile-save-area > div:last-child { display:grid; grid-template-columns:1fr 1fr; }
+  .create-grid.two,
+  .create-grid.three,
+  .create-grid.four,
+  .price-grid { grid-template-columns:1fr; }
+  .create-grid.two > :last-child { grid-column:auto; }
+  .messages-page .chat-shell { border-radius:0; }
+  .chat-composer { padding:0.75rem; }
+  .rentora-ai-fab { height:3rem; min-height:3rem; padding-inline:0.85rem; }
+  .rentora-ai-fab.mobile-hidden-ai { display:none !important; }
+  body:has(.property-search-panel) .rentora-ai-fab,
+  body:has(.create-property-layout) .rentora-ai-fab,
+  body:has(.profile-page) .rentora-ai-fab,
+  body:has(.chat-shell) .rentora-ai-fab,
+  body:has(.property-detail-shell) .rentora-ai-fab { display:none !important; }
+  .rentora-home-hero h1,
+  html[lang="ru"] .rentora-home-hero h1,
+  html[lang="am"] .rentora-home-hero h1 { max-width:100%; font-size:clamp(2.25rem, 10vw, 3.1rem); line-height:1.13; }
+}
+
+@media (max-width: 420px) {
+  .shell { padding-inline: 0.875rem; }
+  .profile-save-area > div:last-child { grid-template-columns:1fr; }
+  .property-card .property-card-specs { grid-template-columns:repeat(3, minmax(0, 1fr)); }
+  html[lang="am"] .search-page-intro h1,
+  html[lang="ru"] .search-page-intro h1 { overflow-wrap:anywhere; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior:auto !important; transition-duration:1ms !important; animation-duration:1ms !important; }
+}

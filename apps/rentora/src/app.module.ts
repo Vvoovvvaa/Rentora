@@ -18,6 +18,7 @@ import {
   AdminSecretcode,
   Favorites,
   Property,
+  PropertyAnalytic,
   PropertyImage,
   PropertyViews,
   Report,
@@ -38,6 +39,7 @@ import path from 'path';
 import { PropertyPriceHistory } from '@app/common-rentora/database/entity/price-history';
 import { RedisModule } from '@app/common-rentora/redis/redis.module';
 import { AiModule } from './ai/ai.module';
+import { AnalyticModule } from './analytic/analytic.module';
 
 @Module({
   imports: [
@@ -50,6 +52,7 @@ import { AiModule } from './ai/ai.module';
     SupportModule,
     RedisModule,
     AiModule,
+    AnalyticModule,
 
     I18nModule.forRoot({
       fallbackLanguage: 'en',
@@ -95,6 +98,7 @@ import { AiModule } from './ai/ai.module';
             AdminSecretcode,
             Support,
             PropertyPriceHistory,
+            PropertyAnalytic
           ],
           autoLoadEntities: true,
           synchronize: true,

@@ -51,8 +51,21 @@ export function Header() {
   const params = useSearchParams();
   const [open, setOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
+
+  useEffect(() => {
+    setOpen(false);
+    setAccountOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!open) return;
+    document.body.dataset.mobileMenuOpen = "true";
+    return () => {
+      delete document.body.dataset.mobileMenuOpen;
+    };
+  }, [open]);
   const filters = queryWithSearchParams(params).toString();
-  const mapHref = pathname === "/search" ? `/map${filters ? `?${filters}` : ""}` : "/map";
+  const mapHref = `/map${filters ? `?${filters}` : ""}`;
   const exploreHref = pathname === "/map" ? `/search${filters ? `?${filters}` : ""}` : "/properties";
   const links = [
     { href: exploreHref, label: t("navigation.explore"), icon: House, section: "explore" },
@@ -82,7 +95,7 @@ export function Header() {
       </div>
       <button onClick={() => setOpen(!open)} className="grid h-10 w-10 place-items-center rounded-xl bg-[#f1ece4] xl:hidden" aria-label={open ? t("common.close") : t("navigation.explore")} aria-expanded={open}>{open ? <X size={19}/> : <Menu size={19}/>}</button>
     </div>
-    {open && <div className="border-t border-[#eee8df] bg-[#fbf9f5] xl:hidden"><nav className="shell grid gap-1 py-4"><LanguageSelector compact/>{links.map((link) => { const Icon = link.icon; return <Link onClick={() => setOpen(false)} key={link.section} href={link.href} className={`nav-link mobile ${isActive(pathname, link.section === "explore" ? "/properties" : link.href) ? "is-active" : ""}`}><Icon size={16}/>{link.label}</Link>; })}{user ? <><Link href="/properties/create" className="nav-link mobile"><Plus size={16}/> {t("navigation.addListing")}</Link><Link href="/profile" className="nav-link mobile"><UserRound size={16}/> {t("navigation.profile")}</Link><Link href="/my-properties" className="nav-link mobile"><LayoutGrid size={16}/> {t("navigation.myListings")}</Link><Link href="/support" className="nav-link mobile"><CircleHelp size={16}/> {t("navigation.support")}</Link><button className="nav-link mobile text-rose-700" onClick={() => void signOut()}><X size={16}/> {t("navigation.logOut")}</button></> : <Link href="/login" className="nav-link mobile"><UserRound size={16}/> {t("navigation.logIn")}</Link>}</nav></div>}
+    {open && <div className="mobile-navigation-backdrop xl:hidden" onMouseDown={() => setOpen(false)}><nav className="mobile-navigation-sheet shell" onMouseDown={(event) => event.stopPropagation()}><div className="mobile-navigation-sheet-head"><span>{t("navigation.explore")}</span><LanguageSelector compact/></div>{links.map((link) => { const Icon = link.icon; return <Link onClick={() => setOpen(false)} key={link.section} href={link.href} className={`nav-link mobile ${isActive(pathname, link.section === "explore" ? "/properties" : link.href) ? "is-active" : ""}`}><Icon size={16}/>{link.label}</Link>; })}{user ? <><Link href="/properties/create" onClick={() => setOpen(false)} className="nav-link mobile"><Plus size={16}/> {t("navigation.addListing")}</Link><Link href="/profile" onClick={() => setOpen(false)} className="nav-link mobile"><UserRound size={16}/> {t("navigation.profile")}</Link><Link href="/my-properties" onClick={() => setOpen(false)} className="nav-link mobile"><LayoutGrid size={16}/> {t("navigation.myListings")}</Link><Link href="/support" onClick={() => setOpen(false)} className="nav-link mobile"><CircleHelp size={16}/> {t("navigation.support")}</Link><button className="nav-link mobile text-rose-700" onClick={() => void signOut()}><X size={16}/> {t("navigation.logOut")}</button></> : <Link href="/login" onClick={() => setOpen(false)} className="nav-link mobile"><UserRound size={16}/> {t("navigation.logIn")}</Link>}</nav></div>}
   </header>;
 }
 
@@ -91,4 +104,9 @@ export function Footer() {
   return <footer className="mt-auto border-t border-[#e7dfd4] bg-[#fbf9f5]"><div className="shell flex flex-col gap-5 py-12 text-sm text-stone-500 md:flex-row md:items-center md:justify-between"><Link href="/" aria-label="Rentora home"><RentoraLogo size="footer"/></Link><p>{t("navigation.rentoraTagline")}</p><div className="flex gap-5"><Link href="/properties">{t("navigation.homes")}</Link><Link href="/messages">{t("navigation.messages")}</Link><Link href="/favorites" className="flex items-center gap-1"><Heart size={14}/> {t("navigation.saved")}</Link></div></div></footer>;
 }
 
-export function AppShell({ children }: { children: React.ReactNode }) { return <div className="flex min-h-screen flex-col"><Header/><main className="flex-1">{children}</main><Footer/></div>; }
+export function AppShell({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const isMapWorkspace = pathname === "/map" || pathname === "/my-properties/map";
+
+  return <div className="flex min-h-screen flex-col"><Header/><main className="min-h-0 flex-1">{children}</main>{!isMapWorkspace && <Footer/>}</div>;
+}
