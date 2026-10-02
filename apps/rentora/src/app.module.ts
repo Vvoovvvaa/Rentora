@@ -40,6 +40,9 @@ import { PropertyPriceHistory } from '@app/common-rentora/database/entity/price-
 import { RedisModule } from '@app/common-rentora/redis/redis.module';
 import { AiModule } from './ai/ai.module';
 import { AnalyticModule } from './analytic/analytic.module';
+import { UserSubscription } from '@app/common-rentora/database/entity/subscription-plan';
+import { SubscriptionConfig } from '@app/common-rentora/database/entity/subscription-config';
+import { SubscriptionModule } from './subscription/subscription.module';
 
 @Module({
   imports: [
@@ -53,6 +56,7 @@ import { AnalyticModule } from './analytic/analytic.module';
     RedisModule,
     AiModule,
     AnalyticModule,
+    SubscriptionModule,
 
     I18nModule.forRoot({
       fallbackLanguage: 'en',
@@ -98,7 +102,9 @@ import { AnalyticModule } from './analytic/analytic.module';
             AdminSecretcode,
             Support,
             PropertyPriceHistory,
-            PropertyAnalytic
+            PropertyAnalytic,
+            UserSubscription,
+            SubscriptionConfig
           ],
           autoLoadEntities: true,
           synchronize: true,
@@ -106,6 +112,7 @@ import { AnalyticModule } from './analytic/analytic.module';
         };
       },
     }),
+
 
   ],
 

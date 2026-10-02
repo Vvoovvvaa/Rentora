@@ -13,6 +13,7 @@ import {
   BarChart3,
   Eye,
   Heart,
+  LockKeyhole,
   MessageCircle,
   Percent,
 } from "lucide-react";
@@ -37,6 +38,9 @@ import {
   cityOf,
   priceOf,
 } from "./property-presentation";
+
+import { useI18n } from "@/context/i18n-context";
+import { useSubscription } from "@/context/subscription-context";
 
 type AnalyticsPeriodKey =
   | "today"
@@ -451,6 +455,8 @@ export function PropertyAnalyticsView({
 }: {
   id: string;
 }) {
+  const { t } = useI18n();
+  const { subscription } = useSubscription();
   const [
     property,
     setProperty,
@@ -477,18 +483,18 @@ export function PropertyAnalyticsView({
     setError,
   ] = useState("");
 
+  const [
+    locked,
+    setLocked,
+  ] = useState(false);
+
   const load = async () => {
     setLoading(true);
     setError("");
+    setLocked(false);
 
     try {
-      const [
-        properties,
-        analyticsResult,
-      ] = await Promise.all([
-        propertiesApi.mine(),
-        analyticsApi.property(id),
-      ]);
+      const properties = await propertiesApi.mine();
 
       const current =
         properties.find(
@@ -508,9 +514,24 @@ export function PropertyAnalyticsView({
       }
 
       setProperty(current);
-      setAnalytics(
-        analyticsResult,
-      );
+
+      if (subscription && !subscription.config.advancedAnalytics) {
+        setLocked(true);
+        return;
+      }
+
+      try {
+        setAnalytics(await analyticsApi.property(id));
+      } catch (reason) {
+        const status = (reason as { response?: { status?: number } }).response?.status;
+
+        if (status === 403) {
+          setLocked(true);
+          return;
+        }
+
+        throw reason;
+      }
     } catch (reason) {
       setError(
         apiMessage(reason),
@@ -533,7 +554,7 @@ export function PropertyAnalyticsView({
       window.clearTimeout(
         timer,
       );
-  }, [id]);
+  }, [id, subscription]);
 
   const chart =
     useMemo(
@@ -548,6 +569,32 @@ export function PropertyAnalyticsView({
   if (loading) {
     return (
       <AnalyticsSkeleton />
+    );
+  }
+
+  if (locked && property) {
+    return (
+      <main className="min-h-screen bg-[#f4efe8] py-12">
+        <div className="shell">
+          <Link
+            href="/my-properties"
+            className="inline-flex items-center gap-2 text-sm font-extrabold text-[#5a4332]"
+          >
+            <ArrowLeft size={16} />
+            {t("myListings.backToListings")}
+          </Link>
+
+          <section className="analytics-locked-state">
+            <span><LockKeyhole size={23} aria-hidden="true" /></span>
+            <p className="eyebrow">{t("subscription.currentPlan")}</p>
+            <h1>{t("subscription.analyticsLockedTitle")}</h1>
+            <p>{t("subscription.analyticsLockedCopy")}</p>
+            <Link href="/subscription" className="btn-primary">
+              {t("subscription.analyticsLockedAction")}
+            </Link>
+          </section>
+        </div>
+      </main>
     );
   }
 

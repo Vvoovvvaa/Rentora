@@ -1,0 +1,89 @@
+/* Homepage narrative layer: warm, editorial surfaces without changing product flows. */
+.rentora-home-hero::after { position: absolute; top: -18rem; right: -13rem; width: min(56vw, 51rem); height: min(56vw, 51rem); border-radius: 50%; background: radial-gradient(circle, rgba(229, 181, 125, .18) 0, rgba(174, 114, 65, .09) 42%, transparent 70%); content: ""; pointer-events: none; }
+.rentora-home-hero-copy { animation: rentora-home-rise 520ms cubic-bezier(.22, .8, .32, 1) both; }
+.rentora-home-product-preview { animation: rentora-home-preview-enter 650ms 80ms cubic-bezier(.22, .8, .32, 1) both; }
+.rentora-home-product-preview::after { position: absolute; z-index: 1; right: 12%; bottom: 9%; width: 12rem; height: 12rem; border-radius: 50%; background: radial-gradient(circle, rgba(255, 246, 228, .38), transparent 67%); content: ""; pointer-events: none; }
+.rentora-home-preview-pin { transition: transform 180ms ease, box-shadow 180ms ease; }
+.rentora-home-preview-pin:hover { box-shadow: 0 12px 22px rgba(60, 46, 30, .24); transform: translateY(-2px); }
+
+.rentora-home-story { position: relative; overflow: hidden; background: linear-gradient(135deg, #f6f1ea, #efe2d3); padding: clamp(5rem, 8vw, 7.5rem) 0; }
+.rentora-home-story::before { position: absolute; top: -21rem; left: -16rem; width: 43rem; height: 43rem; border-radius: 50%; background: radial-gradient(circle, rgba(255, 253, 249, .95), transparent 68%); content: ""; pointer-events: none; }
+.rentora-home-story .shell { position: relative; }
+.rentora-home-story-heading, .rentora-home-benefits-heading { display: grid; grid-template-columns: minmax(0, 1fr) minmax(17rem, .64fr); align-items: end; gap: clamp(1.5rem, 6vw, 8rem); }
+.rentora-home-story-heading h2, .rentora-home-benefits-heading h2 { max-width: 11.5ch; margin: .65rem 0 0; color: #32261e; font-size: clamp(2.2rem, 4.2vw, 4.15rem); font-weight: 720; letter-spacing: -.072em; line-height: .98; text-wrap: balance; }
+.rentora-home-story-heading > p, .rentora-home-benefits-heading > p { max-width: 37rem; margin: 0; color: #716255; font-size: .96rem; line-height: 1.72; }
+.rentora-home-story-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin-top: clamp(2rem, 4vw, 3.7rem); }
+.rentora-home-story-card { min-width: 0; border: 1px solid rgba(152, 119, 87, .2); border-radius: 1.35rem; background: linear-gradient(145deg, rgba(255,253,249,.93), rgba(250,243,234,.78)); box-shadow: 0 11px 25px rgba(69, 48, 30, .055), inset 0 1px 0 rgba(255,255,255,.88); padding: clamp(1.25rem, 2.5vw, 1.7rem); transition: transform 220ms cubic-bezier(.22,.8,.32,1), box-shadow 220ms ease, border-color 220ms ease; }
+.rentora-home-story-card:hover { border-color: #c7a37e; box-shadow: 0 20px 35px rgba(69, 48, 30, .11); transform: translateY(-5px); }
+.rentora-home-story-card > span, .rentora-home-benefit-card > span { display: grid; width: 2.6rem; height: 2.6rem; place-items: center; border: 1px solid #e2cdb7; border-radius: .9rem; background: linear-gradient(145deg, #fff8ed, #efd9c0); color: #795338; }
+.rentora-home-story-card h3, .rentora-home-benefit-card h3 { margin: 1.25rem 0 0; color: #392b21; font-size: 1.18rem; font-weight: 740; letter-spacing: -.035em; line-height: 1.18; }
+.rentora-home-story-card p, .rentora-home-benefit-card p { margin: .7rem 0 0; color: #75675b; font-size: .86rem; line-height: 1.65; }
+.rentora-home-story-note { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 1.1rem; margin-top: 1rem; border: 1px solid rgba(117, 78, 48, .16); border-radius: 1.25rem; background: linear-gradient(115deg, #4a3222, #2e211a); box-shadow: 0 17px 30px rgba(57, 39, 24, .13); color: #f7ecdc; padding: 1.15rem 1.3rem; }
+.rentora-home-story-note-icon { display: grid; width: 2.65rem; height: 2.65rem; place-items: center; border: 1px solid rgba(246, 224, 194, .24); border-radius: .85rem; background: rgba(249, 229, 200, .1); color: #eccb9e; }
+.rentora-home-story-note .rentora-home-kicker { color: #e7bd8c; }
+.rentora-home-story-note > div:last-child > p:last-child { max-width: 72ch; margin: .35rem 0 0; color: #f4e4d0; font-size: .86rem; line-height: 1.58; }
+
+.rentora-home-benefits { position: relative; overflow: hidden; background: #fffdf9; padding: clamp(5rem, 8vw, 7.4rem) 0; }
+.rentora-home-benefits::before { position: absolute; right: -16rem; bottom: -22rem; width: 43rem; height: 43rem; border-radius: 50%; background: radial-gradient(circle, rgba(234, 214, 189, .7), transparent 68%); content: ""; pointer-events: none; }
+.rentora-home-benefits .shell { position: relative; }
+.rentora-home-benefit-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); grid-auto-flow: dense; gap: 1rem; margin-top: clamp(2rem, 4vw, 3.6rem); }
+.rentora-home-benefit-card { position: relative; display: flex; min-width: 0; min-height: 14.5rem; flex-direction: column; overflow: hidden; border: 1px solid #e6d8c9; border-radius: 1.35rem; background: linear-gradient(145deg, #fffefa, #fbf4eb); box-shadow: 0 10px 23px rgba(68, 44, 26, .055); padding: clamp(1.25rem, 2.5vw, 1.65rem); transition: transform 220ms cubic-bezier(.22,.8,.32,1), box-shadow 220ms ease, border-color 220ms ease; }
+.rentora-home-benefit-card::after { position: absolute; right: -3.5rem; bottom: -3.5rem; width: 10rem; height: 10rem; border-radius: 50%; background: radial-gradient(circle, rgba(192, 149, 103, .14), transparent 70%); content: ""; opacity: 0; transition: opacity 220ms ease, transform 220ms ease; transform: scale(.8); pointer-events: none; }
+.rentora-home-benefit-card:hover { border-color: #d1ad87; box-shadow: 0 21px 36px rgba(68, 44, 26, .11); transform: translateY(-5px); }
+.rentora-home-benefit-card:hover::after { opacity: 1; transform: scale(1); }
+.rentora-home-benefit-card.is-accent { border-color: #725039; background: linear-gradient(145deg, #513826, #33251c); box-shadow: 0 15px 29px rgba(62, 42, 27, .17); }
+.rentora-home-benefit-card.is-accent > span { border-color: rgba(240, 215, 184, .22); background: rgba(246, 222, 191, .12); color: #f1cc9c; }
+.rentora-home-benefit-card.is-accent h3 { color: #fff9ef; }
+.rentora-home-benefit-card.is-accent p { color: #e1ccba; }
+.rentora-home-benefit-card.is-primary { grid-column: span 5; min-height: 19.5rem; }
+.rentora-home-benefit-card.is-map { grid-column: span 4; }
+.rentora-home-benefit-card.is-compare { grid-column: span 3; }
+.rentora-home-benefit-card.is-talk { grid-column: span 6; }
+.rentora-home-benefit-card.is-local { grid-column: span 6; }
+.rentora-home-benefit-prompt { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: .55rem; margin-top: auto; border: 1px solid rgba(245, 222, 194, .18); border-radius: .85rem; background: rgba(255, 248, 237, .09); padding: .7rem .75rem; color: #f7e1c4; font-size: .76rem; line-height: 1.35; }
+.rentora-home-benefit-prompt span { min-width: 0; }
+.rentora-home-benefit-prompt svg:last-child { color: #e9bd88; }
+
+.rentora-home-map-section { position: relative; overflow: hidden; background: linear-gradient(135deg, #e9dfd2, #e4d3bf); }
+.rentora-home-map-section::after { position: absolute; right: -15rem; bottom: -20rem; width: 43rem; height: 43rem; border: 1px solid rgba(138, 98, 62, .12); border-radius: 50%; box-shadow: 0 0 0 5rem rgba(255, 250, 243, .16); content: ""; pointer-events: none; }
+.rentora-home-map-layout { position: relative; }
+
+.rentora-home-journey { position: relative; overflow: hidden; background: linear-gradient(180deg, #f9f6f1, #f2ebe2); }
+.rentora-home-journey::before { position: absolute; top: 2rem; left: -16rem; width: 36rem; height: 36rem; border-radius: 50%; background: radial-gradient(circle, rgba(234, 217, 197, .58), transparent 69%); content: ""; pointer-events: none; }
+.rentora-home-journey .shell { position: relative; }
+.rentora-home-journey-stage { display: grid; grid-template-columns: minmax(15.5rem, .68fr) minmax(0, 1.32fr); align-items: stretch; gap: clamp(1rem, 4vw, 3rem); margin-top: clamp(2rem, 4vw, 3.6rem); }
+.rentora-home-journey-summary { display: flex; min-width: 0; flex-direction: column; border: 1px solid rgba(93, 62, 40, .36); border-radius: 1.45rem; background: linear-gradient(145deg, #513727, #2f211a); box-shadow: 0 18px 38px rgba(65, 41, 23, .16); padding: clamp(1.35rem, 3vw, 2rem); color: #fff8ee; }
+.rentora-home-journey-summary > span { display: grid; width: 2.75rem; height: 2.75rem; place-items: center; border: 1px solid rgba(241, 211, 176, .25); border-radius: .9rem; background: rgba(252, 233, 206, .1); color: #eccb9e; }
+.rentora-home-journey-summary .rentora-home-kicker { margin-top: 1.5rem; color: #e8bd8a; }
+.rentora-home-journey-summary h3 { max-width: 12ch; margin: .55rem 0 0; color: #fff8ef; font-size: clamp(1.45rem, 2.3vw, 2rem); font-weight: 710; letter-spacing: -.055em; line-height: 1.04; }
+.rentora-home-journey-summary > p:not(.rentora-home-kicker) { margin: .8rem 0 0; color: #e2cdbc; font-size: .88rem; line-height: 1.65; }
+.rentora-home-journey-summary a { display: inline-flex; align-items: center; gap: .5rem; width: fit-content; margin-top: auto; padding-top: 1.75rem; color: #f4c990; font-size: .78rem; font-weight: 800; text-decoration: none; }
+.rentora-home-journey-summary a:hover { color: #fff1dd; }
+.rentora-home-journey-line { position: relative; display: grid; grid-template-columns: 1fr; gap: .75rem; margin: 0; padding: .2rem 0; }
+.rentora-home-journey-line::before { position: absolute; top: 2.5rem; bottom: 2.5rem; left: 1.45rem; width: 1px; height: auto; background: linear-gradient(180deg, rgba(179, 128, 82, .1), rgba(166, 108, 62, .66), rgba(179, 128, 82, .1)); content: ""; }
+.rentora-home-journey-line article { position: relative; display: grid; grid-template-columns: 3.25rem minmax(0, 1fr); column-gap: 1rem; min-width: 0; border: 1px solid rgba(168, 136, 104, .17); border-radius: 1.15rem; background: rgba(255, 253, 249, .72); box-shadow: 0 9px 19px rgba(72, 49, 28, .035); padding: 1rem 1.15rem; transition: transform 220ms ease, box-shadow 220ms ease; }
+.rentora-home-journey-line article:hover { box-shadow: 0 18px 28px rgba(72, 49, 28, .08); transform: translateY(-4px); }
+.rentora-home-journey-line article > div { position: relative; z-index: 1; grid-row: span 2; display: grid; width: 2.9rem; height: 2.9rem; margin: 0; place-items: center; border: 1px solid #ddbf9d; border-radius: .85rem; background: #fffaf3; box-shadow: 0 7px 16px rgba(76, 50, 28, .09); color: #765035; }
+.rentora-home-journey-line article > div span { position: absolute; top: -.55rem; right: -.75rem; display: grid; width: 1.35rem; height: 1.35rem; place-items: center; border: 1px solid #ecd4b9; border-radius: 50%; background: #f8ebdc; color: #9a663e; font-size: .55rem; font-weight: 850; letter-spacing: 0; }
+.rentora-home-journey-line h3 { margin: .05rem 0 0; color: #392b21; font-size: 1.1rem; font-weight: 730; letter-spacing: -.04em; line-height: 1.2; }
+.rentora-home-journey-line p { grid-column: 2; max-width: 58ch; margin: .35rem 0 0; color: #75675b; font-size: .84rem; line-height: 1.58; }
+
+/* Refined type treatment for the public product story. */
+.rentora-home { font-feature-settings: "kern" 1, "liga" 1; }
+.rentora-home-hero h1 { color: #fffaf4; font-weight: 690; letter-spacing: -.065em; line-height: 1.01; text-shadow: 0 2px 18px rgba(0, 0, 0, .12); }
+.rentora-home-hero-intro { color: #e2d2c1; font-weight: 500; }
+.rentora-home-section-heading h2, .rentora-home-map-copy h2, .rentora-home-journey-heading h2, .rentora-home-final h2 { font-weight: 700; letter-spacing: -.065em; line-height: 1; text-wrap: balance; }
+.rentora-home-section-heading > div:last-child p, .rentora-home-map-copy > p:not(.rentora-home-kicker), .rentora-home-journey-heading > p:not(.rentora-home-kicker) { color: #6e6054; font-weight: 510; }
+.rentora-home-final h2 { font-weight: 680; letter-spacing: -.06em; }
+
+@keyframes rentora-home-rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes rentora-home-preview-enter { from { opacity: 0; transform: translateY(15px) rotate(-.4deg); } to { opacity: 1; transform: translateY(0) rotate(1.4deg); } }
+
+@media (max-width: 980px) { .rentora-home-benefit-card.is-primary { grid-column: span 6; } .rentora-home-benefit-card.is-map, .rentora-home-benefit-card.is-local { grid-column: span 6; } .rentora-home-benefit-card.is-compare, .rentora-home-benefit-card.is-talk { grid-column: span 6; } .rentora-home-benefit-card { min-height: 13.5rem; } }
+@media (max-width: 760px) { .rentora-home-story-heading, .rentora-home-benefits-heading { grid-template-columns: 1fr; gap: 1rem; } .rentora-home-story-heading h2, .rentora-home-benefits-heading h2 { max-width: 15ch; } .rentora-home-story-grid { grid-template-columns: 1fr; } .rentora-home-story-card { padding: 1.25rem; } .rentora-home-journey-stage { grid-template-columns: 1fr; } .rentora-home-journey-summary { min-height: 0; } .rentora-home-journey-summary a { margin-top: 1.5rem; padding-top: 0; } .rentora-home-journey-line article { padding: 1rem; } }
+@media (max-width: 620px) { .rentora-home-story, .rentora-home-benefits { padding: 4rem 0; } .rentora-home-story-heading h2, .rentora-home-benefits-heading h2 { max-width: 100%; font-size: clamp(2.05rem, 9.5vw, 2.9rem); } .rentora-home-story-note { align-items: flex-start; padding: 1rem; } .rentora-home-benefit-grid { grid-template-columns: 1fr; } .rentora-home-benefit-card, .rentora-home-benefit-card.is-primary, .rentora-home-benefit-card.is-map, .rentora-home-benefit-card.is-compare, .rentora-home-benefit-card.is-talk, .rentora-home-benefit-card.is-local { grid-column: auto; min-height: 0; padding: 1.25rem; } .rentora-home-journey-stage { gap: 1rem; } .rentora-home-journey-summary { border-radius: 1.2rem; } .rentora-home-journey-line { gap: .65rem; } .rentora-home-journey-line article { grid-template-columns: 2.8rem minmax(0, 1fr); column-gap: .8rem; } .rentora-home-journey-line::before { top: 2.2rem; bottom: 2.2rem; left: 1.25rem; } .rentora-home-journey-line article > div { width: 2.55rem; height: 2.55rem; } }
+html[lang="am"] .rentora-home-story-heading h2, html[lang="am"] .rentora-home-benefits-heading h2 { font-weight: 670; letter-spacing: -.03em; line-height: 1.15; }
+html[lang="am"] .rentora-home-story-card h3, html[lang="am"] .rentora-home-benefit-card h3 { font-weight: 700; letter-spacing: -.018em; }
+html[lang="am"] .rentora-home-hero h1 { font-weight: 650; letter-spacing: -.03em; line-height: 1.14; text-shadow: none; }
+html[lang="am"] .rentora-home-section-heading h2, html[lang="am"] .rentora-home-map-copy h2, html[lang="am"] .rentora-home-journey-heading h2, html[lang="am"] .rentora-home-final h2 { font-weight: 660; letter-spacing: -.028em; line-height: 1.15; }
+html[lang="ru"] .rentora-home-hero h1 { font-weight: 680; letter-spacing: -.055em; line-height: 1.06; }

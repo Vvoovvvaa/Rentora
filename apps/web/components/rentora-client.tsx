@@ -26,6 +26,10 @@ import {
 } from "@/context/rentora-ai-context";
 
 import {
+  SubscriptionProvider,
+} from "@/context/subscription-context";
+
+import {
   AppShell,
 } from "./site-chrome";
 
@@ -84,6 +88,10 @@ import {
   PropertyAnalyticsView,
 } from "./property-analytics-view";
 
+import {
+  SubscriptionPage,
+} from "./subscription-page";
+
 export function RentoraClient() {
   return (
     <I18nProvider>
@@ -126,8 +134,9 @@ function LocalizedRentoraClient() {
 
   return (
     <AuthProvider>
-      <CompareProvider>
-        <RentoraAiProvider>
+      <SubscriptionProvider>
+        <CompareProvider>
+          <RentoraAiProvider>
           <AppShell>
             {path === "/" ? (
               <HomeView />
@@ -176,6 +185,9 @@ function LocalizedRentoraClient() {
               <NeedLogin>
                 <SupportView />
               </NeedLogin>
+            ) : path ===
+              "/subscription" ? (
+              <SubscriptionPage />
             ) : path ===
                 "/properties" ||
               path ===
@@ -234,8 +246,9 @@ function LocalizedRentoraClient() {
           <RentoraAiPanel />
 
           <RentoraAiFloatingButton />
-        </RentoraAiProvider>
-      </CompareProvider>
+          </RentoraAiProvider>
+        </CompareProvider>
+      </SubscriptionProvider>
     </AuthProvider>
   );
 }

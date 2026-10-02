@@ -36,6 +36,8 @@ export function ChatPanel({ selectedRoomId }: { selectedRoomId?: number }) {
   const [text, setText] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [socketReady, setSocketReady] = useState(false);
+  const [sending, setSending] = useState(false);
   const socketRef = useRef<Socket | null>(null);
   const activeRef = useRef<number | undefined>(undefined);
   const feedRef = useRef<HTMLDivElement>(null);
@@ -73,7 +75,23 @@ export function ChatPanel({ selectedRoomId }: { selectedRoomId?: number }) {
     const token = localStorage.getItem("rentora_token");
     const socket = io(getSocketServerUrl(), { auth: { token } });
     socketRef.current = socket;
-    socket.emit("joinRoom", active);
+    const joinRoom = () => {
+      socket.timeout(10_000).emit("joinRoom", active, (joinError: Error | null) => {
+        if (!mounted || !joinError) return;
+        setSocketReady(false);
+        setError(t("messages.connectionFailed"));
+      });
+    };
+    const onConnect = () => {
+      if (!mounted) return;
+      setSocketReady(true);
+      joinRoom();
+    };
+    const onConnectError = () => {
+      if (!mounted) return;
+      setSocketReady(false);
+      setError(t("messages.connectionFailed"));
+    };
     const onMessage = (message: ChatMessage) => {
       setContext((current) => ({ ...current, [message.roomId]: { ...current[message.roomId], lastMessage: message } }));
       if (message.roomId !== activeRef.current) {
@@ -82,15 +100,20 @@ export function ChatPanel({ selectedRoomId }: { selectedRoomId?: number }) {
       }
       setMessages((current) => current.some((item) => item.id === message.id) ? current : [...current, message]);
     };
+    socket.on("connect", onConnect);
+    socket.on("connect_error", onConnectError);
     socket.on("newMessage", onMessage);
+    if (socket.connected) onConnect();
     return () => {
       window.clearTimeout(errorTimer);
       window.clearTimeout(unreadTimer);
+      socket.off("connect", onConnect);
+      socket.off("connect_error", onConnectError);
       socket.off("newMessage", onMessage);
       socket.disconnect();
       if (socketRef.current === socket) socketRef.current = null;
     };
-  }, [active]);
+  }, [active, t]);
 
   useEffect(() => {
     const feed = feedRef.current;
@@ -109,9 +132,36 @@ export function ChatPanel({ selectedRoomId }: { selectedRoomId?: number }) {
   const send = (event: React.FormEvent) => {
     event.preventDefault();
     const body = text.trim();
-    if (!active || !body || !socketRef.current) return;
-    socketRef.current.emit("sendMessage", { roomId: active, text: body });
-    setText("");
+    const socket = socketRef.current;
+    if (!active || !body || !socket || !socket.connected || sending) return;
+
+    setSending(true);
+    setError("");
+    socket.timeout(10_000).emit(
+      "sendMessage",
+      { roomId: active, text: body },
+      (sendError: Error | null, message?: ChatMessage) => {
+        setSending(false);
+        if (sendError || !message?.id) {
+          setError(t("messages.sendFailed"));
+          return;
+        }
+
+        setText("");
+        setContext((current) => ({
+          ...current,
+          [message.roomId]: {
+            ...current[message.roomId],
+            lastMessage: message,
+          },
+        }));
+        setMessages((current) =>
+          current.some((item) => item.id === message.id)
+            ? current
+            : [...current, message],
+        );
+      },
+    );
   };
   const handleFeedScroll = () => {
     const feed = feedRef.current;
@@ -174,8 +224,8 @@ export function ChatPanel({ selectedRoomId }: { selectedRoomId?: number }) {
       </div>
 
       <form onSubmit={send} className="chat-composer">
-        <textarea disabled={!active} value={text} onChange={(event) => setText(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} rows={1} maxLength={2000} placeholder={active ? t("messages.typeMessage") : t("messages.chooseConversationFirst")} aria-label={t("messages.typeMessage")}/>
-        <button type="submit" disabled={!active || !text.trim()} className="chat-send" aria-label={t("messages.send")}><Send size={18}/><span>{t("messages.send")}</span></button>
+        <textarea disabled={!active || sending} value={text} onChange={(event) => setText(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} rows={1} maxLength={2000} placeholder={active ? t("messages.typeMessage") : t("messages.chooseConversationFirst")} aria-label={t("messages.typeMessage")}/>
+        <button type="submit" disabled={!active || !socketReady || !text.trim() || sending} className="chat-send" aria-label={sending ? t("messages.sending") : t("messages.send")}><Send size={18}/><span>{sending ? t("messages.sending") : t("messages.send")}</span></button>
       </form>
     </section>
   </div>;

@@ -14,6 +14,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { I18nContext, I18nService } from 'nestjs-i18n';
 
 import { CreatePropertyDto } from './dto/create-property.dto';
 import { PropertyPublishing, PropertyStatus } from '@app/common-rentora/enums';
@@ -24,8 +25,8 @@ import { SenderService } from '@app/common-rentora/smtp';
 import { CreateReportDto } from './dto/create-report.dto';
 import { PropertyMapDto } from './dto/property-map.dto';
 import { applyPropertyFilters } from '../search/property-filter.helper';
-import { I18nContext, I18nService } from 'nestjs-i18n';
 import { PropertyPriceHistory } from '@app/common-rentora/database/entity/price-history';
+import { SubscriptionService } from '../subscription/subscription.service';
 
 @Injectable()
 export class PropertiesService {
@@ -49,10 +50,9 @@ export class PropertiesService {
     private readonly propertyViews: Repository<PropertyViews>,
 
     private readonly uploadservice: UploadService,
-
     private readonly senderservice: SenderService,
-
     private readonly i18n: I18nService,
+    private readonly subscriptionService: SubscriptionService
   ) { }
 
   private t(key: string, args?: Record<string, any>): string {
@@ -79,6 +79,8 @@ export class PropertiesService {
       throw new BadRequestException(this.t('property.VERIFY_EMAIL'));
     }
 
+    await this.checkActivePropertyLimit(userId)
+
     const property = this.propertyRepo.create({
       ...dto,
       owner: user,
@@ -94,6 +96,7 @@ export class PropertiesService {
     });
 
     await this.priceHistoryRepo.save(priceHistory);
+
 
     if (files.length) {
       const images: PropertyImage[] = [];
@@ -260,31 +263,69 @@ export class PropertiesService {
       message: this.t('property.PROPERTY_ARCHIVED'),
     };
   }
-
-  async restoreProperty(propid: number, userId: number) {
-    const property = await this.propertyRepo.findOne({
-      where: { id: propid, owner: { id: userId } },
-      relations: { owner: true },
-    });
+  async restoreProperty(
+    propid: number,
+    userId: number,
+  ) {
+    const property =
+      await this.propertyRepo.findOne({
+        where: {
+          id: propid,
+          owner: {
+            id: userId,
+          },
+        },
+        relations: {
+          owner: true,
+        },
+      });
 
     if (!property) {
-      throw new BadRequestException(this.t('property.TRY_AGAIN_LATER'));
+      throw new BadRequestException(
+        this.t('property.TRY_AGAIN_LATER'),
+      );
     }
 
-    if (property.owner.id !== userId) {
-      throw new ForbiddenException(this.t('property.CANNOT_RESTORE_PROPERTY'));
+    if (
+      property.owner.id !== userId
+    ) {
+      throw new ForbiddenException(
+        this.t(
+          'property.CANNOT_RESTORE_PROPERTY',
+        ),
+      );
     }
 
-    if (property.status !== PropertyStatus.ARCHIVED) {
-      throw new BadRequestException(this.t('property.PROPERTY_NOT_ARCHIVED'));
+    if (
+      property.status !==
+      PropertyStatus.ARCHIVED
+    ) {
+      throw new BadRequestException(
+        this.t(
+          'property.PROPERTY_NOT_ARCHIVED',
+        ),
+      );
     }
 
-    property.status = PropertyStatus.ACTIVE;
-    await this.propertyRepo.save(property);
+    // ВАЖНО
+    await this.checkActivePropertyLimit(
+      userId,
+    );
 
-    return { message: this.t('property.PROPERTY_RESTORED') };
+    property.status =
+      PropertyStatus.ACTIVE;
+
+    await this.propertyRepo.save(
+      property,
+    );
+
+    return {
+      message:
+        this.t(
+          'property.PROPERTY_RESTORED',
+        ),
+    };
   }
-
   async compareProperties(userId: number, propId1: number, propId2: number) {
     const user = await this.userRepo.findOne({ where: { id: userId } });
 
@@ -491,4 +532,34 @@ export class PropertiesService {
 
     return history;
   }
+
+  private async checkActivePropertyLimit(
+    userId: number,
+  ): Promise<void> {
+    const config =
+      await this.subscriptionService.getUserConfig(
+        userId,
+      );
+
+    const activePropertiesCount =
+      await this.propertyRepo.count({
+        where: {
+          owner: {
+            id: userId,
+          },
+
+          status: PropertyStatus.ACTIVE,
+        },
+      });
+
+    if (
+      activePropertiesCount >=
+      config.maxProperties
+    ) {
+      throw new ForbiddenException(
+        `Your ${config.plan} plan allows maximum ${config.maxProperties} active properties`,
+      );
+    }
+  }
+
 }

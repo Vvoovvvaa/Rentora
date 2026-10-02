@@ -28,7 +28,12 @@ export class ChatController {
 
   @Get(':roomId/messages')
   @UseGuards(AuthGuard)
-  async getMessages(@Param('roomId') roomId: number) {
+  async getMessages(
+    @Param('roomId') roomId: number,
+    @AuthUser('id') userId: number,
+  ) {
+    await this.chatService.checkRoomAccess(roomId, userId);
+
     return await this.chatService.getMessages(roomId);
   }
 }

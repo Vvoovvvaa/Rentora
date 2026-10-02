@@ -7,10 +7,12 @@ import { useAuth } from "@/context/auth-context";
 import { apiMessage, userApi } from "@/lib/api";
 import { PhoneInput } from "./phone-input";
 import { useI18n } from "@/context/i18n-context";
+import { useSubscription } from "@/context/subscription-context";
 
 export function ProfilePage() {
   const { user, refresh, signOut } = useAuth();
-  const { t } = useI18n();
+  const { t, formatDate } = useI18n();
+  const { subscription, loading: subscriptionLoading } = useSubscription();
   const [name, setName] = useState(user?.name || "");
   const [phone, setPhone] = useState(user?.phone || "+374");
   const [age, setAge] = useState(String(user?.age || ""));
@@ -92,6 +94,8 @@ export function ProfilePage() {
 
           <div className="profile-save-area"><div>{error && <p className="profile-notice is-error" role="alert">{error}</p>}{success && <p className="profile-notice is-success" role="status">{success}</p>}</div><div><button type="button" className="btn-secondary" onClick={reset} disabled={saving}>{t("common.cancel")}</button><button className="btn-primary" disabled={saving}>{saving ? t("profile.saving") : t("profile.saveChanges")}</button></div></div>
         </form>
+
+        {subscriptionLoading ? <div className="skeleton h-28 rounded-2xl" /> : subscription && <section className="profile-subscription-card" aria-label={t("subscription.currentPlan")}><div><p>{t("subscription.currentPlan")}</p><h3>{t(`subscription.planNames.${subscription.plan}`)}</h3><small>{t("subscription.activeListings", { count: subscription.config.maxProperties })}{subscription.expiresAt && subscription.plan !== "FREE" ? ` · ${subscription.autoRenew ? t("subscription.renewsOn", { date: formatDate(subscription.expiresAt) }) : t("subscription.validUntil", { date: formatDate(subscription.expiresAt) })}` : ""}</small></div><Link href="/subscription">{t("subscription.managePlan")}</Link></section>}
 
         <section className="profile-account-card"><div><p className="eyebrow">{t("profile.eyebrow")}</p><h2>{t("profile.title")}</h2></div><dl><div><dt>{t("profile.email")}</dt><dd>{user?.gmailStatus === "VERIFIED" ? t("profile.verifiedEmail") : t("common.notAvailable")}</dd></div><div><dt>{t("property.status")}</dt><dd>{user?.accauntStatus === "ACTIVE" ? t("status.ACTIVE") : user?.accauntStatus || t("common.notAvailable")}</dd></div></dl></section>
       </div>

@@ -15,6 +15,14 @@ import {
 
 import { AnalyticService } from '../analytic/analytic.service';
 
+export type ChatMessageResponse = {
+  id: number;
+  roomId: number;
+  senderId: number;
+  text: string;
+  createdAt: Date;
+};
+
 @Injectable()
 export class ChatService {
   constructor(
@@ -42,23 +50,49 @@ export class ChatService {
     roomId: number;
     senderId: number;
     text: string;
-  }) {
-    const message = this.messageRepository.create(data);
+  }): Promise<ChatMessageResponse> {
+    // `Message` owns relation columns rather than scalar `roomId`/`senderId`
+    // columns. Supplying the relations is what persists both foreign keys.
+    const message = this.messageRepository.create({
+      text: data.text,
+      user: { id: data.senderId },
+      chatRomms: { id: data.roomId },
+    });
 
-    return this.messageRepository.save(message);
+    const savedMessage = await this.messageRepository.save(message);
+
+    return {
+      id: savedMessage.id,
+      roomId: data.roomId,
+      senderId: data.senderId,
+      text: savedMessage.text,
+      createdAt: savedMessage.createdAt,
+    };
   }
 
-  async getMessages(roomId: number) {
-    return this.messageRepository.find({
+  async getMessages(roomId: number): Promise<ChatMessageResponse[]> {
+    const messages = await this.messageRepository.find({
       where: {
         chatRomms: {
           id: roomId,
         },
       },
+      relations: {
+        chatRomms: true,
+        user: true,
+      },
       order: {
         createdAt: 'ASC',
       },
     });
+
+    return messages.map((message) => ({
+      id: message.id,
+      roomId: message.chatRomms.id,
+      senderId: message.user.id,
+      text: message.text,
+      createdAt: message.createdAt,
+    }));
   }
 
   async createRoom(data: {

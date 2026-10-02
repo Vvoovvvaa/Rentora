@@ -96,6 +96,37 @@ export type PropertySort =
   | "OLDEST"
   | "MOST_VIEWED";
 
+export type SubscriptionPlanName =
+  | "FREE"
+  | "PLUS"
+  | "PRO";
+
+export type SubscriptionStatus =
+  | "ACTIVE"
+  | "EXPIRED"
+  | "CANCELED"
+  | string;
+
+export interface SubscriptionPlan {
+  id: number;
+  plan: SubscriptionPlanName;
+  maxProperties: number;
+  advancedAnalytics: boolean;
+  monthlyBumps: number;
+  prioritySearch: boolean;
+  price: number;
+}
+
+export interface CurrentSubscription {
+  id?: number;
+  plan: SubscriptionPlanName;
+  status: SubscriptionStatus;
+  autoRenew: boolean;
+  startedAt: string | null;
+  expiresAt: string | null;
+  config: SubscriptionPlan;
+}
+
 export type ReportReason =
   | "FRAUD"
   | "INCCORECT_PRICE"

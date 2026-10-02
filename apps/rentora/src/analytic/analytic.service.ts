@@ -6,7 +6,9 @@ import {
 
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 
 import { InjectRepository } from '@nestjs/typeorm';
@@ -15,6 +17,8 @@ import {
   MoreThanOrEqual,
   Repository,
 } from 'typeorm';
+
+import { SubscriptionService } from '../subscription/subscription.service';
 
 @Injectable()
 export class AnalyticService {
@@ -27,217 +31,413 @@ export class AnalyticService {
 
     @InjectRepository(PropertyAnalytic)
     private readonly propertyAnalyticRepo: Repository<PropertyAnalytic>,
+
+    private readonly subscriptionService: SubscriptionService,
   ) {}
 
-  private formatDate(date: Date) {
-    const year = date.getFullYear();
+  // =====================================================
+  // ACCESS
+  // =====================================================
 
-    const month = String(
-      date.getMonth() + 1,
-    ).padStart(2, '0');
+  private async checkAnalyticsAccess(
+    userId: number,
+    propertyId: number,
+  ): Promise<void> {
+    /*
+     * Проверяем одновременно:
+     * - property существует
+     * - property принадлежит этому пользователю
+     */
+    const property = await this.propertyRepo.findOne({
+      where: {
+        id: propertyId,
 
-    const day = String(
-      date.getDate(),
-    ).padStart(2, '0');
+        owner: {
+          id: userId,
+        },
+      },
+
+      select: {
+        id: true,
+      },
+    });
+
+    /*
+     * Не раскрываем пользователю информацию
+     * о существовании чужого property.
+     */
+    if (!property) {
+      throw new NotFoundException(
+        'Property not found',
+      );
+    }
+
+    /*
+     * SubscriptionService сам определяет:
+     *
+     * UserSubscription
+     *      ↓
+     * FREE / PLUS / PRO
+     *      ↓
+     * SubscriptionConfig
+     */
+    const config =
+      await this.subscriptionService.getUserConfig(
+        userId,
+      );
+
+    if (!config.advancedAnalytics) {
+      throw new ForbiddenException(
+        'Advanced analytics is available only for PLUS and PRO plans',
+      );
+    }
+  }
+
+  // =====================================================
+  // DATE HELPERS
+  // =====================================================
+
+  private formatDate(
+    date: Date,
+  ): string {
+    const year =
+      date.getFullYear();
+
+    const month =
+      String(
+        date.getMonth() + 1,
+      ).padStart(
+        2,
+        '0',
+      );
+
+    const day =
+      String(
+        date.getDate(),
+      ).padStart(
+        2,
+        '0',
+      );
 
     return `${year}-${month}-${day}`;
   }
 
-  private getToday() {
-    return this.formatDate(new Date());
+  private getToday(): string {
+    return this.formatDate(
+      new Date(),
+    );
   }
 
-  async createTodayAnalytic(propertyId: number) {
-    const property = await this.propertyRepo.findOne({
-      where: {
-        id: propertyId,
-      },
-    });
+  // =====================================================
+  // DAILY ANALYTIC
+  // =====================================================
 
-    if (!property) {
-      throw new BadRequestException('Property Not found');
-    }
-
-    const today = this.getToday();
-
-    let analytic = await this.propertyAnalyticRepo.findOne({
-      where: {
-        property: {
+  private async createTodayAnalytic(
+    propertyId: number,
+  ) {
+    const property =
+      await this.propertyRepo.findOne({
+        where: {
           id: propertyId,
         },
-        date: today,
-      },
-    });
-
-    if (!analytic) {
-      analytic = this.propertyAnalyticRepo.create({
-        property: property,
-        date: today,
-        favoritesAdded: 0,
-        chatsStarted: 0,
       });
 
-      await this.propertyAnalyticRepo.save(analytic);
+    if (!property) {
+      throw new BadRequestException(
+        'Property not found',
+      );
+    }
+
+    const today =
+      this.getToday();
+
+    let analytic =
+      await this.propertyAnalyticRepo.findOne({
+        where: {
+          property: {
+            id: propertyId,
+          },
+
+          date: today,
+        },
+      });
+
+    if (!analytic) {
+      analytic =
+        this.propertyAnalyticRepo.create({
+          property,
+
+          date: today,
+
+          favoritesAdded: 0,
+
+          chatsStarted: 0,
+        });
+
+      await this.propertyAnalyticRepo.save(
+        analytic,
+      );
     }
 
     return analytic;
   }
 
-  async addFavorite(propertyId: number) {
-    const analytic = await this.createTodayAnalytic(propertyId);
+  // =====================================================
+  // FAVORITE
+  // =====================================================
+
+  async addFavorite(
+    propertyId: number,
+  ): Promise<void> {
+    const analytic =
+      await this.createTodayAnalytic(
+        propertyId,
+      );
 
     await this.propertyAnalyticRepo.increment(
       {
         id: analytic.id,
       },
+
       'favoritesAdded',
+
       1,
     );
   }
 
-  async addChat(propertyId: number) {
-    const analytic = await this.createTodayAnalytic(propertyId);
+  // =====================================================
+  // CHAT
+  // =====================================================
+
+  async addChat(
+    propertyId: number,
+  ): Promise<void> {
+    const analytic =
+      await this.createTodayAnalytic(
+        propertyId,
+      );
 
     await this.propertyAnalyticRepo.increment(
       {
         id: analytic.id,
       },
+
       'chatsStarted',
+
       1,
     );
   }
 
-  async getViews(propertyId: number) {
-    const property = await this.propertyRepo.findOne({
-      where: {
-        id: propertyId,
-      },
-    });
+  // =====================================================
+  // VIEWS
+  // =====================================================
+
+  private async getViews(
+    propertyId: number,
+  ) {
+    const property =
+      await this.propertyRepo.findOne({
+        where: {
+          id: propertyId,
+        },
+      });
 
     if (!property) {
-      throw new BadRequestException('Property Not found');
+      throw new BadRequestException(
+        'Property not found',
+      );
     }
 
-    const now = new Date();
+    const now =
+      new Date();
 
-    const today = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate(),
-    );
+    const today =
+      new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate(),
+      );
 
-    const week = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate() - 6,
-    );
+    const week =
+      new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate() - 6,
+      );
 
-    const month = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate() - 29,
-    );
+    const month =
+      new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate() - 29,
+      );
 
-    const todayViews = await this.propertyViewsRepo.count({
-      where: {
-        property: {
-          id: propertyId,
+    const [
+      todayViews,
+      weekViews,
+      monthViews,
+    ] = await Promise.all([
+      this.propertyViewsRepo.count({
+        where: {
+          property: {
+            id: propertyId,
+          },
+
+          createdAt:
+            MoreThanOrEqual(
+              today,
+            ),
         },
-        createdAt: MoreThanOrEqual(today),
-      },
-    });
+      }),
 
-    const weekViews = await this.propertyViewsRepo.count({
-      where: {
-        property: {
-          id: propertyId,
-        },
-        createdAt: MoreThanOrEqual(week),
-      },
-    });
+      this.propertyViewsRepo.count({
+        where: {
+          property: {
+            id: propertyId,
+          },
 
-    const monthViews = await this.propertyViewsRepo.count({
-      where: {
-        property: {
-          id: propertyId,
+          createdAt:
+            MoreThanOrEqual(
+              week,
+            ),
         },
-        createdAt: MoreThanOrEqual(month),
-      },
-    });
+      }),
+
+      this.propertyViewsRepo.count({
+        where: {
+          property: {
+            id: propertyId,
+          },
+
+          createdAt:
+            MoreThanOrEqual(
+              month,
+            ),
+        },
+      }),
+    ]);
 
     return {
       today: todayViews,
+
       week: weekViews,
+
       month: monthViews,
-      total: property.view,
+
+      total:
+        property.view ?? 0,
     };
   }
 
-  async getViewsChart(
+  // =====================================================
+  // VIEWS CHART
+  // =====================================================
+
+  private async getViewsChart(
     propertyId: number,
     days: number = 7,
   ) {
-    const property = await this.propertyRepo.findOne({
-      where: {
-        id: propertyId,
-      },
-    });
-
-    if (!property) {
-      throw new BadRequestException('Property Not found');
+    if (
+      days < 1 ||
+      days > 365
+    ) {
+      throw new BadRequestException(
+        'Days must be between 1 and 365',
+      );
     }
 
-    const fromDate = new Date();
+    const property =
+      await this.propertyRepo.findOne({
+        where: {
+          id: propertyId,
+        },
 
-    fromDate.setHours(0, 0, 0, 0);
+        select: {
+          id: true,
+        },
+      });
 
-    fromDate.setDate(
-      fromDate.getDate() - (days - 1),
+    if (!property) {
+      throw new BadRequestException(
+        'Property not found',
+      );
+    }
+
+    const fromDate =
+      new Date();
+
+    fromDate.setHours(
+      0,
+      0,
+      0,
+      0,
     );
 
-    const views = await this.propertyViewsRepo
-      .createQueryBuilder('view')
-      .innerJoin(
-        'view.property',
-        'property',
-      )
-      .select(
-        'DATE(view.createdAt)',
-        'date',
-      )
-      .addSelect(
-        'COUNT(view.id)',
-        'views',
-      )
-      .where(
-        'property.id = :propertyId',
-        {
-          propertyId,
-        },
-      )
-      .andWhere(
-        'view.createdAt >= :fromDate',
-        {
-          fromDate,
-        },
-      )
-      .groupBy(
-        'DATE(view.createdAt)',
-      )
-      .orderBy(
-        'DATE(view.createdAt)',
-        'ASC',
-      )
-      .getRawMany<{
-        date: string;
-        views: string;
-      }>();
+    fromDate.setDate(
+      fromDate.getDate() -
+        (days - 1),
+    );
 
-    const viewsMap = new Map<string, number>();
+    const views =
+      await this.propertyViewsRepo
+        .createQueryBuilder(
+          'view',
+        )
 
-    for (const view of views) {
+        .innerJoin(
+          'view.property',
+          'property',
+        )
+
+        .select(
+          'DATE(view.createdAt)',
+          'date',
+        )
+
+        .addSelect(
+          'COUNT(view.id)',
+          'views',
+        )
+
+        .where(
+          'property.id = :propertyId',
+          {
+            propertyId,
+          },
+        )
+
+        .andWhere(
+          'view.createdAt >= :fromDate',
+          {
+            fromDate,
+          },
+        )
+
+        .groupBy(
+          'DATE(view.createdAt)',
+        )
+
+        .orderBy(
+          'DATE(view.createdAt)',
+          'ASC',
+        )
+
+        .getRawMany<{
+          date: string;
+          views: string;
+        }>();
+
+    const viewsMap =
+      new Map<
+        string,
+        number
+      >();
+
+    for (
+      const view of views
+    ) {
       viewsMap.set(
-        view.date,
+        String(view.date),
         Number(view.views),
       );
     }
@@ -247,48 +447,72 @@ export class AnalyticService {
       views: number;
     }[] = [];
 
-    for (let i = 0; i < days; i++) {
-      const date = new Date(fromDate);
+    for (
+      let i = 0;
+      i < days;
+      i++
+    ) {
+      const date =
+        new Date(fromDate);
 
       date.setDate(
         fromDate.getDate() + i,
       );
 
-      const formattedDate = this.formatDate(date);
+      const formattedDate =
+        this.formatDate(
+          date,
+        );
 
       chart.push({
-        date: formattedDate,
-        views: viewsMap.get(formattedDate) ?? 0,
+        date:
+          formattedDate,
+
+        views:
+          viewsMap.get(
+            formattedDate,
+          ) ?? 0,
       });
     }
 
     return chart;
   }
 
+  // =====================================================
+  // ANALYTIC PERIOD
+  // =====================================================
+
   private async getAnalyticPeriod(
     propertyId: number,
     fromDate?: string,
   ) {
-    const query = this.propertyAnalyticRepo
-      .createQueryBuilder('analytic')
-      .innerJoin(
-        'analytic.property',
-        'property',
-      )
-      .select(
-        'COALESCE(SUM(analytic.favoritesAdded), 0)',
-        'favorites',
-      )
-      .addSelect(
-        'COALESCE(SUM(analytic.chatsStarted), 0)',
-        'chats',
-      )
-      .where(
-        'property.id = :propertyId',
-        {
-          propertyId,
-        },
-      );
+    const query =
+      this.propertyAnalyticRepo
+        .createQueryBuilder(
+          'analytic',
+        )
+
+        .innerJoin(
+          'analytic.property',
+          'property',
+        )
+
+        .select(
+          'COALESCE(SUM(analytic.favoritesAdded), 0)',
+          'favorites',
+        )
+
+        .addSelect(
+          'COALESCE(SUM(analytic.chatsStarted), 0)',
+          'chats',
+        )
+
+        .where(
+          'property.id = :propertyId',
+          {
+            propertyId,
+          },
+        );
 
     if (fromDate) {
       query.andWhere(
@@ -299,79 +523,130 @@ export class AnalyticService {
       );
     }
 
-    const result = await query.getRawOne();
+    const result =
+      await query.getRawOne<{
+        favorites: string;
+        chats: string;
+      }>();
 
     return {
-      favorites: Number(
-        result?.favorites ?? 0,
-      ),
-      chats: Number(
-        result?.chats ?? 0,
-      ),
+      favorites:
+        Number(
+          result?.favorites ??
+            0,
+        ),
+
+      chats:
+        Number(
+          result?.chats ??
+            0,
+        ),
     };
   }
 
-  async getActivities(propertyId: number) {
-    const property = await this.propertyRepo.findOne({
-      where: {
-        id: propertyId,
-      },
-    });
+  // =====================================================
+  // ACTIVITIES
+  // =====================================================
+
+  private async getActivities(
+    propertyId: number,
+  ) {
+    const property =
+      await this.propertyRepo.findOne({
+        where: {
+          id: propertyId,
+        },
+
+        select: {
+          id: true,
+        },
+      });
 
     if (!property) {
-      throw new BadRequestException('Property Not found');
+      throw new BadRequestException(
+        'Property not found',
+      );
     }
 
-    const now = new Date();
+    const now =
+      new Date();
 
-    const today = this.getToday();
+    const today =
+      this.getToday();
 
-    const week = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate() - 6,
-    );
+    const week =
+      new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate() - 6,
+      );
 
-    const month = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate() - 29,
-    );
+    const month =
+      new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate() - 29,
+      );
 
-    const weekDate = this.formatDate(week);
-    const monthDate = this.formatDate(month);
+    const weekDate =
+      this.formatDate(
+        week,
+      );
 
-    const todayStats = await this.getAnalyticPeriod(
-      propertyId,
-      today,
-    );
+    const monthDate =
+      this.formatDate(
+        month,
+      );
 
-    const weekStats = await this.getAnalyticPeriod(
-      propertyId,
-      weekDate,
-    );
+    const [
+      todayStats,
+      weekStats,
+      monthStats,
+      totalStats,
+    ] = await Promise.all([
+      this.getAnalyticPeriod(
+        propertyId,
+        today,
+      ),
 
-    const monthStats = await this.getAnalyticPeriod(
-      propertyId,
-      monthDate,
-    );
+      this.getAnalyticPeriod(
+        propertyId,
+        weekDate,
+      ),
 
-    const totalStats = await this.getAnalyticPeriod(
-      propertyId,
-    );
+      this.getAnalyticPeriod(
+        propertyId,
+        monthDate,
+      ),
+
+      this.getAnalyticPeriod(
+        propertyId,
+      ),
+    ]);
 
     return {
-      today: todayStats,
-      week: weekStats,
-      month: monthStats,
-      total: totalStats,
+      today:
+        todayStats,
+
+      week:
+        weekStats,
+
+      month:
+        monthStats,
+
+      total:
+        totalStats,
     };
   }
+
+  // =====================================================
+  // CONVERSION
+  // =====================================================
 
   private calculateRate(
     value: number,
     views: number,
-  ) {
+  ): number {
     if (!views) {
       return 0;
     }
@@ -384,80 +659,154 @@ export class AnalyticService {
     );
   }
 
-  async getPropertyAnalytics(propertyId: number) {
-    const views = await this.getViews(propertyId);
+  // =====================================================
+  // MAIN ANALYTICS
+  // =====================================================
 
-    const activities = await this.getActivities(propertyId);
-
-    const chart = await this.getViewsChart(
+  async getPropertyAnalytics(
+    propertyId: number,
+    userId: number,
+  ) {
+    /*
+     * ВАЖНО:
+     *
+     * userId первым,
+     * propertyId вторым.
+     */
+    await this.checkAnalyticsAccess(
+      userId,
       propertyId,
-      7,
     );
+
+    const [
+      views,
+      activities,
+      chart,
+    ] = await Promise.all([
+      this.getViews(
+        propertyId,
+      ),
+
+      this.getActivities(
+        propertyId,
+      ),
+
+      this.getViewsChart(
+        propertyId,
+        7,
+      ),
+    ]);
 
     return {
       views,
 
       favorites: {
-        today: activities.today.favorites,
-        week: activities.week.favorites,
-        month: activities.month.favorites,
-        total: activities.total.favorites,
+        today:
+          activities.today
+            .favorites,
+
+        week:
+          activities.week
+            .favorites,
+
+        month:
+          activities.month
+            .favorites,
+
+        total:
+          activities.total
+            .favorites,
       },
 
       chats: {
-        today: activities.today.chats,
-        week: activities.week.chats,
-        month: activities.month.chats,
-        total: activities.total.chats,
+        today:
+          activities.today
+            .chats,
+
+        week:
+          activities.week
+            .chats,
+
+        month:
+          activities.month
+            .chats,
+
+        total:
+          activities.total
+            .chats,
       },
 
       conversion: {
         today: {
-          favorite: this.calculateRate(
-            activities.today.favorites,
-            views.today,
-          ),
+          favorite:
+            this.calculateRate(
+              activities.today
+                .favorites,
 
-          chat: this.calculateRate(
-            activities.today.chats,
-            views.today,
-          ),
+              views.today,
+            ),
+
+          chat:
+            this.calculateRate(
+              activities.today
+                .chats,
+
+              views.today,
+            ),
         },
 
         week: {
-          favorite: this.calculateRate(
-            activities.week.favorites,
-            views.week,
-          ),
+          favorite:
+            this.calculateRate(
+              activities.week
+                .favorites,
 
-          chat: this.calculateRate(
-            activities.week.chats,
-            views.week,
-          ),
+              views.week,
+            ),
+
+          chat:
+            this.calculateRate(
+              activities.week
+                .chats,
+
+              views.week,
+            ),
         },
 
         month: {
-          favorite: this.calculateRate(
-            activities.month.favorites,
-            views.month,
-          ),
+          favorite:
+            this.calculateRate(
+              activities.month
+                .favorites,
 
-          chat: this.calculateRate(
-            activities.month.chats,
-            views.month,
-          ),
+              views.month,
+            ),
+
+          chat:
+            this.calculateRate(
+              activities.month
+                .chats,
+
+              views.month,
+            ),
         },
 
         total: {
-          favorite: this.calculateRate(
-            activities.total.favorites,
-            views.total,
-          ),
+          favorite:
+            this.calculateRate(
+              activities.total
+                .favorites,
 
-          chat: this.calculateRate(
-            activities.total.chats,
-            views.total,
-          ),
+              views.total,
+            ),
+
+          chat:
+            this.calculateRate(
+              activities.total
+                .chats,
+
+              views.total,
+            ),
         },
       },
 

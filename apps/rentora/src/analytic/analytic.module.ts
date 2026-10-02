@@ -1,5 +1,8 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+
+import {
+  TypeOrmModule,
+} from '@nestjs/typeorm';
 
 import {
   Property,
@@ -7,8 +10,17 @@ import {
   PropertyViews,
 } from '@app/common-rentora';
 
-import { AnalyticService } from './analytic.service';
-import { AnalyticController } from './analytic.controller';
+import {
+  AnalyticService,
+} from './analytic.service';
+
+import {
+  AnalyticController,
+} from './analytic.controller';
+
+import {
+  SubscriptionModule,
+} from '../subscription/subscription.module';
 
 @Module({
   imports: [
@@ -17,6 +29,8 @@ import { AnalyticController } from './analytic.controller';
       PropertyViews,
       PropertyAnalytic,
     ]),
+
+    SubscriptionModule,
   ],
 
   controllers: [

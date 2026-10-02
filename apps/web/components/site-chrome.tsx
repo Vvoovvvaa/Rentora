@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Heart, House, Menu, MessageCircle, Plus, UserRound, X, ChevronDown, LayoutGrid, Map, CircleHelp } from "lucide-react";
+import { Heart, House, Menu, MessageCircle, Plus, UserRound, X, ChevronDown, LayoutGrid, Map, CircleHelp, CreditCard } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/auth-context";
@@ -79,6 +79,7 @@ export function Header() {
     { href: "/favorites", label: t("navigation.savedHomes"), icon: Heart },
     { href: "/messages", label: t("navigation.messages"), icon: MessageCircle },
     { href: "/support", label: t("navigation.support"), icon: CircleHelp },
+    { href: "/subscription", label: t("subscription.managePlan"), icon: CreditCard },
   ];
   return <header className="sticky top-0 z-30 border-b border-[#e7dfd4] bg-[#fbf9f5]/90 backdrop-blur-xl">
     <div className="shell flex min-h-[88px] items-center justify-between py-4">

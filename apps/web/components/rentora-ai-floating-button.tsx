@@ -37,6 +37,7 @@ export function RentoraAiFloatingButton() {
 
   const hidden =
     pathname === "/" ||
+    pathname === "/subscription" ||
     HIDDEN_PATHS.some(
       (path) =>
         pathname === path ||

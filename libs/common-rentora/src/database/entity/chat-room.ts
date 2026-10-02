@@ -34,6 +34,6 @@ export class ChatRoom extends Base{
   client: User;
 
   @OneToMany(() => Message,message => message.chatRomms )
-  message: Message
+  message: Message[]
 
 }

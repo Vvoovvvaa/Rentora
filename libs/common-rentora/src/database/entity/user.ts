@@ -1,6 +1,6 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne } from 'typeorm';
 import { Base } from './base';
-import { userRoles } from '../../enums';
+import { SubscripptionPlanEnum, userRoles } from '../../enums';
 import { UserSecurity } from './user-security';
 import { accauntSatus } from '../../enums/accaunt-status';
 import { EmailStatusEnum } from '../../enums/email-status';
@@ -13,6 +13,7 @@ import { Support } from './support';
 import { PropertyViews } from './property-views';
 import { ChatRoom } from './chat-room';
 import { Message } from './message';
+import { UserSubscription  } from './subscription-plan';
 
 @Entity('users')
 export class User extends Base {
@@ -88,7 +89,10 @@ export class User extends Base {
   clientChatRooms: ChatRoom
 
   @OneToMany(() => Message, message => message.user)
-  sender: Message
+  sender: Message[]
+
+  @OneToMany(() => UserSubscription , subscriptions => subscriptions.user, {onDelete: "CASCADE"})
+  subscriptions: UserSubscription []
 
 }
 

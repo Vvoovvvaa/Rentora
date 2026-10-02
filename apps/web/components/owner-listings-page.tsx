@@ -519,6 +519,11 @@ export function OwnerListingsPage() {
   ] = useState("");
 
   const [
+    limitError,
+    setLimitError,
+  ] = useState(false);
+
+  const [
     notice,
     setNotice,
   ] = useState("");
@@ -558,6 +563,7 @@ export function OwnerListingsPage() {
   const load = () => {
     setLoading(true);
     setError("");
+    setLimitError(false);
 
     propertiesApi
       .mine()
@@ -737,6 +743,7 @@ export function OwnerListingsPage() {
 
       setNotice("");
       setError("");
+      setLimitError(false);
 
       try {
         await propertiesApi.restore(
@@ -751,9 +758,11 @@ export function OwnerListingsPage() {
 
         load();
       } catch (reason) {
-        setError(
-          apiMessage(reason),
-        );
+        const message = apiMessage(reason);
+        const status = (reason as { response?: { status?: number } }).response?.status;
+        const reachedLimit = status === 403 && /limit|subscription|active propert/i.test(message);
+        setLimitError(reachedLimit);
+        setError(reachedLimit ? t("subscription.listingLimitCopy") : message);
       } finally {
         setActionId(null);
       }
@@ -1080,6 +1089,7 @@ export function OwnerListingsPage() {
               >
                 Try again
               </button>
+              {limitError && <Link href="/subscription" className="btn-secondary">{t("subscription.viewPlans")}</Link>}
             </div>
           )}
 

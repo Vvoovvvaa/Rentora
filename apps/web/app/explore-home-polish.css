@@ -1,0 +1,408 @@
+/*
+ * Final public-surface polish.
+ * This layer intentionally comes last: it unifies the homepage, Explore, and
+ * listing cards without changing routes, queries, or data behaviour.
+ */
+:root {
+  --rt-showcase-ink: #32251c;
+  --rt-showcase-soft: #76685b;
+  --rt-showcase-gold: #bb895e;
+  --rt-showcase-line: rgba(128, 91, 60, 0.16);
+  --rt-showcase-shadow: 0 20px 48px rgba(62, 41, 24, 0.1);
+}
+
+/* Homepage: a little more atmosphere, while keeping its calm editorial layout. */
+.rentora-home {
+  background:
+    radial-gradient(circle at 6% 34%, rgba(233, 214, 191, 0.22), transparent 23rem),
+    #faf7f2;
+}
+
+.rentora-home-hero {
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 79% 18%, rgba(210, 165, 113, 0.18), transparent 25rem),
+    radial-gradient(circle at 17% 92%, rgba(107, 68, 39, 0.16), transparent 28rem),
+    linear-gradient(126deg, #211711 0%, #38251a 54%, #281b14 100%);
+}
+
+.rentora-home-hero::before {
+  position: absolute;
+  z-index: -1;
+  top: 18%;
+  right: 9%;
+  width: min(40vw, 34rem);
+  aspect-ratio: 1;
+  border: 1px solid rgba(243, 215, 177, 0.12);
+  border-radius: 50%;
+  box-shadow: 0 0 0 3.75rem rgba(243, 215, 177, 0.025), 0 0 0 7.5rem rgba(243, 215, 177, 0.015);
+  content: "";
+  pointer-events: none;
+}
+
+.rentora-home-hero h1,
+.rentora-home-story-heading h2,
+.rentora-home-benefits-heading h2,
+.rentora-home-map-copy h2,
+.rentora-home-journey-heading h2,
+.rentora-home-final h2 {
+  font-weight: 680;
+  text-wrap: pretty;
+}
+
+.rentora-home-hero-intro { max-width: 54ch; color: #e7d8c7; line-height: 1.7; }
+.rentora-home-kicker { font-weight: 760; }
+
+.rentora-home-discovery {
+  border-color: rgba(244, 221, 191, 0.22);
+  background: linear-gradient(145deg, rgba(255, 251, 244, 0.1), rgba(255, 251, 244, 0.045));
+  box-shadow: 0 24px 44px rgba(10, 6, 4, 0.2), inset 0 1px 0 rgba(255, 250, 243, 0.11);
+}
+.rentora-home-discovery-tabs { border-bottom-color: rgba(245, 223, 195, 0.14); }
+.rentora-home-discovery-tabs button { transition: background-color 180ms ease, color 180ms ease, transform 180ms ease; }
+.rentora-home-discovery-tabs button:hover:not(.is-active) { color: #fff7ea; transform: translateY(-1px); }
+
+.rentora-home-story-card,
+.rentora-home-benefit-card {
+  border-color: var(--rt-showcase-line);
+  box-shadow: 0 12px 28px rgba(74, 48, 27, 0.055), inset 0 1px 0 rgba(255, 255, 255, 0.82);
+}
+
+@media (hover: hover) {
+  .rentora-home-story-card:hover,
+  .rentora-home-benefit-card:hover {
+    border-color: rgba(174, 122, 74, 0.42);
+    box-shadow: var(--rt-showcase-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    transform: translateY(-6px);
+  }
+
+  .rentora-home-journey-line article:hover { transform: translateX(4px); }
+}
+
+.rentora-home-story-note,
+.rentora-home-journey-summary {
+  box-shadow: 0 21px 48px rgba(53, 34, 20, 0.18), inset 0 1px 0 rgba(255, 246, 234, 0.08);
+}
+
+.rentora-home-map-section {
+  background:
+    radial-gradient(circle at 84% 14%, rgba(252, 245, 234, 0.72), transparent 20rem),
+    linear-gradient(135deg, #ece1d4, #e2cdb7);
+}
+.rentora-home-map-canvas { box-shadow: 0 28px 55px rgba(70, 46, 27, 0.21) !important; }
+.rentora-home-map-overlay { border-color: rgba(255, 255, 255, 0.92); }
+
+.rentora-home-final {
+  position: relative;
+  overflow: hidden;
+}
+.rentora-home-final::after {
+  position: absolute;
+  right: -8rem;
+  bottom: -12rem;
+  width: 31rem;
+  height: 31rem;
+  border: 1px solid rgba(248, 222, 188, 0.13);
+  border-radius: 50%;
+  box-shadow: 0 0 0 5rem rgba(248, 222, 188, 0.025);
+  content: "";
+  pointer-events: none;
+}
+.rentora-home-final-inner { position: relative; z-index: 1; }
+
+/* Explore: stronger hierarchy, softer depth, and a quieter search surface. */
+.search-page {
+  background:
+    radial-gradient(circle at 87% 8%, rgba(229, 198, 163, 0.48), transparent 24rem),
+    radial-gradient(circle at 8% 48%, rgba(245, 234, 219, 0.82), transparent 26rem),
+    #f7f2eb;
+}
+
+.search-hero {
+  border-color: rgba(104, 70, 44, 0.46);
+  background:
+    radial-gradient(circle at 88% 13%, rgba(232, 194, 145, 0.26), transparent 22rem),
+    radial-gradient(circle at 16% 120%, rgba(181, 122, 71, 0.19), transparent 22rem),
+    linear-gradient(132deg, #34231a 0%, #251912 58%, #1d1510 100%);
+  box-shadow: 0 24px 56px rgba(57, 36, 21, 0.18), inset 0 1px 0 rgba(255, 242, 224, 0.08);
+}
+
+.search-page-intro h1 {
+  font-weight: 680;
+  letter-spacing: -0.055em;
+  line-height: 1.06;
+  text-wrap: pretty;
+}
+.search-page-intro > p:last-child { color: #e7d7c5; font-weight: 460; line-height: 1.68; }
+
+.search-hero-count {
+  border-color: rgba(251, 231, 204, 0.17);
+  background: linear-gradient(145deg, rgba(255, 249, 239, 0.13), rgba(255, 249, 239, 0.055));
+  box-shadow: inset 0 1px 0 rgba(255, 250, 243, 0.12);
+}
+.search-hero-count strong { font-weight: 720; }
+
+.search-hero-filters .property-search-panel {
+  border-color: rgba(240, 211, 176, 0.2);
+  background:
+    linear-gradient(145deg, rgba(80, 55, 38, 0.97), rgba(42, 30, 23, 0.98));
+  box-shadow: 0 22px 42px rgba(22, 13, 8, 0.32), inset 0 1px 0 rgba(255, 244, 230, 0.08);
+}
+
+.property-search-panel .custom-select-trigger,
+.property-search-panel .field {
+  border-color: rgba(255, 242, 225, 0.15);
+  background: rgba(255, 251, 244, 0.08);
+  font-weight: 590;
+  transition: border-color 180ms ease, background-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+.property-search-panel .custom-select-trigger:hover,
+.property-search-panel .field:hover { background: rgba(255, 251, 244, 0.12); transform: translateY(-1px); }
+.property-search-submit {
+  background: linear-gradient(135deg, #f2d3a4, #e6bd83);
+  box-shadow: 0 8px 18px rgba(15, 9, 5, 0.2);
+  color: #302116;
+  transition: box-shadow 180ms ease, transform 180ms ease, filter 180ms ease;
+}
+.property-search-submit:hover { box-shadow: 0 12px 24px rgba(15, 9, 5, 0.28); filter: saturate(1.05) brightness(1.025); transform: translateY(-1px); }
+.property-search-advanced-toggle { transition: border-color 180ms ease, background-color 180ms ease, color 180ms ease, transform 180ms ease; }
+.property-search-advanced-toggle:hover { transform: translateY(-1px); }
+
+.search-results-header {
+  align-items: center;
+  border-bottom-color: rgba(176, 139, 102, 0.26);
+  padding-bottom: 1.15rem;
+}
+.search-results-header h2 { font-weight: 680; letter-spacing: -0.04em; }
+.search-sort-control {
+  border-color: rgba(191, 158, 125, 0.4);
+  background: rgba(255, 252, 247, 0.78);
+  box-shadow: 0 8px 20px rgba(70, 44, 23, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+.search-sort-control .custom-select-trigger { font-weight: 650; }
+.search-page .active-filters > button:not(.clear-filters) {
+  border-color: rgba(191, 154, 117, 0.32);
+  background: #fffaf3;
+  box-shadow: 0 4px 10px rgba(76, 48, 27, 0.045);
+}
+
+/* Listing cards: image, value and details now read as three deliberate layers. */
+.property-card {
+  isolation: isolate;
+  border-color: rgba(203, 181, 160, 0.6);
+  border-radius: 1.45rem !important;
+  background: linear-gradient(145deg, #fffefa 0%, #fcf7f0 100%);
+  box-shadow: 0 12px 26px rgba(64, 41, 23, 0.075), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transition: transform 240ms cubic-bezier(0.22, 0.8, 0.32, 1), box-shadow 240ms ease, border-color 240ms ease;
+}
+.property-card::before {
+  position: absolute;
+  z-index: 4;
+  top: 0;
+  right: 16%;
+  left: 16%;
+  height: 2px;
+  border-radius: 0 0 999px 999px;
+  background: linear-gradient(90deg, transparent, rgba(194, 141, 86, 0.72), transparent);
+  content: "";
+  opacity: 0;
+  pointer-events: none;
+  transform: scaleX(0.55);
+  transition: opacity 220ms ease, transform 260ms ease;
+}
+.property-card-link { color: inherit; text-decoration: none; }
+.property-card-media { background: #473327; }
+.property-card-image { filter: saturate(0.9) contrast(1.025); transition: transform 700ms cubic-bezier(0.22, 0.8, 0.32, 1), filter 280ms ease !important; }
+.property-card-image-wash {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(180deg, rgba(32, 20, 13, 0.2), transparent 42%, rgba(30, 18, 10, 0.24));
+  pointer-events: none;
+}
+.property-card-badge { position: relative; z-index: 2; box-shadow: 0 4px 12px rgba(35, 23, 14, 0.1); }
+.property-card-price-layer { z-index: 2; }
+.property-card-price-block { position: relative; z-index: 2; }
+.property-card-price { font-variant-numeric: tabular-nums; font-weight: 720 !important; text-shadow: 0 2px 12px rgba(0, 0, 0, 0.32); }
+.property-card-content { padding: 1.2rem 1.25rem 1.15rem !important; }
+.property-card .property-card-title { min-height: 2.68em; font-weight: 690; letter-spacing: -0.032em; line-height: 1.33; }
+.property-card .property-card-meta { color: #857467; font-size: 0.79rem; font-weight: 560; }
+.property-card .property-card-specs {
+  border-color: rgba(188, 164, 140, 0.22);
+  border-radius: 0.9rem;
+  background: linear-gradient(145deg, #fbf5ed, #f6ede2);
+  color: #766458;
+}
+.property-card .property-card-specs span { font-weight: 650; }
+.property-card-footer { border-top: 1px solid rgba(188, 164, 140, 0.16); padding-top: 0.85rem; }
+.property-card-detail-label { color: #a29386; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+.property-card-view { color: #795134; font-weight: 760; }
+.property-card .property-card-action-button {
+  border-color: rgba(255, 250, 242, 0.55);
+  box-shadow: 0 8px 17px rgba(40, 25, 15, 0.16);
+  transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease, color 180ms ease;
+}
+
+@media (hover: hover) {
+  .property-card:hover {
+    border-color: rgba(182, 136, 95, 0.66);
+    box-shadow: 0 25px 48px rgba(64, 41, 23, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.94);
+    transform: translateY(-7px);
+  }
+  .property-card:hover::before { opacity: 1; transform: scaleX(1); }
+  .property-card:hover .property-card-image { filter: saturate(1) contrast(1.04); transform: scale(1.055) !important; }
+  .property-card:hover .property-card-action-button { box-shadow: 0 11px 21px rgba(40, 25, 15, 0.21); }
+}
+.property-card:focus-within { border-color: rgba(183, 135, 93, 0.76); box-shadow: 0 0 0 4px rgba(183, 135, 93, 0.14), 0 16px 34px rgba(64, 41, 23, 0.1); }
+.property-card .property-card-action-button:active { transform: translateY(0) scale(0.96); }
+
+html[lang="am"] .property-card .property-card-title,
+html[lang="am"] .search-page-intro h1 { font-weight: 650; letter-spacing: -0.018em; line-height: 1.22; }
+html[lang="ru"] .property-card .property-card-title { letter-spacing: -0.024em; }
+
+/* Profile: turn the account area into a calm personal workspace instead of a form stack. */
+.profile-page {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 89% 3%, rgba(226, 194, 157, 0.48), transparent 25rem),
+    radial-gradient(circle at 7% 68%, rgba(247, 232, 213, 0.66), transparent 22rem),
+    #f6f0e8;
+}
+.profile-page::before {
+  position: absolute;
+  top: 7.5rem;
+  right: -14rem;
+  width: 33rem;
+  height: 33rem;
+  border: 1px solid rgba(159, 113, 72, 0.1);
+  border-radius: 50%;
+  box-shadow: 0 0 0 4.5rem rgba(159, 113, 72, 0.025);
+  content: "";
+  pointer-events: none;
+}
+.profile-shell { position: relative; z-index: 1; }
+.profile-intro { position: relative; max-width: 100%; margin-bottom: clamp(1.75rem, 3vw, 2.5rem); }
+.profile-intro h1 { max-width: 14ch; color: #33251b; font-weight: 680; letter-spacing: -0.058em; line-height: 1.05; text-wrap: pretty; }
+.profile-intro > p:not(.eyebrow) { max-width: 52ch; color: #7d6d5e; line-height: 1.68; }
+.profile-layout { grid-template-columns: minmax(17rem, 0.36fr) minmax(0, 1fr); gap: clamp(1.15rem, 2.5vw, 2rem); }
+.profile-sidebar,
+.profile-settings-card,
+.profile-account-card {
+  border-color: rgba(192, 162, 133, 0.35);
+  box-shadow: 0 16px 34px rgba(66, 42, 23, 0.065), inset 0 1px 0 rgba(255, 255, 255, 0.86);
+}
+.profile-sidebar {
+  border-radius: 1.4rem;
+  background: linear-gradient(165deg, rgba(255, 253, 249, 0.98), rgba(246, 237, 226, 0.92));
+}
+.profile-summary-card { position: relative; overflow: hidden; padding-bottom: 1.45rem; }
+.profile-summary-card::after {
+  position: absolute;
+  top: -4rem;
+  right: -4rem;
+  width: 10rem;
+  height: 10rem;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(211, 165, 113, 0.24), transparent 67%);
+  content: "";
+  pointer-events: none;
+}
+.profile-avatar {
+  position: relative;
+  z-index: 1;
+  border: 3px solid rgba(255, 250, 242, 0.92);
+  box-shadow: 0 10px 22px rgba(81, 54, 31, 0.18), 0 0 0 1px rgba(174, 125, 80, 0.22);
+}
+.profile-summary-copy h2 { position: relative; z-index: 1; font-weight: 690; letter-spacing: -0.035em; }
+.profile-summary-copy > p { position: relative; z-index: 1; }
+.profile-navigation { gap: 0.4rem; padding-block: 1rem; }
+.profile-navigation a,
+.profile-logout {
+  min-height: 2.85rem;
+  border: 1px solid transparent;
+  border-radius: 0.82rem;
+  font-weight: 650;
+  transition: transform 180ms ease, color 180ms ease, border-color 180ms ease, background-color 180ms ease, box-shadow 180ms ease;
+}
+.profile-navigation a:hover { border-color: rgba(185, 142, 99, 0.22); box-shadow: 0 7px 15px rgba(75, 48, 26, 0.045); transform: translateX(2px); }
+.profile-navigation a.is-active { border-color: rgba(87, 59, 38, 0.7); background: linear-gradient(135deg, #573b28, #37261b); box-shadow: 0 9px 20px rgba(68, 43, 24, 0.18); }
+.profile-logout:hover { transform: translateX(2px); }
+
+.profile-main-content { gap: 1.25rem; }
+.profile-settings-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.45rem;
+  background: linear-gradient(145deg, rgba(255, 253, 249, 0.98), rgba(250, 244, 236, 0.95));
+}
+.profile-settings-card::before {
+  position: absolute;
+  top: 0;
+  right: 9%;
+  left: 9%;
+  height: 2px;
+  border-radius: 0 0 999px 999px;
+  background: linear-gradient(90deg, transparent, rgba(182, 128, 76, 0.62), transparent);
+  content: "";
+}
+.profile-card-heading h2,
+.profile-account-card h2 { color: #35271d; font-weight: 680; letter-spacing: -0.035em; }
+.profile-card-heading p:not(.eyebrow) { color: #87766a; line-height: 1.65; }
+.profile-field { color: #69594c; font-weight: 690; }
+.profile-field input,
+.profile-phone-field input {
+  border-color: rgba(189, 160, 130, 0.42);
+  border-radius: 0.78rem;
+  background: rgba(255, 254, 251, 0.88);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.94);
+  transition: border-color 180ms ease, background-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+.profile-field input:hover,
+.profile-phone-field input:hover { border-color: rgba(174, 125, 80, 0.64); background: #fffefa; }
+.profile-field input:focus,
+.profile-phone-field input:focus { border-color: #aa774d; box-shadow: 0 0 0 4px rgba(184, 135, 94, 0.13); transform: translateY(-1px); }
+.profile-photo-section { border-top-color: rgba(190, 159, 127, 0.24); }
+.profile-photo-preview { border: 2px solid #fffaf3; box-shadow: 0 7px 15px rgba(74, 48, 27, 0.12), 0 0 0 1px rgba(177, 132, 89, 0.24); }
+.profile-photo-button { border-color: rgba(185, 148, 111, 0.48); background: #fffaf3; }
+.profile-photo-button:hover { border-color: #ad7a50; background: #f8ecdf; }
+.profile-save-area { border-top-color: rgba(190, 159, 127, 0.25); }
+.profile-save-area .btn-primary { box-shadow: 0 8px 17px rgba(81, 63, 48, 0.18); }
+.profile-save-area .btn-primary:hover:not(:disabled) { transform: translateY(-1px); }
+.profile-save-area .btn-secondary:hover:not(:disabled) { transform: translateY(-1px); }
+.profile-subscription-card {
+  border-color: rgba(186, 147, 109, 0.42);
+  border-radius: 1.2rem;
+  background: linear-gradient(122deg, #fffaf3, #f6e7d5);
+  box-shadow: 0 11px 24px rgba(73, 47, 25, 0.055);
+}
+.profile-subscription-card a { display: inline-flex; align-items: center; min-height: 2.5rem; border: 1px solid rgba(166, 115, 70, 0.4); border-radius: 0.72rem; background: rgba(255, 253, 249, 0.7); padding-inline: 0.78rem; transition: background-color 180ms ease, color 180ms ease, transform 180ms ease; }
+.profile-subscription-card a:hover { background: #fffdf9; color: #493120; transform: translateY(-1px); }
+.profile-account-card {
+  border-radius: 1.25rem;
+  background: rgba(255, 253, 249, 0.86);
+}
+.profile-account-card dl div { border-left-color: rgba(190, 159, 127, 0.24); }
+.profile-account-card dt { color: #9a8470; }
+.profile-account-card dd { color: #554234; font-weight: 690; }
+
+@media (max-width: 767px) {
+  .rentora-home-hero::before { top: 5%; right: -11rem; width: 22rem; }
+  .search-hero { box-shadow: 0 17px 38px rgba(57, 36, 21, 0.16), inset 0 1px 0 rgba(255, 242, 224, 0.08); }
+  .search-hero-count { min-width: 0; border: 0; background: transparent; box-shadow: none; padding: 0; }
+  .search-results-header { align-items: flex-start; }
+  .property-card-content { padding: 1.05rem 1.1rem 1rem !important; }
+  .property-card .property-card-title { min-height: 0; }
+  .profile-layout { grid-template-columns: 1fr; }
+  .profile-sidebar { position: static; }
+  .profile-intro h1 { max-width: 100%; }
+  .profile-settings-card { border-radius: 1.2rem; }
+  .profile-subscription-card { align-items: flex-start; flex-direction: column; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .property-card,
+  .property-card-image,
+  .rentora-home-story-card,
+  .rentora-home-benefit-card { transition: none !important; }
+}

@@ -3,12 +3,14 @@
 import { Check, ImagePlus, LoaderCircle, Trash2, UploadCloud } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { apiMessage, propertiesApi } from "@/lib/api";
 import type { BuildingType, Currency, PropertyCategory, PropertyCondition, PropertyFeature, PropertyListing } from "@/types/models";
 import { CustomSelect } from "./custom-select";
 import { currencyOptions, getBuildingOptions, getCategoryOptions, getCityOptions, getConditionOptions, getFeatureGroups, getListingOptions } from "./property-form-options";
 import { LocationPicker } from "./location-picker";
 import { useI18n } from "@/context/i18n-context";
+import { useSubscription } from "@/context/subscription-context";
 
 type CreatePropertyForm = {
   title: string; description: string; city: string; category: PropertyCategory; listing: PropertyListing | ""; price: string; currency: Currency; rooms: string; area: string;
@@ -27,15 +29,24 @@ function Field({ label, hint, error, children }: { label: string; hint?: string;
 export function CreatePropertyForm() {
   const router = useRouter();
   const { t } = useI18n();
+  const { subscription } = useSubscription();
   const inputRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState<CreatePropertyForm>(initialForm);
   const [photos, setPhotos] = useState<File[]>([]);
   const [errors, setErrors] = useState<FormErrors>({});
   const [busy, setBusy] = useState(false);
   const [dragging, setDragging] = useState(false);
+  const [activeListings, setActiveListings] = useState<number | null>(null);
+  const [limitBlocked, setLimitBlocked] = useState(false);
   const previews = useMemo(() => photos.map((file) => ({ file, url: URL.createObjectURL(file) })), [photos]);
 
   useEffect(() => () => previews.forEach(({ url }) => URL.revokeObjectURL(url)), [previews]);
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      void propertiesApi.mine().then((items) => setActiveListings(items.filter((item) => item.status === "active").length)).catch(() => setActiveListings(null));
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, []);
   const update = <K extends Exclude<keyof CreatePropertyForm, "features">>(key: K, value: CreatePropertyForm[K]) => {
     setForm((current) => ({ ...current, [key]: value }));
     setErrors((current) => ({ ...current, [key]: undefined }));
@@ -66,7 +77,12 @@ export function CreatePropertyForm() {
   };
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
+    const limit = subscription?.config.maxProperties;
     if (busy || !validate()) return;
+    if (limit !== undefined && activeListings !== null && activeListings >= limit) {
+      setLimitBlocked(true);
+      return;
+    }
     setBusy(true);
     try {
       const data = new FormData();
@@ -77,7 +93,10 @@ export function CreatePropertyForm() {
       await propertiesApi.create(data);
       router.push("/my-properties");
     } catch (reason) {
-      setErrors((current) => ({ ...current, photos: apiMessage(reason) }));
+      const message = apiMessage(reason);
+      const status = (reason as { response?: { status?: number } }).response?.status;
+      if (status === 403 && /limit|subscription|active propert/i.test(message)) setLimitBlocked(true);
+      else setErrors((current) => ({ ...current, photos: message }));
     } finally {
       setBusy(false);
     }
@@ -86,6 +105,7 @@ export function CreatePropertyForm() {
   const categoryOptions = getCategoryOptions(); const listingOptions = getListingOptions(); const conditionOptions = getConditionOptions(); const buildingOptions = getBuildingOptions(); const featureGroups = getFeatureGroups((id) => t(`property.${id}`));
   return <form onSubmit={submit} className="create-property-layout">
     <main className="create-property-sections">
+      {subscription && <section className="create-subscription-limit" aria-live="polite"><div><strong>{t("subscription.listingsUsed", { used: activeListings ?? "—", max: subscription.config.maxProperties })}</strong><p>{limitBlocked ? t("subscription.listingLimitCopy") : t(`subscription.planNames.${subscription.plan}`)}</p></div>{limitBlocked && <Link href="/subscription" className="btn-secondary">{t("subscription.viewPlans")}</Link>}</section>}
       <section className="create-section"><div className="section-heading"><p className="eyebrow">01 · {t("create.basic")}</p><h2>{t("create.basic")}</h2><p>{t("create.basicCopy")}</p></div><div className="create-grid two"><Field label={t("create.listingTitle")} error={errors.title}><input value={form.title} onChange={(event) => update("title", event.target.value)} className="field"/></Field><Field label={t("create.homeType")}><CustomSelect value={form.category} onChange={(value) => update("category", value as PropertyCategory)} options={categoryOptions} placeholder={t("create.chooseType")} allowEmpty={false}/></Field><Field label={t("create.listingPurpose")} error={errors.listing}><CustomSelect value={form.listing} onChange={(value) => update("listing", value as PropertyListing | "")} options={listingOptions} placeholder={t("create.choosePurpose")}/></Field><Field label={t("property.city")}><CustomSelect value={form.city} onChange={(value) => update("city", value)} options={citySelectOptions} placeholder={t("create.chooseCity")} allowEmpty={false}/></Field><Field label={t("create.description")} hint={`${form.description.length}/30`} error={errors.description}><textarea value={form.description} minLength={30} onChange={(event) => update("description", event.target.value)} className="field min-h-40"/></Field></div></section>
       <section className="create-section"><div className="section-heading"><p className="eyebrow">02 · {t("create.location")}</p><h2>{t("create.location")}</h2><p>{t("create.locationCopy")}</p></div><LocationPicker city={form.city} address={form.address} latitude={form.latitude} longitude={form.longitude} error={errors.address} onChange={(location) => { setForm((current) => ({ ...current, ...location })); setErrors((current) => ({ ...current, address: undefined })); }}/></section>
       <section className="create-section"><div className="section-heading"><p className="eyebrow">03 · {t("create.price")}</p><h2>{t("create.price")}</h2><p>{t("create.priceCopy")}</p></div><div className="create-grid price-grid"><Field label={t("create.price")} error={errors.price}><input value={form.price} onChange={(event) => update("price", event.target.value.replace(/[^\d.]/g, ""))} className="field" inputMode="decimal" placeholder="0"/></Field><Field label={t("create.currency")}><CustomSelect value={form.currency} onChange={(value) => update("currency", value as Currency)} options={currencyOptions} placeholder={t("create.currency")} allowEmpty={false}/></Field></div></section>
@@ -95,6 +115,6 @@ export function CreatePropertyForm() {
       <section className="create-section"><div className="section-heading"><p className="eyebrow">07 · {t("create.features")}</p><h2>{t("create.features")}</h2><p>{t("create.featuresCopy")}</p></div><div className="features-groups">{featureGroups.map((group) => { const Icon = group.icon; return <section className="feature-group" key={group.id}><h3><Icon size={17}/>{group.label}</h3><div className="feature-options">{group.options.map((option) => { const selected = form.features.includes(option.value); return <button type="button" key={option.value} onClick={() => toggleFeature(option.value)} className={`feature-option ${selected ? "is-selected" : ""}`} aria-pressed={selected}><Check size={15}/><span>{option.label}</span></button>; })}</div></section>; })}</div></section>
       <section className="create-section"><div className="section-heading"><p className="eyebrow">08 · {t("create.photos")}</p><h2>{t("create.photos")}</h2><p>{t("create.photosCopy")}</p></div><input ref={inputRef} type="file" accept="image/*" multiple className="sr-only" onChange={(event) => event.target.files && addPhotos(event.target.files)}/><button type="button" className={`photo-dropzone ${dragging ? "is-dragging" : ""}`} onClick={() => inputRef.current?.click()} onDragOver={(event) => { event.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={(event) => { event.preventDefault(); setDragging(false); addPhotos(event.dataTransfer.files); }}><UploadCloud size={24}/><strong>{t("create.uploadPhotos")}</strong><span>{t("create.chooseFiles")}</span></button>{errors.photos && <p className="field-error mt-3">{errors.photos}</p>}{previews.length > 0 && <div className="photo-preview-grid">{previews.map(({ file, url }, index) => <figure className="photo-preview" key={`${file.name}-${file.lastModified}`}><img src={url} alt={`${t("create.photos")} ${index + 1}`}/>{index === 0 && <figcaption>{t("create.cover")}</figcaption>}<button type="button" onClick={() => setPhotos((current) => current.filter((_, itemIndex) => itemIndex !== index))} aria-label={t("create.removePhoto")}><Trash2 size={15}/></button></figure>)}</div>}<p className="mt-4 text-sm font-semibold text-slate-500">{t("create.selected")}: {photos.length}/10</p></section>
     </main>
-    <aside className="create-summary"><div className="create-summary-card"><p className="eyebrow">{t("create.summary")}</p><h2>{form.title || t("create.newListing")}</h2><dl><div><dt>{t("create.listingPurpose")}</dt><dd>{listingOptions.find((item) => item.value === form.listing)?.label || t("create.notSelected")}</dd></div><div><dt>{t("create.price")}</dt><dd>{form.price ? `${form.price} ${currencyOptions.find((item) => item.value === form.currency)?.label || ""}` : t("create.notSpecified")}</dd></div><div><dt>{t("property.city")}</dt><dd>{citySelectOptions.find((item) => item.value === form.city)?.label}</dd></div><div><dt>{t("create.mainDetails")}</dt><dd>{form.rooms || "—"} / {form.area ? `${form.area} m²` : "—"}</dd></div><div><dt>{t("create.photos")}</dt><dd>{photos.length}</dd></div><div><dt>{t("create.features")}</dt><dd>{form.features.length}</dd></div></dl><button disabled={busy} className="btn-primary w-full gap-2">{busy ? <><LoaderCircle className="animate-spin" size={18}/> {t("create.publishing")}</> : <><ImagePlus size={18}/> {t("create.publish")}</>}</button></div></aside>
+    <aside className="create-summary"><div className="create-summary-card"><p className="eyebrow">{t("create.summary")}</p><h2>{form.title || t("create.newListing")}</h2><dl><div><dt>{t("create.listingPurpose")}</dt><dd>{listingOptions.find((item) => item.value === form.listing)?.label || t("create.notSelected")}</dd></div><div><dt>{t("create.price")}</dt><dd>{form.price ? `${form.price} ${currencyOptions.find((item) => item.value === form.currency)?.label || ""}` : t("create.notSpecified")}</dd></div><div><dt>{t("property.city")}</dt><dd>{citySelectOptions.find((item) => item.value === form.city)?.label}</dd></div><div><dt>{t("create.mainDetails")}</dt><dd>{form.rooms || "—"} / {form.area ? `${form.area} m²` : "—"}</dd></div><div><dt>{t("create.photos")}</dt><dd>{photos.length}</dd></div><div><dt>{t("create.features")}</dt><dd>{form.features.length}</dd></div></dl><button disabled={busy || limitBlocked} className="btn-primary w-full gap-2">{busy ? <><LoaderCircle className="animate-spin" size={18}/> {t("create.publishing")}</> : <><ImagePlus size={18}/> {t("create.publish")}</>}</button></div></aside>
   </form>;
 }

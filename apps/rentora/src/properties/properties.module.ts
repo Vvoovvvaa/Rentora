@@ -12,6 +12,9 @@ import {
 import { UploadModule } from '../upload/upload.module';
 import { EmailModule } from '@app/common-rentora/smtp';
 import { PropertyPriceHistory } from '@app/common-rentora/database/entity/price-history';
+import { UserSubscription } from '@app/common-rentora/database/entity/subscription-plan';
+import { SubscriptionConfig } from '@app/common-rentora/database/entity/subscription-config';
+import { SubscriptionModule } from '../subscription/subscription.module';
 
 @Module({
   controllers: [PropertiesController],
@@ -24,9 +27,12 @@ import { PropertyPriceHistory } from '@app/common-rentora/database/entity/price-
       Report,
       PropertyPriceHistory,
       PropertyViews,
+      UserSubscription,
+      SubscriptionConfig
     ]),
     UploadModule,
     EmailModule,
+    SubscriptionModule
   ],
 })
 export class PropertiesModule {}

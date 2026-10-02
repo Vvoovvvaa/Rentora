@@ -13,6 +13,9 @@ import type {
   PropertyPriceHistoryEntry,
   ReportReason,
   SearchParams,
+  SubscriptionPlan,
+  SubscriptionPlanName,
+  CurrentSubscription,
   SupportStatus,
   SupportTicket,
   SupportTicketType,
@@ -357,6 +360,39 @@ export const authApi = {
  * Properties
  * ============================================================
  */
+
+export const subscriptionApi = {
+  plans: () =>
+    api
+      .get<SubscriptionPlan[]>(
+        "/subscription/plans",
+      )
+      .then(
+        (response) => response.data,
+      ),
+
+  me: () =>
+    api
+      .get<CurrentSubscription>(
+        "/subscription/me",
+      )
+      .then(
+        (response) => response.data,
+      ),
+
+  // TODO: Replace with the real checkout endpoint once payments are connected.
+  testPurchase: (
+    plan: Exclude<SubscriptionPlanName, "FREE">,
+  ) =>
+    api
+      .post<unknown>(
+        "/subscription/test-purchase",
+        { plan },
+      )
+      .then(
+        (response) => response.data,
+      ),
+};
 
 export const propertiesApi = {
   all: () =>

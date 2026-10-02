@@ -3,19 +3,21 @@
 import Link from "next/link";
 import {
   ArrowRight,
-  BedDouble,
+  Bot,
+  Compass,
   GitCompare,
   Map,
   MapPin,
   MessageCircle,
   Search,
+  ShieldCheck,
   SlidersHorizontal,
   Sparkles,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
 import { useI18n } from "@/context/i18n-context";
-import { apiMessage, propertiesApi } from "@/lib/api";
+import { propertiesApi } from "@/lib/api";
 import type { Property } from "@/types/models";
 
 import { RentoraMap } from "./rentora-map";
@@ -23,7 +25,6 @@ import { SearchForm } from "./search-form";
 import { RentoraAiHeroSearch } from "./rentora-ai-hero-search";
 import {
   cityOf,
-  getListingLabel,
   isPublicProperty,
   priceOf,
 } from "./property-presentation";
@@ -34,16 +35,14 @@ export function HomeView() {
   const { t } = useI18n();
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [discoveryMode, setDiscoveryMode] = useState<DiscoveryMode>("ai");
 
   const load = useCallback(() => {
     setLoading(true);
-    setError("");
     propertiesApi
       .all()
       .then((items) => setProperties(items.filter(isPublicProperty)))
-      .catch((reason) => setError(apiMessage(reason)))
+      .catch(() => setProperties([]))
       .finally(() => setLoading(false));
   }, []);
 
@@ -55,7 +54,6 @@ export function HomeView() {
 
   const primaryProperty = properties[0];
   const secondaryProperty = properties[1];
-  const featuredProperties = properties.slice(0, 3);
 
   return (
     <main className="rentora-home">
@@ -117,24 +115,49 @@ export function HomeView() {
         </div>
       </section>
 
-      <section className="rentora-home-featured">
+      <section className="rentora-home-story">
         <div className="shell">
-          <div className="rentora-home-section-heading">
+          <div className="rentora-home-story-heading">
             <div>
-              <p className="rentora-home-kicker">{t("home.freshListings")}</p>
-              <h2>{t("home.homesWorthSeeing")}</h2>
+              <p className="rentora-home-kicker">{t("home.approach")}</p>
+              <h2>{t("home.approachTitle")}</h2>
             </div>
-            <div>
-              <p>{t("home.freshListingsCopy")}</p>
-              <Link href="/properties" className="rentora-home-text-action">
-                {t("home.seeAllHomes")}<ArrowRight size={17} />
-              </Link>
-            </div>
+            <p>{t("home.approachCopy")}</p>
           </div>
 
-          {error ? <ErrorBlock message={error} retry={load} /> : (
-            <FeaturedListings properties={featuredProperties} loading={loading} />
-          )}
+          <div className="rentora-home-story-grid">
+            <StoryCard icon={Compass} title={t("home.storyWhyTitle")} copy={t("home.storyWhyCopy")} />
+            <StoryCard icon={Search} title={t("home.storyWhatTitle")} copy={t("home.storyWhatCopy")} />
+            <StoryCard icon={ShieldCheck} title={t("home.storyArmeniaTitle")} copy={t("home.storyArmeniaCopy")} />
+          </div>
+
+          <div className="rentora-home-story-note">
+            <div className="rentora-home-story-note-icon"><Sparkles size={20} aria-hidden="true" /></div>
+            <div>
+              <p className="rentora-home-kicker">{t("home.storyAboutTitle")}</p>
+              <p>{t("home.storyAboutCopy")}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="rentora-home-benefits">
+        <div className="shell">
+          <div className="rentora-home-benefits-heading">
+            <div>
+              <p className="rentora-home-kicker">{t("home.benefitsEyebrow")}</p>
+              <h2>{t("home.benefitsTitle")}</h2>
+            </div>
+            <p>{t("home.benefitsCopy")}</p>
+          </div>
+
+          <div className="rentora-home-benefit-grid">
+            <BenefitCard icon={Bot} title={t("home.askAi")} copy={t("home.aiSearchCopy")} tone="accent" variant="primary" prompt={t("home.benefitSearchPrompt")} />
+            <BenefitCard icon={Map} title={t("home.mapSearch")} copy={t("home.mapSearchCopy")} variant="map" />
+            <BenefitCard icon={GitCompare} title={t("home.compareProperties")} copy={t("home.comparePropertiesCopy")} variant="compare" />
+            <BenefitCard icon={MessageCircle} title={t("home.talkDirectly")} copy={t("home.talkDirectlyCopy")} variant="talk" />
+            <BenefitCard icon={MapPin} title={t("home.builtForArmenia")} copy={t("home.storyArmeniaCopy")} variant="local" />
+          </div>
         </div>
       </section>
 
@@ -164,15 +187,24 @@ export function HomeView() {
       <section className="rentora-home-journey">
         <div className="shell">
           <div className="rentora-home-journey-heading">
-            <p className="rentora-home-kicker">{t("home.productToolsTitle")}</p>
+            <p className="rentora-home-kicker">{t("home.journeyEyebrow")}</p>
             <h2>{t("home.journeyTitle")}</h2>
             <p>{t("home.journeyCopy")}</p>
           </div>
 
-          <div className="rentora-home-journey-line" aria-label={t("home.journeyTitle")}>
-            <JourneyPoint icon={Search} number="01" title={t("home.journeyFind")} text={t("home.journeyFindCopy")} />
-            <JourneyPoint icon={GitCompare} number="02" title={t("home.journeyCompare")} text={t("home.journeyCompareCopy")} />
-            <JourneyPoint icon={MessageCircle} number="03" title={t("home.journeyTalk")} text={t("home.journeyTalkCopy")} />
+          <div className="rentora-home-journey-stage">
+            <aside className="rentora-home-journey-summary">
+              <span><Compass size={24} aria-hidden="true" /></span>
+              <p className="rentora-home-kicker">{t("home.journeySideEyebrow")}</p>
+              <h3>{t("home.journeySideTitle")}</h3>
+              <p>{t("home.journeySideCopy")}</p>
+              <Link href="/properties">{t("home.exploreHomes")}<ArrowRight size={16} /></Link>
+            </aside>
+            <div className="rentora-home-journey-line" aria-label={t("home.journeyTitle")}>
+              <JourneyPoint icon={Search} number="01" title={t("home.journeyFind")} text={t("home.journeyFindCopy")} />
+              <JourneyPoint icon={GitCompare} number="02" title={t("home.journeyCompare")} text={t("home.journeyCompareCopy")} />
+              <JourneyPoint icon={MessageCircle} number="03" title={t("home.journeyTalk")} text={t("home.journeyTalkCopy")} />
+            </div>
           </div>
         </div>
       </section>
@@ -195,6 +227,27 @@ export function HomeView() {
         </div>
       </section>
     </main>
+  );
+}
+
+function StoryCard({ icon: Icon, title, copy }: { icon: typeof Compass; title: string; copy: string }) {
+  return (
+    <article className="rentora-home-story-card">
+      <span><Icon size={19} aria-hidden="true" /></span>
+      <h3>{title}</h3>
+      <p>{copy}</p>
+    </article>
+  );
+}
+
+function BenefitCard({ icon: Icon, title, copy, tone, variant, prompt }: { icon: typeof Compass; title: string; copy: string; tone?: "accent"; variant: "primary" | "map" | "compare" | "talk" | "local"; prompt?: string }) {
+  return (
+    <article className={`rentora-home-benefit-card is-${variant} ${tone === "accent" ? "is-accent" : ""}`}>
+      <span><Icon size={20} aria-hidden="true" /></span>
+      <h3>{title}</h3>
+      <p>{copy}</p>
+      {prompt && <div className="rentora-home-benefit-prompt"><Search size={15} aria-hidden="true" /><span>{prompt}</span><ArrowRight size={15} aria-hidden="true" /></div>}
+    </article>
   );
 }
 
@@ -232,38 +285,6 @@ function ProductPreviewCard({ property, main = false }: { property: Property; ma
         <strong>{priceOf(property)}</strong>
         <span>{cityOf(property.city)} · {property.rooms} {t("common.rooms")}</span>
       </div>
-    </Link>
-  );
-}
-
-function FeaturedListings({ properties, loading }: { properties: Property[]; loading: boolean }) {
-  const { t } = useI18n();
-  if (loading) return <div className="rentora-home-listing-loading" aria-busy="true"><span /><span /><span /></div>;
-  if (!properties.length) return <Empty label={t("home.noActiveHomes")} />;
-
-  return (
-    <div className="rentora-home-featured-layout">
-      {properties.map((property) => <FeatureListing property={property} key={property.id} />)}
-    </div>
-  );
-}
-
-function FeatureListing({ property }: { property: Property }) {
-  const { t } = useI18n();
-  const image = property.images?.[0]?.url;
-  return (
-    <Link href={`/properties/${property.id}`} className="rentora-home-featured-listing">
-      <div className="rentora-home-featured-image">
-        {image ? <img src={image} alt="" /> : <div />}
-        <span>{property.listing ? getListingLabel(property.listing) : t("home.freshListings")}</span>
-      </div>
-      <div className="rentora-home-featured-copy">
-        <p className="rentora-home-featured-price">{priceOf(property)}</p>
-        <h3>{property.title}</h3>
-        <p className="rentora-home-featured-location"><MapPin size={14} />{cityOf(property.city)}</p>
-        <p className="rentora-home-featured-specs"><BedDouble size={14} />{property.rooms} {t("common.rooms")} · {property.area} m²</p>
-      </div>
-      <span className="rentora-home-featured-arrow"><ArrowRight size={18} /></span>
     </Link>
   );
 }

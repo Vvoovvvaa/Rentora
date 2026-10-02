@@ -9,6 +9,8 @@ import {
 } from '@app/common-rentora/database/entity';
 import { EmailModule } from '@app/common-rentora/smtp';
 import { PropertyPriceHistory } from '@app/common-rentora/database/entity/price-history';
+import { UserSubscription } from '@app/common-rentora/database/entity/subscription-plan';
+import { SubscriptionConfig } from '@app/common-rentora/database/entity/subscription-config';
 
 @Module({
   providers: [AdminsPropertiesService],
@@ -19,6 +21,8 @@ import { PropertyPriceHistory } from '@app/common-rentora/database/entity/price-
       Property,
       PropertyPriceHistory,
       PropertyViews,
+      UserSubscription,
+      SubscriptionConfig
     ]),
     EmailModule,
   ],
