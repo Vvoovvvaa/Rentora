@@ -41,7 +41,7 @@ export class UserService {
     private readonly uploadservice: UploadService,
     private readonly senderservice: SenderService,
     private readonly i18n: I18nService,
-    private readonly analyticservice: AnalyticService
+    private readonly analyticservice: AnalyticService,
   ) {}
 
   private t(key: string, args?: Record<string, any>): string {
@@ -243,7 +243,7 @@ export class UserService {
 
     await this.favoritesRepo.save(newFavorite);
 
-    await this.analyticservice.addFavorite(propertyId)
+    await this.analyticservice.addFavorite(propertyId);
 
     return {
       status: 'added',

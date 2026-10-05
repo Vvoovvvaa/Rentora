@@ -1,0 +1,754 @@
+/* =========================================================
+   RENTORA PROPERTY SEARCH
+   ========================================================= */
+
+.search {
+  position: relative;
+  z-index: 40;
+
+  display: grid;
+  gap: 0.6rem;
+
+  width: 100%;
+
+  overflow: visible;
+}
+
+/* =========================================================
+   ROWS
+   ========================================================= */
+
+.primaryRow,
+.secondaryRow {
+  position: relative;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      4,
+      minmax(0, 1fr)
+    );
+
+  gap: 0.6rem;
+}
+
+.primaryRow {
+  z-index: 30;
+}
+
+.secondaryRow {
+  z-index: 20;
+}
+
+/* =========================================================
+   NORMAL FIELDS
+   ========================================================= */
+
+.filterBox,
+.numberBox,
+.advancedNumber {
+  position: relative;
+
+  display: flex;
+
+  min-width: 0;
+  height: 3.65rem;
+
+  align-items: center;
+
+  border:
+    1px solid
+    #e5d8cb;
+
+  border-radius:
+    0.95rem;
+
+  background:
+    linear-gradient(
+      180deg,
+      #fdf9f5 0%,
+      #faf5ef 100%
+    );
+
+  padding:
+    0 0.9rem;
+
+  transition:
+    border-color
+      180ms ease,
+    background
+      180ms ease,
+    box-shadow
+      180ms ease,
+    transform
+      180ms ease;
+}
+
+.filterBox:hover,
+.numberBox:hover,
+.advancedNumber:hover {
+  border-color:
+    #d0ad89;
+
+  background:
+    #fffaf4;
+}
+
+.filterBox:focus-within,
+.numberBox:focus-within,
+.advancedNumber:focus-within {
+  z-index: 50;
+
+  border-color:
+    #b98356;
+
+  background:
+    #fffaf4;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(
+      176,
+      116,
+      67,
+      0.07
+    );
+}
+
+/* =========================================================
+   CUSTOM SELECT
+   ========================================================= */
+
+.filterBox
+  :global(.custom-select) {
+  position: static;
+
+  width: 100%;
+
+  min-width: 0;
+}
+
+.filterBox
+  :global(.custom-select-trigger) {
+  display: flex;
+
+  width: 100%;
+
+  min-height: 3.4rem;
+
+  align-items: center;
+
+  justify-content:
+    space-between;
+
+  gap: 0.5rem;
+
+  border:
+    0 !important;
+
+  border-radius: 0;
+
+  background:
+    transparent !important;
+
+  padding:
+    0 !important;
+
+  color:
+    #3e2e24;
+
+  font-size:
+    0.74rem;
+
+  font-weight:
+    760;
+
+  box-shadow:
+    none !important;
+
+  outline: 0;
+}
+
+.filterBox
+  :global(.custom-select-trigger:hover),
+.filterBox
+  :global(.custom-select-trigger.is-open) {
+  border:
+    0 !important;
+
+  background:
+    transparent !important;
+
+  box-shadow:
+    none !important;
+
+  transform: none;
+}
+
+.filterBox
+  :global(.custom-select-trigger > span) {
+  min-width: 0;
+
+  overflow: hidden;
+
+  text-overflow:
+    ellipsis;
+
+  white-space:
+    nowrap;
+}
+
+.filterBox
+  :global(.custom-select-trigger svg) {
+  flex: 0 0 auto;
+
+  color:
+    #9d7150;
+}
+
+/* =========================================================
+   SELECT DROPDOWN
+   ========================================================= */
+
+.filterBox
+  :global(.custom-select-menu) {
+  z-index: 2000;
+
+  top:
+    calc(
+      100% + 0.45rem
+    );
+
+  left: 0;
+
+  width: 100%;
+
+  min-width: 11rem;
+
+  max-height: 18rem;
+
+  overflow-y: auto;
+
+  border:
+    1px solid
+    rgba(
+      255,
+      255,
+      255,
+      0.1
+    );
+
+  border-radius:
+    0.9rem;
+
+  background:
+    rgba(
+      45,
+      33,
+      25,
+      0.99
+    );
+
+  padding: 0.35rem;
+
+  color:
+    #fff9f1;
+
+  box-shadow:
+    0 1.2rem
+      2.8rem
+      rgba(
+        35,
+        21,
+        13,
+        0.25
+      );
+
+  backdrop-filter:
+    blur(16px);
+}
+
+.filterBox
+  :global(.custom-select-option) {
+  display: flex;
+
+  width: 100%;
+
+  min-height:
+    2.35rem;
+
+  align-items: center;
+
+  justify-content:
+    space-between;
+
+  gap: 0.5rem;
+
+  border: 0;
+
+  border-radius:
+    0.62rem;
+
+  background:
+    transparent;
+
+  padding:
+    0.5rem 0.65rem;
+
+  color:
+    #eadfd5;
+
+  font-size:
+    0.67rem;
+
+  font-weight:
+    680;
+
+  transition:
+    background
+      150ms ease,
+    color
+      150ms ease;
+}
+
+.filterBox
+  :global(.custom-select-option:hover),
+.filterBox
+  :global(.custom-select-option.is-selected) {
+  background:
+    #5c4230;
+
+  color:
+    #fff9f0;
+}
+
+/* =========================================================
+   NUMBER INPUTS
+   ========================================================= */
+
+.numberBox input,
+.advancedNumber input {
+  display: block;
+
+  width: 100%;
+
+  min-width: 0;
+
+  border: 0;
+
+  outline: 0;
+
+  background:
+    transparent;
+
+  padding: 0;
+
+  color:
+    #3f3026;
+
+  font-size:
+    0.74rem;
+
+  font-weight:
+    760;
+}
+
+.numberBox input::placeholder,
+.advancedNumber input::placeholder {
+  color:
+    #88786a;
+
+  opacity: 1;
+}
+
+/* =========================================================
+   ADVANCED BUTTON
+   ========================================================= */
+
+.advancedButton {
+  display: flex;
+
+  min-width: 0;
+  height: 3.65rem;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 0.52rem;
+
+  border:
+    1px solid
+    #dfcebe;
+
+  border-radius:
+    0.95rem;
+
+  background:
+    linear-gradient(
+      180deg,
+      #fffaf5 0%,
+      #faf4ed 100%
+    );
+
+  padding:
+    0 0.85rem;
+
+  color:
+    #664a37;
+
+  font-size:
+    0.68rem;
+
+  font-weight:
+    820;
+
+  white-space:
+    nowrap;
+
+  transition:
+    border-color
+      180ms ease,
+    background
+      180ms ease,
+    color
+      180ms ease,
+    transform
+      180ms ease,
+    box-shadow
+      180ms ease;
+}
+
+.advancedIcon {
+  display: grid;
+
+  width: 1.9rem;
+  height: 1.9rem;
+
+  flex: 0 0 auto;
+
+  place-items: center;
+
+  border-radius:
+    0.65rem;
+
+  background:
+    #efddc7;
+
+  color:
+    #95633f;
+
+  transition:
+    background
+      180ms ease,
+    color
+      180ms ease;
+}
+
+.advancedButton:hover {
+  border-color:
+    #c49368;
+
+  background:
+    #f5e6d5;
+
+  transform:
+    translateY(-1px);
+}
+
+.advancedButtonActive {
+  border-color:
+    #75503a;
+
+  background:
+    #493328;
+
+  color:
+    #f4dfc1;
+
+  box-shadow:
+    0 0.55rem
+      1.1rem
+      rgba(
+        63,
+        41,
+        27,
+        0.1
+      );
+}
+
+.advancedButtonActive
+  .advancedIcon {
+  background:
+    rgba(
+      231,
+      187,
+      129,
+      0.14
+    );
+
+  color:
+    #e8b879;
+}
+
+/* =========================================================
+   SEARCH BUTTON
+   ========================================================= */
+
+.searchButton {
+  position: relative;
+
+  display: flex;
+
+  min-width: 0;
+  height: 3.65rem;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 0.55rem;
+
+  overflow: hidden;
+
+  border:
+    1px solid
+    #d2a064;
+
+  border-radius:
+    0.95rem;
+
+  background:
+    linear-gradient(
+      135deg,
+      #f0c98b 0%,
+      #dfa75e 100%
+    );
+
+  padding:
+    0 1rem;
+
+  color:
+    #38271d;
+
+  font-size:
+    0.69rem;
+
+  font-weight:
+    850;
+
+  white-space:
+    nowrap;
+
+  box-shadow:
+    0 0.6rem
+      1.35rem
+      rgba(
+        124,
+        78,
+        38,
+        0.12
+      );
+
+  transition:
+    transform
+      180ms ease,
+    box-shadow
+      180ms ease,
+    filter
+      180ms ease;
+}
+
+.searchButton svg {
+  flex: 0 0 auto;
+}
+
+.searchButton:hover {
+  filter:
+    brightness(
+      1.035
+    );
+
+  box-shadow:
+    0 0.9rem
+      1.8rem
+      rgba(
+        124,
+        78,
+        38,
+        0.18
+      );
+
+  transform:
+    translateY(-2px);
+}
+
+.searchButton::after {
+  position: absolute;
+
+  top: -100%;
+  left: -35%;
+
+  width: 28%;
+  height: 300%;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(
+        255,
+        255,
+        255,
+        0.35
+      ),
+      transparent
+    );
+
+  content: "";
+
+  opacity: 0;
+
+  transform:
+    rotate(18deg)
+    translateX(-160%);
+
+  transition:
+    transform
+      650ms ease,
+    opacity
+      160ms ease;
+}
+
+.searchButton:hover::after {
+  opacity: 1;
+
+  transform:
+    rotate(18deg)
+    translateX(650%);
+}
+
+/* =========================================================
+   ADVANCED FILTER AREA
+   ========================================================= */
+
+.advanced {
+  position: relative;
+
+  z-index: 10;
+
+  margin-top: 0.05rem;
+
+  border-top:
+    1px solid
+    #eadfd4;
+
+  padding-top:
+    0.75rem;
+
+  animation:
+    advancedIn
+      180ms ease both;
+}
+
+.advancedGrid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(0, 1fr)
+    );
+
+  gap: 0.6rem;
+}
+
+.advancedBox,
+.advancedNumber {
+  height: 3.55rem;
+
+  background:
+    #fcf7f1;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (
+  max-width: 1050px
+) {
+  .primaryRow,
+  .secondaryRow {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+
+  .advancedGrid {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+}
+
+@media (
+  max-width: 600px
+) {
+  .primaryRow,
+  .secondaryRow,
+  .advancedGrid {
+    grid-template-columns:
+      1fr;
+  }
+
+  .filterBox,
+  .numberBox,
+  .advancedButton,
+  .searchButton {
+    height: 3.5rem;
+  }
+}
+
+/* =========================================================
+   ANIMATION
+   ========================================================= */
+
+@keyframes advancedIn {
+  from {
+    opacity: 0;
+
+    transform:
+      translateY(
+        -5px
+      );
+  }
+
+  to {
+    opacity: 1;
+
+    transform:
+      translateY(0);
+  }
+}
+
+@media (
+  prefers-reduced-motion:
+    reduce
+) {
+  .filterBox,
+  .numberBox,
+  .advancedButton,
+  .searchButton {
+    transition: none;
+  }
+
+  .advanced {
+    animation: none;
+  }
+}

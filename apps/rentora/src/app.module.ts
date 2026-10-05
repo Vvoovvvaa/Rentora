@@ -104,7 +104,7 @@ import { SubscriptionModule } from './subscription/subscription.module';
             PropertyPriceHistory,
             PropertyAnalytic,
             UserSubscription,
-            SubscriptionConfig
+            SubscriptionConfig,
           ],
           autoLoadEntities: true,
           synchronize: true,
@@ -112,8 +112,6 @@ import { SubscriptionModule } from './subscription/subscription.module';
         };
       },
     }),
-
-
   ],
 
   controllers: [AppController],

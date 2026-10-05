@@ -84,7 +84,7 @@ export class Property extends Base {
   @Column({ nullable: true })
   floor: number;
 
-  @Column({ nullable: true, name: "total_floors" })
+  @Column({ nullable: true, name: 'total_floors' })
   totalFloors: number;
 
   @Column({
@@ -92,11 +92,11 @@ export class Property extends Base {
     precision: 4,
     scale: 2,
     nullable: true,
-    name: "celling_heinght"
+    name: 'celling_heinght',
   })
   ceilingHeight: number;
 
-  @Column({ nullable: true, name: "construction_year" })
+  @Column({ nullable: true, name: 'construction_year' })
   constructionYear: number;
 
   @Column({
@@ -110,7 +110,7 @@ export class Property extends Base {
     type: 'enum',
     enum: BuildingType,
     nullable: true,
-    name: "building_type"
+    name: 'building_type',
   })
   buildingType: BuildingType;
 
@@ -175,9 +175,11 @@ export class Property extends Base {
   })
   views: PropertyViews[];
 
-  @OneToMany(() => ChatRoom, chatroom => chatroom.property)
-  chatRooms: ChatRoom[]
+  @OneToMany(() => ChatRoom, (chatroom) => chatroom.property)
+  chatRooms: ChatRoom[];
 
-  @OneToMany(() => PropertyAnalytic, analytic => analytic.property, {onDelete: 'CASCADE'})
-  analytic: PropertyAnalytic[]
+  @OneToMany(() => PropertyAnalytic, (analytic) => analytic.property, {
+    onDelete: 'CASCADE',
+  })
+  analytic: PropertyAnalytic[];
 }

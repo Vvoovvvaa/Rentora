@@ -1,6 +1,6 @@
-import type { NextRequest } from "next/server";
+import type { NextRequest } from 'next/server';
 
-import { updateSession } from "./utils/supabase/middleware";
+import { updateSession } from './utils/supabase/middleware';
 
 export async function proxy(request: NextRequest) {
   return updateSession(request);
@@ -8,6 +8,6 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!api|_next/static|_next/image|favicon.ico|icon.png|apple-icon.png|brand/.*|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    '/((?!api|_next/static|_next/image|favicon.ico|icon.png|apple-icon.png|brand/.*|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };

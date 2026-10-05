@@ -113,33 +113,22 @@ export function applyPropertyFilters(
 
   // Exact construction year — old public search support
   if (dto.constructionYear !== undefined) {
-    query.andWhere(
-      'property.constructionYear = :constructionYear',
-      {
-        constructionYear: dto.constructionYear,
-      },
-    );
+    query.andWhere('property.constructionYear = :constructionYear', {
+      constructionYear: dto.constructionYear,
+    });
   }
 
   // Construction year range
   if (dto.minConstructionYear !== undefined) {
-    query.andWhere(
-      'property.constructionYear >= :minConstructionYear',
-      {
-        minConstructionYear:
-          dto.minConstructionYear,
-      },
-    );
+    query.andWhere('property.constructionYear >= :minConstructionYear', {
+      minConstructionYear: dto.minConstructionYear,
+    });
   }
 
   if (dto.maxConstructionYear !== undefined) {
-    query.andWhere(
-      'property.constructionYear <= :maxConstructionYear',
-      {
-        maxConstructionYear:
-          dto.maxConstructionYear,
-      },
-    );
+    query.andWhere('property.constructionYear <= :maxConstructionYear', {
+      maxConstructionYear: dto.maxConstructionYear,
+    });
   }
 
   // Condition
@@ -151,12 +140,9 @@ export function applyPropertyFilters(
 
   // Building type
   if (dto.buildingType) {
-    query.andWhere(
-      'property.buildingType = :buildingType',
-      {
-        buildingType: dto.buildingType,
-      },
-    );
+    query.andWhere('property.buildingType = :buildingType', {
+      buildingType: dto.buildingType,
+    });
   }
 
   // Features

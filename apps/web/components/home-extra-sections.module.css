@@ -1,0 +1,1865 @@
+/* =========================================================
+   RENTORA EXTRA HOMEPAGE SECTIONS
+
+   03 Why Rentora
+   05 For owners
+   06 Built for Armenia
+   ========================================================= */
+
+/* =========================================================
+   SHARED
+   ========================================================= */
+
+.lightEyebrow,
+.darkEyebrow,
+.armeniaEyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  margin: 0;
+
+  font-size: 0.68rem;
+  font-weight: 800;
+
+  letter-spacing: 0.14em;
+  line-height: 1.3;
+
+  text-transform: uppercase;
+}
+
+.textAction,
+.ownerAction,
+.armeniaAction {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 0.48rem;
+
+  width: fit-content;
+
+  text-decoration: none;
+
+  transition:
+    gap 200ms ease,
+    transform 200ms ease,
+    color 200ms ease,
+    background 200ms ease,
+    box-shadow 200ms ease;
+}
+
+/* =========================================================
+   03 — WHY RENTORA
+   ========================================================= */
+
+.whySection {
+  position: relative;
+
+  isolation: isolate;
+
+  overflow: hidden;
+
+  padding:
+    clamp(6rem, 9vw, 8rem)
+    0;
+
+  background:
+    radial-gradient(
+      circle at 16% 24%,
+      rgba(194, 153, 108, 0.1),
+      transparent 23rem
+    ),
+    #fbf7f1;
+
+  color: #35261d;
+}
+
+.whySection::before {
+  position: absolute;
+
+  z-index: -1;
+
+  top: -14rem;
+  left: -12rem;
+
+  width: 35rem;
+  height: 35rem;
+
+  border: 1px solid rgba(98, 63, 39, 0.06);
+  border-radius: 50%;
+
+  box-shadow:
+    0 0 0 5rem rgba(98, 63, 39, 0.015),
+    0 0 0 10rem rgba(98, 63, 39, 0.009);
+
+  content: "";
+
+  pointer-events: none;
+}
+
+.whyWord {
+  position: absolute;
+
+  z-index: -1;
+
+  right: -2rem;
+  bottom: -3rem;
+
+  color: rgba(91, 58, 36, 0.035);
+
+  font-size:
+    clamp(
+      8rem,
+      18vw,
+      18rem
+    );
+
+  font-weight: 900;
+
+  letter-spacing: -0.08em;
+
+  line-height: 0.8;
+
+  pointer-events: none;
+  user-select: none;
+}
+
+.whyLayout {
+  display: grid;
+
+  grid-template-columns:
+    minmax(19rem, 0.75fr)
+    minmax(0, 1.25fr);
+
+  gap:
+    clamp(
+      4rem,
+      8vw,
+      9rem
+    );
+
+  align-items: start;
+}
+
+.whyIntro {
+  position: sticky;
+
+  top: 8rem;
+
+  max-width: 31rem;
+}
+
+.lightEyebrow {
+  color: #a46f47;
+}
+
+.whyTitle {
+  max-width: 10ch;
+
+  margin:
+    1rem
+    0
+    0;
+
+  color: #33231a;
+
+  font-size:
+    clamp(
+      3rem,
+      4.8vw,
+      4.7rem
+    );
+
+  font-weight: 670;
+
+  letter-spacing: -0.07em;
+
+  line-height: 0.98;
+
+  text-wrap: balance;
+}
+
+.whyCopy {
+  max-width: 29rem;
+
+  margin:
+    1.45rem
+    0
+    0;
+
+  color: #78695c;
+
+  font-size: 0.97rem;
+
+  line-height: 1.75;
+}
+
+.textAction {
+  margin-top: 1.65rem;
+
+  color: #725039;
+
+  font-size: 0.76rem;
+
+  font-weight: 780;
+}
+
+.textAction:hover {
+  gap: 0.75rem;
+
+  color: #342219;
+}
+
+.whyReasons {
+  display: grid;
+}
+
+.whyReason {
+  position: relative;
+
+  display: grid;
+
+  grid-template-columns:
+    2rem
+    3rem
+    minmax(0, 1fr)
+    auto;
+
+  align-items: start;
+
+  gap: 1rem;
+
+  min-height: 11.5rem;
+
+  border-top:
+    1px solid
+    rgba(98, 66, 44, 0.13);
+
+  padding:
+    2rem
+    0;
+
+  transition:
+    padding-left 260ms ease,
+    background 260ms ease;
+}
+
+.whyReason:last-child {
+  border-bottom:
+    1px solid
+    rgba(98, 66, 44, 0.13);
+}
+
+.whyReason::before {
+  position: absolute;
+
+  top: 0;
+  bottom: 0;
+  left: -1.5rem;
+
+  width: 0;
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(193, 145, 95, 0.09),
+      transparent
+    );
+
+  content: "";
+
+  transition:
+    width 320ms ease;
+}
+
+.whyReason:hover::before {
+  width: calc(100% + 1.5rem);
+}
+
+.whyReason:hover {
+  padding-left: 0.7rem;
+}
+
+.whyNumber {
+  position: relative;
+
+  z-index: 1;
+
+  padding-top: 0.65rem;
+
+  color:
+    rgba(
+      95,
+      64,
+      43,
+      0.38
+    );
+
+  font-size: 0.62rem;
+
+  font-weight: 850;
+
+  letter-spacing: 0.1em;
+}
+
+.whyIcon {
+  position: relative;
+
+  z-index: 1;
+
+  display: grid;
+
+  width: 3rem;
+  height: 3rem;
+
+  place-items: center;
+
+  border:
+    1px solid
+    #ead9c7;
+
+  border-radius: 0.95rem;
+
+  background: #fffaf4;
+
+  color: #9c6d47;
+
+  box-shadow:
+    0 0.5rem 1.2rem
+    rgba(91, 61, 39, 0.05);
+
+  transition:
+    transform 250ms ease,
+    background 250ms ease;
+}
+
+.whyReason:hover .whyIcon {
+  background: #f2e2ce;
+
+  transform:
+    translateY(-3px)
+    rotate(-2deg);
+}
+
+.whyReason > div {
+  position: relative;
+
+  z-index: 1;
+
+  max-width: 35rem;
+}
+
+.whyReason h3 {
+  margin: 0.35rem 0 0;
+
+  color: #38271d;
+
+  font-size:
+    clamp(
+      1.35rem,
+      2vw,
+      1.85rem
+    );
+
+  font-weight: 680;
+
+  letter-spacing: -0.045em;
+
+  line-height: 1.08;
+}
+
+.whyReason p {
+  max-width: 33rem;
+
+  margin:
+    0.65rem
+    0
+    0;
+
+  color: #7c6b5d;
+
+  font-size: 0.84rem;
+
+  line-height: 1.68;
+}
+
+.whyArrow {
+  position: relative;
+
+  z-index: 1;
+
+  margin-top: 0.8rem;
+
+  color: #af825e;
+
+  transition:
+    transform 220ms ease,
+    color 220ms ease;
+}
+
+.whyReason:hover .whyArrow {
+  color: #563825;
+
+  transform:
+    translateX(5px);
+}
+
+/* =========================================================
+   05 — FOR OWNERS
+   ========================================================= */
+
+.ownerSection {
+  position: relative;
+
+  overflow: hidden;
+
+  padding:
+    clamp(6rem, 9vw, 8rem)
+    0;
+
+  background:
+    radial-gradient(
+      circle at 20% 44%,
+      rgba(186, 140, 92, 0.15),
+      transparent 29rem
+    ),
+    linear-gradient(
+      135deg,
+      #f0e2d2 0%,
+      #f8f1e8 56%,
+      #f4e9dc 100%
+    );
+
+  color: #36271e;
+}
+
+.ownerLayout {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1.2fr)
+    minmax(18rem, 0.72fr);
+
+  gap:
+    clamp(
+      4rem,
+      8vw,
+      8rem
+    );
+
+  align-items: center;
+}
+
+/* =========================================================
+   OWNER VISUAL
+   ========================================================= */
+
+.ownerVisual {
+  position: relative;
+
+  min-width: 0;
+
+  padding:
+    1.5rem
+    1rem
+    2rem;
+}
+
+.ownerGlow {
+  position: absolute;
+
+  top: 15%;
+  left: 10%;
+
+  width: 75%;
+  height: 70%;
+
+  border-radius: 50%;
+
+  background:
+    rgba(157, 105, 67, 0.16);
+
+  filter: blur(4rem);
+
+  pointer-events: none;
+}
+
+.ownerDashboard {
+  position: relative;
+
+  overflow: hidden;
+
+  border:
+    1px solid
+    rgba(92, 61, 40, 0.13);
+
+  border-radius: 1.45rem;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 252, 247, 0.98),
+      rgba(248, 239, 228, 0.98)
+    );
+
+  padding: 1rem;
+
+  box-shadow:
+    0 2.3rem 5rem
+      rgba(88, 56, 35, 0.17),
+    inset 0 1px
+      rgba(255, 255, 255, 0.95);
+
+  transform:
+    perspective(1300px)
+    rotateY(1.5deg)
+    rotateX(0.5deg);
+
+  transition:
+    transform 420ms
+      cubic-bezier(
+        0.22,
+        0.7,
+        0.22,
+        1
+      ),
+    box-shadow 420ms ease;
+}
+
+.ownerDashboard:hover {
+  box-shadow:
+    0 2.8rem 6rem
+      rgba(88, 56, 35, 0.21),
+    inset 0 1px
+      rgba(255, 255, 255, 0.95);
+
+  transform:
+    perspective(1300px)
+    rotateY(0deg)
+    rotateX(0deg)
+    translateY(-3px);
+}
+
+.ownerHeader {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 1rem;
+
+  min-height: 3.7rem;
+
+  border-bottom:
+    1px solid
+    #eaded0;
+
+  padding:
+    0
+    0.2rem
+    0.85rem;
+}
+
+.ownerHeader > div {
+  display: flex;
+
+  align-items: center;
+
+  gap: 0.65rem;
+}
+
+.ownerBrand {
+  display: grid;
+
+  width: 2.2rem;
+  height: 2.2rem;
+
+  place-items: center;
+
+  border-radius: 0.7rem;
+
+  background: #432d1f;
+
+  color: #efd0a6;
+
+  font-size: 0.78rem;
+
+  font-weight: 900;
+}
+
+.ownerHeader > div > div {
+  display: grid;
+
+  gap: 0.08rem;
+}
+
+.ownerHeader strong {
+  color: #3b2b21;
+
+  font-size: 0.76rem;
+
+  font-weight: 800;
+}
+
+.ownerHeader small {
+  color: #98816e;
+
+  font-size: 0.57rem;
+}
+
+.ownerAddMini {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 0.36rem;
+
+  border-radius: 0.66rem;
+
+  background: #ead0ac;
+
+  padding:
+    0.55rem
+    0.65rem;
+
+  color: #432c1e;
+
+  font-size: 0.6rem;
+
+  font-weight: 800;
+
+  text-decoration: none;
+
+  transition:
+    transform 180ms ease,
+    background 180ms ease;
+}
+
+.ownerAddMini:hover {
+  background: #dfbb87;
+
+  transform:
+    translateY(-2px);
+}
+
+/* stats */
+
+.ownerStats {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      3,
+      1fr
+    );
+
+  gap: 0.7rem;
+
+  margin-top: 1rem;
+}
+
+.ownerStats > div {
+  display: flex;
+
+  align-items: center;
+
+  gap: 0.5rem;
+
+  min-height: 3.5rem;
+
+  border:
+    1px solid
+    #eadccd;
+
+  border-radius: 0.85rem;
+
+  background:
+    rgba(
+      255,
+      253,
+      249,
+      0.72
+    );
+
+  padding:
+    0
+    0.8rem;
+
+  color: #9d704c;
+}
+
+.ownerStats strong {
+  color: #443024;
+
+  font-size: 0.76rem;
+
+  font-weight: 820;
+}
+
+/* listing rows */
+
+.ownerList {
+  display: grid;
+
+  margin-top: 0.75rem;
+
+  overflow: hidden;
+
+  border:
+    1px solid
+    #e6d7c7;
+
+  border-radius: 1rem;
+
+  background:
+    rgba(
+      255,
+      253,
+      249,
+      0.76
+    );
+}
+
+.ownerListing {
+  display: grid;
+
+  grid-template-columns:
+    auto
+    minmax(0, 1fr)
+    auto
+    auto;
+
+  align-items: center;
+
+  gap: 0.65rem;
+
+  min-height: 4rem;
+
+  border-bottom:
+    1px solid
+    #eee3d7;
+
+  padding:
+    0
+    0.9rem;
+
+  transition:
+    background 180ms ease;
+}
+
+.ownerListing:last-child {
+  border-bottom: 0;
+}
+
+.ownerListing:hover {
+  background: #fffaf4;
+}
+
+.ownerPropertyIcon {
+  display: grid;
+
+  width: 2rem;
+  height: 2rem;
+
+  place-items: center;
+
+  border-radius: 0.65rem;
+
+  background: #f2dfc5;
+
+  color: #8b5f3f;
+}
+
+.ownerListingCopy {
+  display: grid;
+
+  gap: 0.1rem;
+
+  min-width: 0;
+}
+
+.ownerListingCopy strong {
+  overflow: hidden;
+
+  color: #403026;
+
+  font-size: 0.68rem;
+
+  font-weight: 760;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+}
+
+.ownerListingCopy small {
+  color: #967f6d;
+
+  font-size: 0.56rem;
+}
+
+.ownerStatus {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 0.3rem;
+
+  border-radius: 999px;
+
+  background: #eee7de;
+
+  padding:
+    0.34rem
+    0.48rem;
+
+  color: #8e7968;
+
+  font-size: 0.55rem;
+
+  font-weight: 750;
+}
+
+.ownerStatusActive {
+  background: #e7efe1;
+
+  color: #608052;
+}
+
+.ownerViews {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 0.28rem;
+
+  min-width: 3rem;
+
+  justify-content: flex-end;
+
+  color: #8d7562;
+
+  font-size: 0.57rem;
+
+  font-weight: 700;
+}
+
+/* analytics chart */
+
+.ownerChart {
+  margin-top: 0.75rem;
+
+  border:
+    1px solid
+    #e6d7c7;
+
+  border-radius: 1rem;
+
+  background:
+    rgba(
+      255,
+      253,
+      249,
+      0.76
+    );
+
+  padding:
+    0.85rem;
+}
+
+.ownerChartTop {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 1rem;
+}
+
+.ownerChartTop span {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 0.4rem;
+
+  color: #88715f;
+
+  font-size: 0.59rem;
+
+  font-weight: 700;
+}
+
+.ownerChartTop strong {
+  color: #678558;
+
+  font-size: 0.62rem;
+
+  font-weight: 800;
+}
+
+.bars {
+  display: flex;
+
+  height: 5.5rem;
+
+  align-items: flex-end;
+
+  gap: 0.48rem;
+
+  margin-top: 0.8rem;
+}
+
+.bars i {
+  flex: 1;
+
+  min-width: 0;
+
+  border-radius:
+    0.25rem
+    0.25rem
+    0
+    0;
+
+  background:
+    linear-gradient(
+      180deg,
+      #c59767,
+      #e3c29c
+    );
+
+  transform-origin: bottom;
+
+  animation:
+    ownerBarIn
+    0.7s
+    ease
+    both;
+}
+
+.bars i:nth-child(2) {
+  animation-delay: 60ms;
+}
+
+.bars i:nth-child(3) {
+  animation-delay: 120ms;
+}
+
+.bars i:nth-child(4) {
+  animation-delay: 180ms;
+}
+
+.bars i:nth-child(5) {
+  animation-delay: 240ms;
+}
+
+.bars i:nth-child(6) {
+  animation-delay: 300ms;
+}
+
+.bars i:nth-child(7) {
+  animation-delay: 360ms;
+}
+
+/* =========================================================
+   OWNER COPY
+   ========================================================= */
+
+.ownerCopy {
+  max-width: 31rem;
+}
+
+.darkEyebrow {
+  color: #9d6943;
+}
+
+.ownerTitle {
+  max-width: 11ch;
+
+  margin:
+    1rem
+    0
+    0;
+
+  color: #34241b;
+
+  font-size:
+    clamp(
+      2.8rem,
+      4.4vw,
+      4.3rem
+    );
+
+  font-weight: 670;
+
+  letter-spacing: -0.065em;
+
+  line-height: 1;
+
+  text-wrap: balance;
+}
+
+.ownerDescription {
+  max-width: 28rem;
+
+  margin:
+    1.4rem
+    0
+    0;
+
+  color: #766454;
+
+  font-size: 0.96rem;
+
+  line-height: 1.72;
+}
+
+.ownerBenefits {
+  display: grid;
+
+  gap: 0.65rem;
+
+  margin-top: 1.6rem;
+}
+
+.ownerBenefits span {
+  display: flex;
+
+  align-items: center;
+
+  gap: 0.6rem;
+
+  color: #674b38;
+
+  font-size: 0.76rem;
+
+  font-weight: 700;
+}
+
+.ownerBenefits svg {
+  color: #a46e45;
+}
+
+.ownerAction {
+  gap: 0.55rem;
+
+  margin-top: 1.8rem;
+
+  border-radius: 0.8rem;
+
+  background: #402b1f;
+
+  padding:
+    0.86rem
+    1rem;
+
+  color: #fff8ef;
+
+  font-size: 0.76rem;
+
+  font-weight: 800;
+
+  box-shadow:
+    0 0.8rem 1.8rem
+    rgba(
+      62,
+      40,
+      26,
+      0.13
+    );
+}
+
+.ownerAction:hover {
+  gap: 0.8rem;
+
+  background: #563823;
+
+  box-shadow:
+    0 1.1rem 2.2rem
+    rgba(
+      62,
+      40,
+      26,
+      0.18
+    );
+
+  transform:
+    translateY(-2px);
+}
+
+/* =========================================================
+   06 — BUILT FOR ARMENIA
+   ========================================================= */
+
+.armeniaSection {
+  position: relative;
+
+  isolation: isolate;
+
+  overflow: hidden;
+
+  padding:
+    clamp(6rem, 10vw, 9rem)
+    0;
+
+  background:
+    linear-gradient(
+      135deg,
+      #3d2a1e,
+      #251912 68%
+    );
+
+  color: #fff8ee;
+}
+
+.armeniaSection::before {
+  position: absolute;
+
+  z-index: -2;
+
+  inset: 0;
+
+  background:
+    radial-gradient(
+      circle at 72% 48%,
+      rgba(204, 153, 94, 0.18),
+      transparent 28rem
+    );
+
+  content: "";
+}
+
+.armeniaRingOne,
+.armeniaRingTwo {
+  position: absolute;
+
+  z-index: -1;
+
+  border:
+    1px solid
+    rgba(
+      238,
+      207,
+      169,
+      0.08
+    );
+
+  border-radius: 50%;
+
+  pointer-events: none;
+}
+
+.armeniaRingOne {
+  top: -15rem;
+  right: -10rem;
+
+  width: 38rem;
+  height: 38rem;
+}
+
+.armeniaRingTwo {
+  right: 18%;
+  bottom: -18rem;
+
+  width: 31rem;
+  height: 31rem;
+}
+
+.armeniaLayout {
+  display: grid;
+
+  grid-template-columns:
+    minmax(18rem, 0.7fr)
+    minmax(0, 1.3fr);
+
+  gap:
+    clamp(
+      4rem,
+      8vw,
+      8rem
+    );
+
+  align-items: center;
+}
+
+.armeniaCopy {
+  max-width: 32rem;
+}
+
+.armeniaEyebrow {
+  color: #e8bf87;
+}
+
+.armeniaTitle {
+  max-width: 11ch;
+
+  margin:
+    1rem
+    0
+    0;
+
+  color: #fff9ef;
+
+  font-size:
+    clamp(
+      2.9rem,
+      4.6vw,
+      4.5rem
+    );
+
+  font-weight: 660;
+
+  letter-spacing: -0.065em;
+
+  line-height: 1;
+
+  text-wrap: balance;
+}
+
+.armeniaDescription {
+  max-width: 28rem;
+
+  margin:
+    1.4rem
+    0
+    0;
+
+  color: #d6c3b1;
+
+  font-size: 0.95rem;
+
+  line-height: 1.72;
+}
+
+.armeniaAction {
+  margin-top: 1.6rem;
+
+  color: #efc790;
+
+  font-size: 0.76rem;
+
+  font-weight: 800;
+}
+
+.armeniaAction:hover {
+  gap: 0.75rem;
+
+  color: #fff1dc;
+}
+
+/* Armenia visual */
+
+.armeniaVisual {
+  position: relative;
+
+  min-height:
+    clamp(
+      24rem,
+      34vw,
+      31rem
+    );
+
+  border:
+    1px solid
+    rgba(
+      239,
+      211,
+      177,
+      0.14
+    );
+
+  border-radius: 50%;
+
+  background:
+    radial-gradient(
+      circle at center,
+      rgba(217, 168, 111, 0.14),
+      rgba(255, 255, 255, 0.015) 48%,
+      transparent 69%
+    );
+
+  box-shadow:
+    inset
+      0 0 5rem
+      rgba(
+        236,
+        194,
+        144,
+        0.025
+      );
+
+  animation:
+    armeniaFloat
+    8s
+    ease-in-out
+    infinite;
+
+  isolation: isolate;
+}
+
+.armeniaVisual::before,
+.armeniaVisual::after {
+  position: absolute;
+
+  top: 50%;
+  left: 50%;
+
+  border:
+    1px solid
+    rgba(
+      236,
+      202,
+      159,
+      0.08
+    );
+
+  border-radius: 50%;
+
+  content: "";
+
+  transform:
+    translate(
+      -50%,
+      -50%
+    );
+
+  pointer-events: none;
+}
+
+.armeniaVisual::before {
+  width: 72%;
+  height: 72%;
+}
+
+.armeniaVisual::after {
+  width: 42%;
+  height: 42%;
+}
+
+.armeniaBigWord {
+  position: absolute;
+
+  z-index: -1;
+
+  top: 50%;
+  left: 50%;
+
+  color:
+    rgba(
+      250,
+      225,
+      193,
+      0.035
+    );
+
+  font-size:
+    clamp(
+      5rem,
+      9vw,
+      9rem
+    );
+
+  font-weight: 900;
+
+  letter-spacing: -0.08em;
+
+  transform:
+    translate(
+      -50%,
+      -50%
+    )
+    rotate(-9deg);
+
+  white-space: nowrap;
+
+  pointer-events: none;
+}
+
+.armeniaCenter {
+  position: absolute;
+
+  z-index: 4;
+
+  top: 50%;
+  left: 50%;
+
+  display: grid;
+
+  justify-items: center;
+
+  gap: 0.7rem;
+
+  transform:
+    translate(
+      -50%,
+      -50%
+    );
+}
+
+.armeniaLogo {
+  display: grid;
+
+  width: 5rem;
+  height: 5rem;
+
+  place-items: center;
+
+  border:
+    1px solid
+    rgba(
+      240,
+      208,
+      169,
+      0.25
+    );
+
+  border-radius: 1.4rem;
+
+  background:
+    linear-gradient(
+      145deg,
+      #e5ba82,
+      #9d6e49
+    );
+
+  color: #2d1e15;
+
+  font-size: 1rem;
+
+  font-weight: 900;
+
+  box-shadow:
+    0 1.2rem 3rem
+    rgba(
+      6,
+      4,
+      2,
+      0.25
+    );
+
+  transform:
+    rotate(-4deg);
+}
+
+.armeniaCenter > span {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 0.42rem;
+
+  color: #ead0ac;
+
+  font-size: 0.67rem;
+
+  font-weight: 750;
+}
+
+.armeniaChip {
+  position: absolute;
+
+  z-index: 3;
+
+  border:
+    1px solid
+    rgba(
+      240,
+      211,
+      175,
+      0.17
+    );
+
+  border-radius: 999px;
+
+  background:
+    rgba(
+      255,
+      248,
+      238,
+      0.07
+    );
+
+  padding:
+    0.55rem
+    0.75rem;
+
+  color: #f0dbc1;
+
+  font-size: 0.65rem;
+
+  font-weight: 720;
+
+  box-shadow:
+    0 0.8rem 2rem
+    rgba(
+      9,
+      5,
+      3,
+      0.12
+    );
+
+  backdrop-filter: blur(8px);
+
+  animation:
+    chipFloat
+    5s
+    ease-in-out
+    infinite;
+}
+
+.chipOne {
+  top: 17%;
+  left: 14%;
+}
+
+.chipTwo {
+  top: 20%;
+  right: 12%;
+
+  animation-delay: -1s;
+}
+
+.chipThree {
+  right: 7%;
+  bottom: 24%;
+
+  animation-delay: -2s;
+}
+
+.chipFour {
+  bottom: 14%;
+  left: 18%;
+
+  animation-delay: -3s;
+}
+
+.chipFive {
+  top: 47%;
+  left: 6%;
+
+  animation-delay: -4s;
+}
+
+/* =========================================================
+   ANIMATIONS
+   ========================================================= */
+
+@keyframes ownerBarIn {
+  from {
+    opacity: 0;
+
+    transform:
+      scaleY(0.15);
+  }
+
+  to {
+    opacity: 1;
+
+    transform:
+      scaleY(1);
+  }
+}
+
+@keyframes armeniaFloat {
+  0%,
+  100% {
+    transform:
+      translateY(0);
+  }
+
+  50% {
+    transform:
+      translateY(-6px);
+  }
+}
+
+@keyframes chipFloat {
+  0%,
+  100% {
+    transform:
+      translateY(0);
+  }
+
+  50% {
+    transform:
+      translateY(-7px);
+  }
+}
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 980px) {
+  .whyLayout,
+  .ownerLayout,
+  .armeniaLayout {
+    grid-template-columns: 1fr;
+
+    gap: 3.5rem;
+  }
+
+  .whyIntro {
+    position: relative;
+
+    top: auto;
+
+    max-width: 40rem;
+  }
+
+  .whyTitle,
+  .ownerTitle,
+  .armeniaTitle {
+    max-width: 14ch;
+  }
+
+  .ownerCopy {
+    max-width: 40rem;
+
+    order: -1;
+  }
+
+  .ownerVisual {
+    max-width: 48rem;
+
+    width: 100%;
+
+    margin: 0 auto;
+  }
+
+  .armeniaVisual {
+    max-width: 44rem;
+
+    width: 100%;
+
+    margin: 0 auto;
+  }
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 640px) {
+  .whySection,
+  .ownerSection,
+  .armeniaSection {
+    padding-block: 4.5rem;
+  }
+
+  .whyTitle,
+  .ownerTitle,
+  .armeniaTitle {
+    max-width: 12ch;
+
+    font-size:
+      clamp(
+        2.55rem,
+        11vw,
+        3.55rem
+      );
+  }
+
+  /* why */
+
+  .whyReasons {
+    margin-top: 0.5rem;
+  }
+
+  .whyReason {
+    grid-template-columns:
+      auto
+      minmax(0, 1fr)
+      auto;
+
+    gap: 0.75rem;
+
+    min-height: 0;
+
+    padding:
+      1.4rem
+      0;
+  }
+
+  .whyNumber {
+    display: none;
+  }
+
+  .whyIcon {
+    width: 2.55rem;
+    height: 2.55rem;
+  }
+
+  .whyReason h3 {
+    font-size: 1.2rem;
+  }
+
+  .whyReason p {
+    font-size: 0.78rem;
+  }
+
+  /* owner */
+
+  .ownerVisual {
+    padding:
+      0.3rem
+      0
+      1rem;
+  }
+
+  .ownerDashboard {
+    padding: 0.75rem;
+
+    border-radius: 1.1rem;
+
+    transform: none;
+  }
+
+  .ownerDashboard:hover {
+    transform:
+      translateY(-2px);
+  }
+
+  .ownerHeader {
+    align-items: flex-start;
+  }
+
+  .ownerAddMini {
+    padding:
+      0.5rem
+      0.55rem;
+
+    font-size: 0.55rem;
+  }
+
+  .ownerStats {
+    gap: 0.4rem;
+  }
+
+  .ownerStats > div {
+    min-height: 3rem;
+
+    padding:
+      0
+      0.55rem;
+  }
+
+  .ownerListing {
+    grid-template-columns:
+      auto
+      minmax(0, 1fr)
+      auto;
+
+    min-height: 3.8rem;
+
+    padding:
+      0
+      0.65rem;
+  }
+
+  .ownerStatus {
+    display: none;
+  }
+
+  .ownerViews {
+    min-width: auto;
+  }
+
+  .bars {
+    height: 4.5rem;
+  }
+
+  /* Armenia */
+
+  .armeniaVisual {
+    min-height: 23rem;
+  }
+
+  .armeniaLogo {
+    width: 4.2rem;
+    height: 4.2rem;
+  }
+
+  .armeniaChip {
+    padding:
+      0.45rem
+      0.6rem;
+
+    font-size: 0.58rem;
+  }
+
+  .chipOne {
+    top: 13%;
+    left: 6%;
+  }
+
+  .chipTwo {
+    top: 17%;
+    right: 5%;
+  }
+
+  .chipThree {
+    right: 3%;
+    bottom: 20%;
+  }
+
+  .chipFour {
+    bottom: 11%;
+    left: 8%;
+  }
+
+  .chipFive {
+    top: 49%;
+    left: 2%;
+  }
+}
+
+/* =========================================================
+   ARMENIAN
+   ========================================================= */
+
+:global(html[lang="am"]) .lightEyebrow,
+:global(html[lang="am"]) .darkEyebrow,
+:global(html[lang="am"]) .armeniaEyebrow {
+  letter-spacing: 0.02em;
+
+  text-transform: none;
+}
+
+:global(html[lang="am"]) .whyTitle,
+:global(html[lang="am"]) .ownerTitle,
+:global(html[lang="am"]) .armeniaTitle {
+  max-width: 15ch;
+
+  font-weight: 630;
+
+  letter-spacing: -0.025em;
+
+  line-height: 1.12;
+}
+
+/* =========================================================
+   REDUCED MOTION
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .whyReason,
+  .whyIcon,
+  .whyArrow,
+  .ownerDashboard,
+  .ownerAddMini,
+  .ownerAction,
+  .textAction,
+  .armeniaAction {
+    transition: none;
+  }
+
+  .bars i,
+  .armeniaVisual,
+  .armeniaChip {
+    animation: none;
+  }
+}

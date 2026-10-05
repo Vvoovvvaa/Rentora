@@ -28,11 +28,11 @@ import { SubscriptionModule } from '../subscription/subscription.module';
       PropertyPriceHistory,
       PropertyViews,
       UserSubscription,
-      SubscriptionConfig
+      SubscriptionConfig,
     ]),
     UploadModule,
     EmailModule,
-    SubscriptionModule
+    SubscriptionModule,
   ],
 })
 export class PropertiesModule {}

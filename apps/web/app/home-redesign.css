@@ -1,0 +1,1100 @@
+/* =========================================================
+   RENTORA HOMEPAGE
+   Global styles for the current homepage.
+
+   Important:
+   Map section uses:
+   home-map-showcase.module.css
+
+   Decision section uses:
+   home-decision-showcase.module.css
+   ========================================================= */
+
+.rentora-home--redesign {
+  position: relative;
+
+  background: #f8f5f0;
+
+  color: #30251e;
+
+  /*
+    Horizontal decoration may still be clipped,
+    but we MUST NOT clip the hero dropdown vertically.
+  */
+  overflow-x: clip;
+  overflow-y: visible;
+}
+
+/* =========================================================
+   HERO
+   ========================================================= */
+
+.rentora-home--redesign .rentora-home-hero {
+  position: relative;
+
+  /*
+    CRITICAL FIX:
+    Do NOT use overflow:hidden here.
+
+    The manual-search CustomSelect menu has to be able
+    to leave the hero section.
+  */
+  overflow: visible;
+
+  z-index: 20;
+
+  background:
+    radial-gradient(
+      circle at 88% 8%,
+      rgba(212, 166, 113, 0.2),
+      transparent 25%
+    ),
+    linear-gradient(
+      135deg,
+      #231912,
+      #513827 62%,
+      #332319
+    );
+}
+
+/*
+  Decorative circle stays INSIDE the hero now,
+  so overflow:visible does not make it bleed
+  into the following sections.
+*/
+.rentora-home--redesign .rentora-home-hero::after {
+  position: absolute;
+
+  z-index: 0;
+
+  right: -10rem;
+  bottom: 1rem;
+
+  width: 28rem;
+  height: 28rem;
+
+  border:
+    1px solid
+    rgba(246, 217, 181, 0.1);
+
+  border-radius: 50%;
+
+  content: "";
+
+  pointer-events: none;
+}
+
+.rentora-home--redesign .rentora-home-hero-shell {
+  position: relative;
+
+  z-index: 2;
+
+  grid-template-columns:
+    minmax(0, 0.92fr)
+    minmax(25rem, 0.78fr);
+
+  gap:
+    clamp(
+      3rem,
+      7vw,
+      8rem
+    );
+
+  min-height:
+    min(
+      46rem,
+      calc(100vh - 4.5rem)
+    );
+
+  padding-block:
+    clamp(
+      5.5rem,
+      9vw,
+      8.5rem
+    );
+}
+
+.rentora-home--redesign .rentora-home-hero-copy {
+  position: relative;
+
+  z-index: 10;
+
+  max-width: 40rem;
+
+  /*
+    Needed because the search dropdown
+    can leave this block.
+  */
+  overflow: visible;
+}
+
+.rentora-home--redesign .rentora-home-kicker {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 0.45rem;
+
+  margin: 0;
+
+  color: #e9c38f;
+
+  font-size: 0.69rem;
+
+  font-weight: 750;
+
+  letter-spacing: 0.14em;
+
+  line-height: 1.3;
+
+  text-transform: uppercase;
+}
+
+.rentora-home--redesign .rentora-home-hero h1 {
+  max-width: 10.5ch;
+
+  margin:
+    1rem
+    0
+    0;
+
+  color: #fffaf3;
+
+  font-size:
+    clamp(
+      3.25rem,
+      5.55vw,
+      5.15rem
+    );
+
+  font-weight: 680;
+
+  letter-spacing: -0.07em;
+
+  line-height: 0.97;
+
+  text-wrap: balance;
+}
+
+.rentora-home--redesign .rentora-home-hero-intro {
+  max-width: 35rem;
+
+  margin:
+    1.45rem
+    0
+    0;
+
+  color: #e3d4c4;
+
+  font-size:
+    clamp(
+      0.95rem,
+      1.2vw,
+      1.08rem
+    );
+
+  font-weight: 480;
+
+  line-height: 1.7;
+}
+
+/* =========================================================
+   HERO SEARCH
+   ========================================================= */
+
+.rentora-home--redesign .rentora-home-discovery {
+  position: relative;
+
+  z-index: 100;
+
+  max-width: 39rem;
+
+  margin-top: 2rem;
+
+  /*
+    CRITICAL FIX:
+    dropdown cannot be clipped here either.
+  */
+  overflow: visible !important;
+
+  border-color:
+    rgba(
+      247,
+      227,
+      201,
+      0.2
+    );
+
+  border-radius: 1.15rem;
+
+  background:
+    rgba(
+      255,
+      249,
+      241,
+      0.08
+    );
+
+  box-shadow:
+    0 1.5rem 3.5rem
+    rgba(
+      0,
+      0,
+      0,
+      0.18
+    );
+}
+
+.rentora-home--redesign .rentora-home-discovery-body {
+  position: relative;
+
+  z-index: 2;
+
+  overflow: visible !important;
+}
+
+/*
+  SearchForm itself already uses overflow:visible,
+  but we enforce it here for the homepage.
+*/
+.rentora-home--redesign
+  .rentora-home-discovery
+  .property-search-panel {
+  position: relative;
+
+  overflow: visible !important;
+
+  z-index: 10;
+}
+
+/*
+  Custom Select wrapper.
+*/
+.rentora-home--redesign
+  .rentora-home-discovery
+  .custom-select {
+  position: relative;
+
+  overflow: visible !important;
+}
+
+/*
+  When a select is opened it must sit above
+  all neighbouring inputs and sections.
+*/
+.rentora-home--redesign
+  .rentora-home-discovery
+  .custom-select:has(
+    .custom-select-trigger.is-open
+  ) {
+  z-index: 500;
+}
+
+/*
+  Actual dropdown menu.
+*/
+.rentora-home--redesign
+  .rentora-home-discovery
+  .custom-select-menu {
+  z-index: 1000 !important;
+
+  /*
+    Cleaner size for the homepage.
+  */
+  min-width: 100%;
+
+  width: max-content;
+
+  max-width: 18rem;
+
+  max-height: 18rem;
+
+  overflow-x: hidden;
+
+  overflow-y: auto;
+
+  border:
+    1px solid
+    rgba(224, 191, 150, 0.16);
+
+  border-radius: 0.85rem;
+
+  background:
+    rgba(
+      25,
+      24,
+      33,
+      0.98
+    );
+
+  box-shadow:
+    0 1.2rem 2.5rem
+    rgba(
+      5,
+      4,
+      10,
+      0.38
+    );
+
+  backdrop-filter:
+    blur(18px);
+}
+
+/*
+  Make sure dropdown doesn't look detached
+  from the Rentora hero.
+*/
+.rentora-home--redesign
+  .rentora-home-discovery
+  .custom-select-option {
+  min-height: 2.55rem;
+
+  border-radius: 0.65rem;
+
+  padding:
+    0.65rem
+    0.75rem;
+
+  font-size: 0.75rem;
+}
+
+.rentora-home--redesign
+  .rentora-home-discovery
+  .custom-select-option:hover,
+.rentora-home--redesign
+  .rentora-home-discovery
+  .custom-select-option.is-selected {
+  background:
+    rgba(
+      223,
+      188,
+      145,
+      0.13
+    );
+
+  color: #f5ddb7;
+}
+
+/* =========================================================
+   HERO AI PRODUCT DEMO
+   ========================================================= */
+
+.rentora-ai-product-demo {
+  position: relative;
+
+  isolation: isolate;
+
+  overflow: hidden;
+
+  max-width: 54rem;
+
+  margin:
+    3.5rem
+    auto
+    0;
+
+  border:
+    1px solid
+    rgba(
+      240,
+      211,
+      173,
+      0.22
+    );
+
+  border-radius: 1.35rem;
+
+  background:
+    linear-gradient(
+      145deg,
+      #33251d,
+      #1e1611
+    );
+
+  padding:
+    clamp(
+      1.2rem,
+      2.7vw,
+      2rem
+    );
+
+  color: #fff9ef;
+
+  box-shadow:
+    0 2rem 5rem
+      rgba(
+        14,
+        8,
+        4,
+        0.28
+      ),
+    inset
+      0 1px
+      rgba(
+        255,
+        255,
+        255,
+        0.08
+      );
+}
+
+.rentora-ai-product-demo.is-hero-demo {
+  width: 100%;
+
+  min-height: 28rem;
+
+  margin: 0;
+
+  transform:
+    perspective(1000px)
+    rotateY(-2deg)
+    rotateX(1deg);
+
+  animation:
+    rentora-demo-arrive
+    0.7s
+    0.1s
+    both;
+}
+
+.rentora-ai-product-demo-glow {
+  position: absolute;
+
+  z-index: -1;
+
+  top: -8rem;
+  right: -8rem;
+
+  width: 22rem;
+  height: 22rem;
+
+  border-radius: 50%;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(
+        222,
+        175,
+        120,
+        0.27
+      ),
+      transparent 68%
+    );
+
+  pointer-events: none;
+}
+
+.rentora-ai-demo-topline {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  color: #f2d3a7;
+
+  font-size: 0.74rem;
+
+  font-weight: 750;
+}
+
+.rentora-ai-demo-topline span {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 0.4rem;
+}
+
+.rentora-ai-demo-topline i {
+  width: 0.45rem;
+  height: 0.45rem;
+
+  border-radius: 50%;
+
+  background: #a9d29f;
+
+  box-shadow:
+    0 0 0 0.28rem
+    rgba(
+      169,
+      210,
+      159,
+      0.1
+    );
+}
+
+.rentora-ai-demo-label {
+  margin:
+    2.35rem
+    0
+    0;
+
+  color: #cdbba8;
+
+  font-size: 0.71rem;
+
+  font-weight: 700;
+
+  letter-spacing: 0.08em;
+
+  text-transform: uppercase;
+}
+
+.rentora-ai-demo-query {
+  max-width: 28rem;
+
+  margin:
+    0.7rem
+    0
+    0;
+
+  color: #fffaf3;
+
+  font-size:
+    clamp(
+      1.25rem,
+      2.1vw,
+      1.8rem
+    );
+
+  font-weight: 590;
+
+  letter-spacing: -0.04em;
+
+  line-height: 1.28;
+}
+
+.rentora-ai-demo-cursor {
+  display: inline-block;
+
+  width: 0.1em;
+  height: 1em;
+
+  margin-left: 0.16em;
+
+  background: #edc88f;
+
+  vertical-align: -0.12em;
+
+  animation:
+    rentora-cursor
+    1.1s
+    step-end
+    infinite;
+}
+
+.rentora-ai-demo-reading {
+  position: relative;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 0.5rem;
+
+  overflow: hidden;
+
+  margin-top: 2rem;
+
+  border-top:
+    1px solid
+    rgba(
+      245,
+      222,
+      190,
+      0.13
+    );
+
+  border-bottom:
+    1px solid
+    rgba(
+      245,
+      222,
+      190,
+      0.13
+    );
+
+  padding:
+    0.9rem
+    0;
+
+  color: #e9c691;
+
+  font-size: 0.78rem;
+
+  font-weight: 700;
+}
+
+.rentora-ai-demo-scan {
+  position: absolute;
+
+  inset:
+    0
+    auto
+    0
+    -20%;
+
+  width: 18%;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(
+        251,
+        226,
+        188,
+        0.16
+      ),
+      transparent
+    );
+
+  animation:
+    rentora-scan
+    3.8s
+    1s
+    ease-in-out
+    infinite;
+}
+
+.rentora-ai-demo-criteria {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 0.6rem;
+
+  margin-top: 1.25rem;
+}
+
+.rentora-ai-demo-criteria span {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 0.38rem;
+
+  border:
+    1px solid
+    rgba(
+      242,
+      218,
+      183,
+      0.17
+    );
+
+  border-radius: 999px;
+
+  background:
+    rgba(
+      255,
+      250,
+      242,
+      0.07
+    );
+
+  padding:
+    0.52rem
+    0.68rem;
+
+  color: #f6e7d1;
+
+  font-size: 0.72rem;
+
+  font-weight: 650;
+
+  opacity: 0;
+
+  transform:
+    translateY(5px);
+
+  animation:
+    rentora-criterion
+    0.38s
+    forwards;
+}
+
+.rentora-ai-demo-criteria svg {
+  color: #ecc68d;
+}
+
+.rentora-ai-demo-action {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 0.45rem;
+
+  margin-top: 2rem;
+
+  color: #f0ce9d;
+
+  font-size: 0.78rem;
+
+  font-weight: 750;
+
+  text-decoration: none;
+
+  transition:
+    gap 0.2s ease,
+    color 0.2s ease;
+}
+
+.rentora-ai-demo-action:hover {
+  gap: 0.72rem;
+
+  color: #fff6e9;
+}
+
+/* =========================================================
+   PRODUCT STRIP
+   ========================================================= */
+
+.rentora-home--redesign .rentora-home-trust-strip {
+  position: relative;
+
+  /*
+    IMPORTANT:
+    Lower than the hero so an open dropdown
+    can render on top of this section.
+  */
+  z-index: 5;
+
+  border: 0;
+
+  background: #fffdf9;
+}
+
+.rentora-home--redesign
+  .rentora-home-trust-strip
+  .shell {
+  grid-template-columns:
+    repeat(
+      5,
+      1fr
+    );
+}
+
+.rentora-home--redesign
+  .rentora-home-trust-strip
+  span {
+  min-height: 6.25rem;
+
+  border-color: #ece2d6;
+
+  color: #655547;
+
+  font-size: 0.74rem;
+
+  font-weight: 680;
+}
+
+.rentora-home--redesign
+  .rentora-home-trust-strip
+  span
+  svg {
+  color: #a7794f;
+}
+
+/* =========================================================
+   FINAL CTA
+   ========================================================= */
+
+.rentora-home--redesign .rentora-home-final {
+  position: relative;
+
+  z-index: 1;
+
+  padding:
+    clamp(
+      4.5rem,
+      8vw,
+      7rem
+    )
+    0;
+
+  background: #2d2018;
+}
+
+.rentora-home--redesign .rentora-home-final-inner {
+  border: 0;
+
+  padding: 0;
+}
+
+.rentora-home--redesign .rentora-home-final h2 {
+  max-width: 16ch;
+
+  margin:
+    0.8rem
+    0
+    0;
+
+  color: #fff8ef;
+
+  font-size:
+    clamp(
+      2.2rem,
+      3.8vw,
+      3.75rem
+    );
+
+  font-weight: 670;
+
+  letter-spacing: -0.065em;
+
+  line-height: 1.02;
+
+  text-wrap: balance;
+}
+
+.rentora-home--redesign
+  .rentora-home-final-inner
+  > div:first-child
+  > p:not(.rentora-home-kicker) {
+  color: #dac8b7;
+}
+
+.rentora-home--redesign
+  .rentora-home-final-primary,
+.rentora-home--redesign
+  .rentora-home-final-secondary {
+  border-radius: 0.8rem;
+
+  padding:
+    0.82rem
+    1rem;
+}
+
+.rentora-home--redesign .rentora-home-final-primary {
+  background: #edc68f;
+
+  color: #38271b;
+}
+
+.rentora-home--redesign .rentora-home-final-secondary {
+  border-color:
+    rgba(
+      245,
+      223,
+      194,
+      0.32
+    );
+
+  color: #fff7ed;
+}
+
+.rentora-home--redesign
+  .rentora-home-final-secondary:hover {
+  background:
+    rgba(
+      255,
+      249,
+      241,
+      0.1
+    );
+}
+
+/* =========================================================
+   ANIMATIONS
+   ========================================================= */
+
+@keyframes rentora-demo-arrive {
+  from {
+    opacity: 0;
+
+    transform:
+      perspective(1000px)
+      translateY(1.2rem)
+      rotateY(-2deg);
+  }
+
+  to {
+    opacity: 1;
+
+    transform:
+      perspective(1000px)
+      rotateY(-2deg)
+      rotateX(1deg);
+  }
+}
+
+@keyframes rentora-cursor {
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes rentora-scan {
+  0%,
+  20% {
+    transform:
+      translateX(-130%);
+  }
+
+  65%,
+  100% {
+    transform:
+      translateX(790%);
+  }
+}
+
+@keyframes rentora-criterion {
+  to {
+    opacity: 1;
+
+    transform:
+      translateY(0);
+  }
+}
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 900px) {
+  .rentora-home--redesign .rentora-home-hero-shell {
+    grid-template-columns: 1fr;
+
+    min-height: 0;
+
+    gap: 3rem;
+  }
+
+  .rentora-home--redesign .rentora-home-hero-copy {
+    max-width: 44rem;
+  }
+
+  .rentora-ai-product-demo.is-hero-demo {
+    max-width: 44rem;
+
+    min-height: 0;
+
+    transform: none;
+  }
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 620px) {
+  .rentora-home--redesign .rentora-home-hero-shell {
+    padding-block: 4.5rem;
+  }
+
+  .rentora-home--redesign .rentora-home-hero h1 {
+    max-width: 12ch;
+
+    font-size:
+      clamp(
+        2.75rem,
+        12vw,
+        3.65rem
+      );
+  }
+
+  /*
+    Mobile dropdown should still be above everything,
+    but we don't want an enormous menu.
+  */
+  .rentora-home--redesign
+    .rentora-home-discovery
+    .custom-select-menu {
+    width: 100%;
+
+    max-width: none;
+
+    max-height: 14rem;
+  }
+
+  .rentora-home--redesign
+    .rentora-home-trust-strip
+    .shell {
+    grid-template-columns:
+      1fr
+      1fr;
+  }
+
+  .rentora-home--redesign
+    .rentora-home-trust-strip
+    span {
+    min-height: 3.9rem;
+
+    border-bottom:
+      1px solid
+      #ece2d6;
+
+    font-size: 0.65rem;
+  }
+
+  .rentora-home--redesign
+    .rentora-home-trust-strip
+    span:last-child {
+    grid-column:
+      span 2;
+  }
+
+  .rentora-ai-product-demo {
+    margin-top: 2rem;
+
+    border-radius: 1rem;
+  }
+
+  .rentora-ai-demo-query {
+    font-size: 1.26rem;
+  }
+
+  .rentora-home--redesign
+    .rentora-home-final-actions {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =========================================================
+   ARMENIAN
+   ========================================================= */
+
+html[lang="am"]
+  .rentora-home--redesign
+  .rentora-home-kicker {
+  letter-spacing: 0.02em;
+
+  text-transform: none;
+}
+
+html[lang="am"]
+  .rentora-home--redesign
+  .rentora-home-hero
+  h1,
+html[lang="am"]
+  .rentora-home--redesign
+  .rentora-home-final
+  h2 {
+  font-weight: 640;
+
+  letter-spacing: -0.03em;
+
+  line-height: 1.12;
+}
+
+/* =========================================================
+   REDUCED MOTION
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .rentora-ai-product-demo.is-hero-demo,
+  .rentora-ai-demo-cursor,
+  .rentora-ai-demo-scan,
+  .rentora-ai-demo-criteria span {
+    animation: none;
+  }
+
+  .rentora-ai-demo-criteria span {
+    opacity: 1;
+
+    transform: none;
+  }
+}

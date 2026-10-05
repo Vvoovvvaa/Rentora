@@ -7,9 +7,11 @@ import { SubscriptionConfig } from '@app/common-rentora/database/entity/subscrip
 import { User } from '@app/common-rentora';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([UserSubscription, SubscriptionConfig,User])],
-    controllers: [SubscriptionController],
-    providers: [SubscriptionService],
-    exports: [SubscriptionService]
+  imports: [
+    TypeOrmModule.forFeature([UserSubscription, SubscriptionConfig, User]),
+  ],
+  controllers: [SubscriptionController],
+  providers: [SubscriptionService],
+  exports: [SubscriptionService],
 })
 export class SubscriptionModule {}

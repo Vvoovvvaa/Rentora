@@ -10,7 +10,7 @@ export class PropertyImage extends Base {
   @Column()
   size: number;
 
-  @Column({name: 'public_id'})
+  @Column({ name: 'public_id' })
   publicId: string;
 
   @ManyToOne(() => Property, (property) => property.images, {

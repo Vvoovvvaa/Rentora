@@ -3,7 +3,12 @@ import { BadRequestException } from '@nestjs/common';
 export class PhotoValidator {
   static validator(file: Express.Multer.File) {
     const MAX_SIZE = 20 * 1024 * 1024;
-    const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    const ALLOWED_TYPES = [
+      'image/jpeg',
+      'image/jpg',
+      'image/png',
+      'image/webp',
+    ];
 
     if (file.size > MAX_SIZE) {
       throw new BadRequestException(

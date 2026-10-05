@@ -1,7 +1,6 @@
 import Joi from 'joi';
 
 export const validationSchema = Joi.object({
-  
   JWT_SECRET1: Joi.string().required(),
   JWT_SECRET2: Joi.string().required(),
 
@@ -29,8 +28,9 @@ export const validationSchema = Joi.object({
   SUPER_ADMIN: Joi.string().required(),
 
   OPENAI_API_KEY: Joi.string().required(),
-  OPENAI_MODEL: Joi.string().required()
+  OPENAI_MODEL: Joi.string().required(),
 
+  NEXT_PUBLIC_SUPABASE_URL: Joi.string().required(),
+  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: Joi.string().required()
 
 });
-

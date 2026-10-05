@@ -52,8 +52,8 @@ export class PropertiesService {
     private readonly uploadservice: UploadService,
     private readonly senderservice: SenderService,
     private readonly i18n: I18nService,
-    private readonly subscriptionService: SubscriptionService
-  ) { }
+    private readonly subscriptionService: SubscriptionService,
+  ) {}
 
   private t(key: string, args?: Record<string, any>): string {
     return this.i18n.t(key, {
@@ -79,7 +79,7 @@ export class PropertiesService {
       throw new BadRequestException(this.t('property.VERIFY_EMAIL'));
     }
 
-    await this.checkActivePropertyLimit(userId)
+    await this.checkActivePropertyLimit(userId);
 
     const property = this.propertyRepo.create({
       ...dto,
@@ -96,7 +96,6 @@ export class PropertiesService {
     });
 
     await this.priceHistoryRepo.save(priceHistory);
-
 
     if (files.length) {
       const images: PropertyImage[] = [];
@@ -120,7 +119,7 @@ export class PropertiesService {
     }
 
     if (user.gmail) {
-      await this.senderservice.sendEmail({
+      void this.senderservice.sendEmail({
         to: user.gmail,
         from: process.env.SMTP_FROM || 'no-replyexample.com',
         subject: 'Property Created',
@@ -263,67 +262,40 @@ export class PropertiesService {
       message: this.t('property.PROPERTY_ARCHIVED'),
     };
   }
-  async restoreProperty(
-    propid: number,
-    userId: number,
-  ) {
-    const property =
-      await this.propertyRepo.findOne({
-        where: {
-          id: propid,
-          owner: {
-            id: userId,
-          },
+  async restoreProperty(propid: number, userId: number) {
+    const property = await this.propertyRepo.findOne({
+      where: {
+        id: propid,
+        owner: {
+          id: userId,
         },
-        relations: {
-          owner: true,
-        },
-      });
+      },
+      relations: {
+        owner: true,
+      },
+    });
 
     if (!property) {
-      throw new BadRequestException(
-        this.t('property.TRY_AGAIN_LATER'),
-      );
+      throw new BadRequestException(this.t('property.TRY_AGAIN_LATER'));
     }
 
-    if (
-      property.owner.id !== userId
-    ) {
-      throw new ForbiddenException(
-        this.t(
-          'property.CANNOT_RESTORE_PROPERTY',
-        ),
-      );
+    if (property.owner.id !== userId) {
+      throw new ForbiddenException(this.t('property.CANNOT_RESTORE_PROPERTY'));
     }
 
-    if (
-      property.status !==
-      PropertyStatus.ARCHIVED
-    ) {
-      throw new BadRequestException(
-        this.t(
-          'property.PROPERTY_NOT_ARCHIVED',
-        ),
-      );
+    if (property.status !== PropertyStatus.ARCHIVED) {
+      throw new BadRequestException(this.t('property.PROPERTY_NOT_ARCHIVED'));
     }
 
     // ВАЖНО
-    await this.checkActivePropertyLimit(
-      userId,
-    );
+    await this.checkActivePropertyLimit(userId);
 
-    property.status =
-      PropertyStatus.ACTIVE;
+    property.status = PropertyStatus.ACTIVE;
 
-    await this.propertyRepo.save(
-      property,
-    );
+    await this.propertyRepo.save(property);
 
     return {
-      message:
-        this.t(
-          'property.PROPERTY_RESTORED',
-        ),
+      message: this.t('property.PROPERTY_RESTORED'),
     };
   }
   async compareProperties(userId: number, propId1: number, propId2: number) {
@@ -533,33 +505,23 @@ export class PropertiesService {
     return history;
   }
 
-  private async checkActivePropertyLimit(
-    userId: number,
-  ): Promise<void> {
-    const config =
-      await this.subscriptionService.getUserConfig(
-        userId,
-      );
+  private async checkActivePropertyLimit(userId: number): Promise<void> {
+    const config = await this.subscriptionService.getUserConfig(userId);
 
-    const activePropertiesCount =
-      await this.propertyRepo.count({
-        where: {
-          owner: {
-            id: userId,
-          },
-
-          status: PropertyStatus.ACTIVE,
+    const activePropertiesCount = await this.propertyRepo.count({
+      where: {
+        owner: {
+          id: userId,
         },
-      });
 
-    if (
-      activePropertiesCount >=
-      config.maxProperties
-    ) {
+        status: PropertyStatus.ACTIVE,
+      },
+    });
+
+    if (activePropertiesCount >= config.maxProperties) {
       throw new ForbiddenException(
         `Your ${config.plan} plan allows maximum ${config.maxProperties} active properties`,
       );
     }
   }
-
 }

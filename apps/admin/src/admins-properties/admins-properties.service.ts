@@ -83,7 +83,7 @@ export class AdminsPropertiesService {
 
     const user = property.owner;
     if (user) {
-      await this.senderserive.sendEmail({
+      void this.senderserive.sendEmail({
         to: user.gmail,
         from: process.env.SMTP_FROM || 'no-reply@Renotra.com',
         subject: 'Property accepted',
@@ -138,7 +138,7 @@ export class AdminsPropertiesService {
 
     const user = property.owner;
     if (user) {
-      await this.senderserive.sendEmail({
+      void this.senderserive.sendEmail({
         to: user.gmail,
         from: process.env.SMTP_FROM || 'no-reply@Renotra.com',
         subject: 'Property rejected',
@@ -180,7 +180,7 @@ export class AdminsPropertiesService {
 
     const user = property.owner;
     if (user) {
-      await this.senderserive.sendEmail({
+      void this.senderserive.sendEmail({
         to: user.gmail,
         from: process.env.SMTP_FROM || 'no-reply@Renotra.com',
         subject: 'Property archived',

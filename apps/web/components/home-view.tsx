@@ -1,93 +1,102 @@
 "use client";
 
 import Link from "next/link";
+
 import {
   ArrowRight,
   Bot,
-  Compass,
+  Check,
+  Eye,
   GitCompare,
+  Heart,
+  Languages,
   Map,
   MapPin,
   MessageCircle,
-  Search,
-  ShieldCheck,
+  Plus,
   SlidersHorizontal,
   Sparkles,
 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+
+import { useState } from "react";
 
 import { useI18n } from "@/context/i18n-context";
-import { propertiesApi } from "@/lib/api";
-import type { Property } from "@/types/models";
 
 import { RentoraMap } from "./rentora-map";
-import { SearchForm } from "./search-form";
 import { RentoraAiHeroSearch } from "./rentora-ai-hero-search";
-import {
-  cityOf,
-  isPublicProperty,
-  priceOf,
-} from "./property-presentation";
+import { SearchForm } from "./search-form";
+
+import mapStyles from "./home-map-showcase.module.css";
+import decisionStyles from "./home-decision-showcase.module.css";
+import extraStyles from "./home-extra-sections.module.css";
 
 type DiscoveryMode = "ai" | "manual";
 
 export function HomeView() {
   const { t } = useI18n();
-  const [properties, setProperties] = useState<Property[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [discoveryMode, setDiscoveryMode] = useState<DiscoveryMode>("ai");
 
-  const load = useCallback(() => {
-    setLoading(true);
-    propertiesApi
-      .all()
-      .then((items) => setProperties(items.filter(isPublicProperty)))
-      .catch(() => setProperties([]))
-      .finally(() => setLoading(false));
-  }, []);
-
-  useEffect(() => {
-    // Home listings are public. They must not wait on the optional session check,
-    // otherwise an unavailable /user/me request can leave the product preview empty.
-    void Promise.resolve().then(load);
-  }, [load]);
-
-  const primaryProperty = properties[0];
-  const secondaryProperty = properties[1];
+  const [discoveryMode, setDiscoveryMode] =
+    useState<DiscoveryMode>("ai");
 
   return (
-    <main className="rentora-home">
+    <main className="rentora-home rentora-home--redesign">
+      {/* =====================================================
+          01 — HERO
+      ===================================================== */}
       <section className="rentora-home-hero">
         <div className="shell rentora-home-hero-shell">
           <div className="rentora-home-hero-copy">
             <p className="rentora-home-kicker">
               <Sparkles size={14} aria-hidden="true" />
+
               {t("home.heroProductEyebrow")}
             </p>
 
             <h1>{t("home.heroProductTitle")}</h1>
-            <p className="rentora-home-hero-intro">{t("home.heroProductCopy")}</p>
 
-            <div className="rentora-home-discovery" aria-label={t("home.discoveryLabel")}>
-              <div className="rentora-home-discovery-tabs" role="tablist" aria-label={t("home.discoveryLabel")}>
+            <p className="rentora-home-hero-intro">
+              {t("home.heroProductCopy")}
+            </p>
+
+            <div
+              id="rentora-ai"
+              className="rentora-home-discovery"
+              aria-label={t("home.discoveryLabel")}
+            >
+              <div
+                className="rentora-home-discovery-tabs"
+                role="tablist"
+                aria-label={t("home.discoveryLabel")}
+              >
                 <button
                   type="button"
                   role="tab"
                   aria-selected={discoveryMode === "ai"}
-                  className={discoveryMode === "ai" ? "is-active" : ""}
+                  className={
+                    discoveryMode === "ai"
+                      ? "is-active"
+                      : ""
+                  }
                   onClick={() => setDiscoveryMode("ai")}
                 >
                   <Sparkles size={15} />
+
                   {t("home.askAi")}
                 </button>
+
                 <button
                   type="button"
                   role="tab"
                   aria-selected={discoveryMode === "manual"}
-                  className={discoveryMode === "manual" ? "is-active" : ""}
+                  className={
+                    discoveryMode === "manual"
+                      ? "is-active"
+                      : ""
+                  }
                   onClick={() => setDiscoveryMode("manual")}
                 >
                   <SlidersHorizontal size={15} />
+
                   {t("home.searchManually")}
                 </button>
               </div>
@@ -102,126 +111,701 @@ export function HomeView() {
             </div>
           </div>
 
-          <HeroProductPreview property={primaryProperty} secondaryProperty={secondaryProperty} />
+          <AiProductDemo compact />
         </div>
       </section>
 
-      <section className="rentora-home-trust-strip" aria-label={t("home.productToolsTitle")}>
+      {/* =====================================================
+          PRODUCT STRIP
+      ===================================================== */}
+      <section
+        className="rentora-home-trust-strip"
+        aria-label={t("home.productToolsTitle")}
+      >
         <div className="shell">
-          <span><Map size={17} aria-hidden="true" />{t("home.mapSearch")}</span>
-          <span><GitCompare size={17} aria-hidden="true" />{t("home.compareProperties")}</span>
-          <span><MessageCircle size={17} aria-hidden="true" />{t("home.talkDirectly")}</span>
-          <span><MapPin size={17} aria-hidden="true" />{t("home.builtForArmenia")}</span>
+          <span>
+            <Sparkles size={16} aria-hidden="true" />
+            {t("home.askAi")}
+          </span>
+
+          <span>
+            <Map size={16} aria-hidden="true" />
+            {t("home.mapSearch")}
+          </span>
+
+          <span>
+            <GitCompare size={16} aria-hidden="true" />
+            {t("home.compareProperties")}
+          </span>
+
+          <span>
+            <MessageCircle size={16} aria-hidden="true" />
+            {t("home.talkDirectly")}
+          </span>
+
+          <span>
+            <MapPin size={16} aria-hidden="true" />
+            {t("home.builtForArmenia")}
+          </span>
         </div>
       </section>
 
-      <section className="rentora-home-story">
-        <div className="shell">
-          <div className="rentora-home-story-heading">
-            <div>
-              <p className="rentora-home-kicker">{t("home.approach")}</p>
-              <h2>{t("home.approachTitle")}</h2>
+      {/* =====================================================
+          02 — MAP DISCOVERY
+      ===================================================== */}
+      <section className={mapStyles.section}>
+        <div
+          className={mapStyles.backgroundGrid}
+          aria-hidden="true"
+        />
+
+        <div className={`shell ${mapStyles.layout}`}>
+          <div className={mapStyles.copy}>
+            <p className={mapStyles.eyebrow}>
+              <MapPin size={14} aria-hidden="true" />
+
+              {t("home.mapFirstEyebrow")}
+            </p>
+
+            <h2 className={mapStyles.title}>
+              {t("home.mapFirstTitle")}
+            </h2>
+
+            <p className={mapStyles.description}>
+              {t("home.mapFirstCopy")}
+            </p>
+
+            <Link
+              href="/map"
+              className={mapStyles.action}
+            >
+              {t("home.openMap")}
+
+              <ArrowRight size={17} />
+            </Link>
+
+            <div className={mapStyles.note}>
+              <span className={mapStyles.noteDot} />
+
+              <span>
+                {t("home.builtForArmenia")}
+              </span>
             </div>
-            <p>{t("home.approachCopy")}</p>
           </div>
 
-          <div className="rentora-home-story-grid">
-            <StoryCard icon={Compass} title={t("home.storyWhyTitle")} copy={t("home.storyWhyCopy")} />
-            <StoryCard icon={Search} title={t("home.storyWhatTitle")} copy={t("home.storyWhatCopy")} />
-            <StoryCard icon={ShieldCheck} title={t("home.storyArmeniaTitle")} copy={t("home.storyArmeniaCopy")} />
-          </div>
+          <div className={mapStyles.visual}>
+            <div
+              className={mapStyles.backPanel}
+              aria-hidden="true"
+            />
 
-          <div className="rentora-home-story-note">
-            <div className="rentora-home-story-note-icon"><Sparkles size={20} aria-hidden="true" /></div>
-            <div>
-              <p className="rentora-home-kicker">{t("home.storyAboutTitle")}</p>
-              <p>{t("home.storyAboutCopy")}</p>
+            <div className={mapStyles.mapCard}>
+              <div className={mapStyles.mapBadge}>
+                <span className={mapStyles.mapBadgeDot} />
+
+                <div>
+                  <strong>Armenia</strong>
+
+                  <small>
+                    {t("home.mapSearch")}
+                  </small>
+                </div>
+              </div>
+
+              <div className={mapStyles.mapViewport}>
+                <RentoraMap
+                  preview
+                  highlightArmenia
+                  initialBounds={{
+                    west: 43.55,
+                    south: 38.85,
+                    east: 46.55,
+                    north: 41.25,
+                  }}
+                  className={mapStyles.map}
+                />
+              </div>
+            </div>
+
+            <div
+              className={mapStyles.countryMark}
+              aria-hidden="true"
+            >
+              AM
             </div>
           </div>
         </div>
       </section>
 
-      <section className="rentora-home-benefits">
-        <div className="shell">
-          <div className="rentora-home-benefits-heading">
-            <div>
-              <p className="rentora-home-kicker">{t("home.benefitsEyebrow")}</p>
-              <h2>{t("home.benefitsTitle")}</h2>
-            </div>
-            <p>{t("home.benefitsCopy")}</p>
-          </div>
-
-          <div className="rentora-home-benefit-grid">
-            <BenefitCard icon={Bot} title={t("home.askAi")} copy={t("home.aiSearchCopy")} tone="accent" variant="primary" prompt={t("home.benefitSearchPrompt")} />
-            <BenefitCard icon={Map} title={t("home.mapSearch")} copy={t("home.mapSearchCopy")} variant="map" />
-            <BenefitCard icon={GitCompare} title={t("home.compareProperties")} copy={t("home.comparePropertiesCopy")} variant="compare" />
-            <BenefitCard icon={MessageCircle} title={t("home.talkDirectly")} copy={t("home.talkDirectlyCopy")} variant="talk" />
-            <BenefitCard icon={MapPin} title={t("home.builtForArmenia")} copy={t("home.storyArmeniaCopy")} variant="local" />
-          </div>
+      {/* =====================================================
+          03 — WHY RENTORA
+      ===================================================== */}
+      <section className={extraStyles.whySection}>
+        <div
+          className={extraStyles.whyWord}
+          aria-hidden="true"
+        >
+          RENTORA
         </div>
-      </section>
 
-      <section className="rentora-home-map-section">
-        <div className="shell rentora-home-map-layout">
-          <div className="rentora-home-map-copy">
-            <p className="rentora-home-kicker">{t("home.mapFirstEyebrow")}</p>
-            <h2>{t("home.mapFirstTitle")}</h2>
-            <p>{t("home.mapFirstCopy")}</p>
-            <Link href="/map" className="rentora-home-dark-action">
-              {t("home.openMap")}<ArrowRight size={17} />
+        <div className={`shell ${extraStyles.whyLayout}`}>
+          <div className={extraStyles.whyIntro}>
+            <p className={extraStyles.lightEyebrow}>
+              {t("home.approach")}
+            </p>
+
+            <h2 className={extraStyles.whyTitle}>
+              {t("home.storyWhyTitle")}
+            </h2>
+
+            <p className={extraStyles.whyCopy}>
+              {t("home.storyWhyCopy")}
+            </p>
+
+            <Link
+              href="/properties"
+              className={extraStyles.textAction}
+            >
+              {t("home.exploreHomes")}
+
+              <ArrowRight size={16} />
             </Link>
           </div>
 
-          <div className="rentora-home-live-map">
-            <RentoraMap
-              properties={properties}
-              fitToProperties
-              initialFitReady={!loading}
-              className="rentora-home-map-canvas"
+          <div className={extraStyles.whyReasons}>
+            <WhyReason
+              number="01"
+              icon={Sparkles}
+              title={t("home.storyWhatTitle")}
+              copy={t("home.storyWhatCopy")}
             />
-            {primaryProperty && <MapListingOverlay property={primaryProperty} />}
+
+            <WhyReason
+              number="02"
+              icon={MapPin}
+              title={t("home.storyArmeniaTitle")}
+              copy={t("home.storyArmeniaCopy")}
+            />
+
+            <WhyReason
+              number="03"
+              icon={Heart}
+              title={t("home.storyAboutTitle")}
+              copy={t("home.storyAboutCopy")}
+            />
           </div>
         </div>
       </section>
 
-      <section className="rentora-home-journey">
-        <div className="shell">
-          <div className="rentora-home-journey-heading">
-            <p className="rentora-home-kicker">{t("home.journeyEyebrow")}</p>
-            <h2>{t("home.journeyTitle")}</h2>
-            <p>{t("home.journeyCopy")}</p>
+      {/* =====================================================
+          04 — DECISION WORKSPACE
+      ===================================================== */}
+      <section className={decisionStyles.section}>
+        <div
+          className={decisionStyles.glow}
+          aria-hidden="true"
+        />
+
+        <div
+          className={decisionStyles.lines}
+          aria-hidden="true"
+        />
+
+        <div className={`shell ${decisionStyles.layout}`}>
+          <div className={decisionStyles.copy}>
+            <p className={decisionStyles.eyebrow}>
+              <span />
+
+              {t("home.productToolsTitle")}
+            </p>
+
+            <h2 className={decisionStyles.title}>
+              {t("home.savedTitle")}
+
+              <span> → </span>
+
+              {t("home.compareProperties")}
+
+              <span> → </span>
+
+              {t("home.messagesTitle")}
+            </h2>
+
+            <p className={decisionStyles.description}>
+              {t("home.toolsCopy")}
+            </p>
+
+            <div className={decisionStyles.steps}>
+              <DecisionStep
+                number="01"
+                href="/favorites"
+                icon={Heart}
+                title={t("home.savedTitle")}
+                copy={t("home.savedCopy")}
+              />
+
+              <DecisionStep
+                number="02"
+                href="/compare"
+                icon={GitCompare}
+                title={t("home.compareProperties")}
+                copy={t("home.comparePropertiesCopy")}
+              />
+
+              <DecisionStep
+                number="03"
+                href="/messages"
+                icon={MessageCircle}
+                title={t("home.messagesTitle")}
+                copy={t("home.messagesCopy")}
+              />
+            </div>
           </div>
 
-          <div className="rentora-home-journey-stage">
-            <aside className="rentora-home-journey-summary">
-              <span><Compass size={24} aria-hidden="true" /></span>
-              <p className="rentora-home-kicker">{t("home.journeySideEyebrow")}</p>
-              <h3>{t("home.journeySideTitle")}</h3>
-              <p>{t("home.journeySideCopy")}</p>
-              <Link href="/properties">{t("home.exploreHomes")}<ArrowRight size={16} /></Link>
-            </aside>
-            <div className="rentora-home-journey-line" aria-label={t("home.journeyTitle")}>
-              <JourneyPoint icon={Search} number="01" title={t("home.journeyFind")} text={t("home.journeyFindCopy")} />
-              <JourneyPoint icon={GitCompare} number="02" title={t("home.journeyCompare")} text={t("home.journeyCompareCopy")} />
-              <JourneyPoint icon={MessageCircle} number="03" title={t("home.journeyTalk")} text={t("home.journeyTalkCopy")} />
+          <div className={decisionStyles.visual}>
+            <div
+              className={decisionStyles.visualHalo}
+              aria-hidden="true"
+            />
+
+            <div className={decisionStyles.workspace}>
+              <div className={decisionStyles.workspaceHeader}>
+                <div className={decisionStyles.workspaceBrand}>
+                  <span className={decisionStyles.workspaceMark}>
+                    R
+                  </span>
+
+                  <div>
+                    <strong>Rentora</strong>
+
+                    <small>
+                      {t("home.productToolsTitle")}
+                    </small>
+                  </div>
+                </div>
+
+                <div className={decisionStyles.workspaceStatus}>
+                  <i />
+
+                  <span>3</span>
+                </div>
+              </div>
+
+              <div
+                className={`${decisionStyles.panel} ${decisionStyles.savedPanel}`}
+              >
+                <div className={decisionStyles.panelHeader}>
+                  <span className={decisionStyles.panelIcon}>
+                    <Heart size={17} />
+                  </span>
+
+                  <div>
+                    <strong>
+                      {t("home.savedTitle")}
+                    </strong>
+
+                    <small>
+                      {t("home.savedCopy")}
+                    </small>
+                  </div>
+
+                  <span className={decisionStyles.count}>
+                    3
+                  </span>
+                </div>
+
+                <div className={decisionStyles.savedRows}>
+                  <SavedRow
+                    location={t("home.cityGyumri")}
+                    price="$72k"
+                    meta="68 m²"
+                  />
+
+                  <SavedRow
+                    location={t("home.cityYerevan")}
+                    price="$79k"
+                    meta="74 m²"
+                  />
+
+                  <SavedRow
+                    location={t("home.cityDilijan")}
+                    price="$68k"
+                    meta="71 m²"
+                  />
+                </div>
+              </div>
+
+              <div
+                className={decisionStyles.flowConnector}
+                aria-hidden="true"
+              >
+                <span />
+              </div>
+
+              <div
+                className={`${decisionStyles.panel} ${decisionStyles.comparePanel}`}
+              >
+                <div className={decisionStyles.panelHeader}>
+                  <span className={decisionStyles.panelIcon}>
+                    <GitCompare size={17} />
+                  </span>
+
+                  <div>
+                    <strong>
+                      {t("home.compareProperties")}
+                    </strong>
+
+                    <small>
+                      {t("home.comparePropertiesCopy")}
+                    </small>
+                  </div>
+                </div>
+
+                <div className={decisionStyles.compareGrid}>
+                  <div className={decisionStyles.compareColumn}>
+                    <span
+                      className={decisionStyles.compareLetter}
+                    >
+                      A
+                    </span>
+
+                    <strong>$72k</strong>
+                    <span>68 m²</span>
+                    <span>2</span>
+                  </div>
+
+                  <div className={decisionStyles.compareDivider}>
+                    <span>VS</span>
+                  </div>
+
+                  <div className={decisionStyles.compareColumn}>
+                    <span
+                      className={decisionStyles.compareLetter}
+                    >
+                      B
+                    </span>
+
+                    <strong>$79k</strong>
+                    <span>74 m²</span>
+                    <span>3</span>
+                  </div>
+                </div>
+
+                <Link
+                  href="/compare"
+                  className={decisionStyles.panelAction}
+                >
+                  {t("home.compareProperties")}
+
+                  <ArrowRight size={15} />
+                </Link>
+              </div>
+
+              <Link
+                href="/messages"
+                className={decisionStyles.messageCard}
+              >
+                <span className={decisionStyles.messageIcon}>
+                  <MessageCircle size={17} />
+                </span>
+
+                <div className={decisionStyles.messageContent}>
+                  <strong>
+                    {t("home.messagesTitle")}
+                  </strong>
+
+                  <div className={decisionStyles.chatLines}>
+                    <span />
+                    <span />
+                  </div>
+                </div>
+
+                <ArrowRight size={16} />
+              </Link>
+            </div>
+
+            <div
+              className={decisionStyles.watermark}
+              aria-hidden="true"
+            >
+              03
             </div>
           </div>
         </div>
       </section>
 
+      {/* =====================================================
+          05 — FOR OWNERS
+      ===================================================== */}
+      <section className={extraStyles.ownerSection}>
+        <div className={`shell ${extraStyles.ownerLayout}`}>
+          <div className={extraStyles.ownerVisual}>
+            <div
+              className={extraStyles.ownerGlow}
+              aria-hidden="true"
+            />
+
+            <div className={extraStyles.ownerDashboard}>
+              <div className={extraStyles.ownerHeader}>
+                <div>
+                  <span className={extraStyles.ownerBrand}>
+                    R
+                  </span>
+
+                  <div>
+                    <strong>Rentora</strong>
+
+                    <small>
+                      {t("home.readyToList")}
+                    </small>
+                  </div>
+                </div>
+
+                <Link
+                  href="/properties/create"
+                  className={extraStyles.ownerAddMini}
+                >
+                  <Plus size={14} />
+
+                  {t("home.createListing")}
+                </Link>
+              </div>
+
+              <div className={extraStyles.ownerStats}>
+                <div>
+                  <Eye size={16} />
+                  <strong>1,924</strong>
+                </div>
+
+                <div>
+                  <MessageCircle size={16} />
+                  <strong>12</strong>
+                </div>
+
+                <div>
+                  <Heart size={16} />
+                  <strong>38</strong>
+                </div>
+              </div>
+
+              <div className={extraStyles.ownerList}>
+                <OwnerListing
+                  city={t("home.cityYerevan")}
+                  status={t("myListings.published")}
+                  views="1,284"
+                  active
+                />
+
+                <OwnerListing
+                  city={t("home.cityGyumri")}
+                  status={t("myListings.published")}
+                  views="640"
+                  active
+                />
+
+                <OwnerListing
+                  city={t("home.cityDilijan")}
+                  status={t("myListings.pending")}
+                  views="—"
+                />
+              </div>
+
+              <div className={extraStyles.ownerChart}>
+                <div className={extraStyles.ownerChartTop}>
+                  <span>
+                    <Eye size={14} />
+                    7 days
+                  </span>
+
+                  <strong>+24%</strong>
+                </div>
+
+                <div className={extraStyles.bars}>
+                  <i style={{ height: "32%" }} />
+                  <i style={{ height: "47%" }} />
+                  <i style={{ height: "41%" }} />
+                  <i style={{ height: "66%" }} />
+                  <i style={{ height: "58%" }} />
+                  <i style={{ height: "78%" }} />
+                  <i style={{ height: "92%" }} />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className={extraStyles.ownerCopy}>
+            <p className={extraStyles.darkEyebrow}>
+              {t("home.readyToList")}
+            </p>
+
+            <h2 className={extraStyles.ownerTitle}>
+              {t("home.listingCtaTitle")}
+            </h2>
+
+            <p className={extraStyles.ownerDescription}>
+              {t("home.listingCtaCopy")}
+            </p>
+
+            <div className={extraStyles.ownerBenefits}>
+              <span>
+                <Check size={15} />
+                {t("home.talkDirectly")}
+              </span>
+
+              <span>
+                <Check size={15} />
+                {t("home.builtForArmenia")}
+              </span>
+
+              <span>
+                <Check size={15} />
+                {t("home.mapSearch")}
+              </span>
+            </div>
+
+            <Link
+              href="/properties/create"
+              className={extraStyles.ownerAction}
+            >
+              <Plus size={17} />
+
+              {t("home.createListing")}
+
+              <ArrowRight size={16} />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* =====================================================
+          06 — BUILT FOR ARMENIA
+      ===================================================== */}
+      <section className={extraStyles.armeniaSection}>
+        <div
+          className={extraStyles.armeniaRingOne}
+          aria-hidden="true"
+        />
+
+        <div
+          className={extraStyles.armeniaRingTwo}
+          aria-hidden="true"
+        />
+
+        <div className={`shell ${extraStyles.armeniaLayout}`}>
+          <div className={extraStyles.armeniaCopy}>
+            <p className={extraStyles.armeniaEyebrow}>
+              <MapPin size={14} />
+
+              {t("home.builtForArmenia")}
+            </p>
+
+            <h2 className={extraStyles.armeniaTitle}>
+              {t("home.storyArmeniaTitle")}
+            </h2>
+
+            <p className={extraStyles.armeniaDescription}>
+              {t("home.storyArmeniaCopy")}
+            </p>
+
+            <Link
+              href="/map"
+              className={extraStyles.armeniaAction}
+            >
+              {t("home.openMap")}
+
+              <ArrowRight size={16} />
+            </Link>
+          </div>
+
+          <div className={extraStyles.armeniaVisual}>
+            <span
+              className={extraStyles.armeniaBigWord}
+              aria-hidden="true"
+            >
+              ARMENIA
+            </span>
+
+            <div className={extraStyles.armeniaCenter}>
+              <div className={extraStyles.armeniaLogo}>
+                AM
+              </div>
+
+              <span>
+                <Languages size={16} />
+
+                Armenia
+              </span>
+            </div>
+
+            <div
+              className={`${extraStyles.armeniaChip} ${extraStyles.chipOne}`}
+            >
+              Հայերեն
+            </div>
+
+            <div
+              className={`${extraStyles.armeniaChip} ${extraStyles.chipTwo}`}
+            >
+              Русский
+            </div>
+
+            <div
+              className={`${extraStyles.armeniaChip} ${extraStyles.chipThree}`}
+            >
+              English
+            </div>
+
+            <div
+              className={`${extraStyles.armeniaChip} ${extraStyles.chipFour}`}
+            >
+              AMD
+            </div>
+
+            <div
+              className={`${extraStyles.armeniaChip} ${extraStyles.chipFive}`}
+            >
+              USD · EUR
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* =====================================================
+          07 — FINAL CTA
+      ===================================================== */}
       <section className="rentora-home-final">
         <div className="shell">
           <div className="rentora-home-final-inner">
             <div>
-              <p className="rentora-home-kicker">{t("home.readyToList")}</p>
-              <h2>{t("home.finalTitle")}</h2>
-              <p>{t("home.finalCopy")}</p>
+              <p className="rentora-home-kicker">
+                {t("home.readyToList")}
+              </p>
+
+              <h2>
+                {t("home.finalTitle")}
+              </h2>
+
+              <p>
+                {t("home.finalCopy")}
+              </p>
             </div>
+
             <div className="rentora-home-final-actions">
-              <Link href="/properties" className="rentora-home-final-secondary">{t("home.exploreHomes")}</Link>
-              <Link href="/properties/create" className="rentora-home-final-primary">
-                {t("home.createListing")}<ArrowRight size={17} />
+              <Link
+                href="/properties"
+                className="rentora-home-final-primary"
+              >
+                {t("home.exploreHomes")}
+
+                <ArrowRight size={17} />
               </Link>
+
+              <a
+                href="#rentora-ai"
+                className="rentora-home-final-secondary"
+              >
+                {t("home.askAi")}
+              </a>
             </div>
           </div>
         </div>
@@ -230,91 +814,294 @@ export function HomeView() {
   );
 }
 
-function StoryCard({ icon: Icon, title, copy }: { icon: typeof Compass; title: string; copy: string }) {
-  return (
-    <article className="rentora-home-story-card">
-      <span><Icon size={19} aria-hidden="true" /></span>
-      <h3>{title}</h3>
-      <p>{copy}</p>
-    </article>
-  );
-}
+/* =========================================================
+   HERO AI
+   ========================================================= */
 
-function BenefitCard({ icon: Icon, title, copy, tone, variant, prompt }: { icon: typeof Compass; title: string; copy: string; tone?: "accent"; variant: "primary" | "map" | "compare" | "talk" | "local"; prompt?: string }) {
-  return (
-    <article className={`rentora-home-benefit-card is-${variant} ${tone === "accent" ? "is-accent" : ""}`}>
-      <span><Icon size={20} aria-hidden="true" /></span>
-      <h3>{title}</h3>
-      <p>{copy}</p>
-      {prompt && <div className="rentora-home-benefit-prompt"><Search size={15} aria-hidden="true" /><span>{prompt}</span><ArrowRight size={15} aria-hidden="true" /></div>}
-    </article>
-  );
-}
-
-function HeroProductPreview({ property, secondaryProperty }: { property?: Property; secondaryProperty?: Property }) {
+function AiProductDemo({
+  compact = false,
+}: {
+  compact?: boolean;
+}) {
   const { t } = useI18n();
-  const pins = [property, secondaryProperty].filter((item): item is Property => Boolean(item));
+
+  const criteria = [
+    t("home.aiDemoCity"),
+    t("home.aiDemoBedrooms"),
+    t("home.aiDemoBudget"),
+    t("home.aiDemoCentre"),
+    t("home.aiDemoComfort"),
+  ];
 
   return (
-    <div className="rentora-home-product-preview" aria-label={t("home.productPreviewLabel")}>
-      <div className="rentora-home-preview-map" aria-hidden="true">
-        <span className="rentora-home-preview-map-label">{t("home.builtForArmenia")}</span>
-        <span className="rentora-home-preview-road is-one" />
-        <span className="rentora-home-preview-road is-two" />
-        <span className="rentora-home-preview-road is-three" />
-        {pins.map((item, index) => <span className={`rentora-home-preview-pin is-${index + 1}`} key={item.id}>{priceOf(item)}</span>)}
+    <div
+      className={`rentora-ai-product-demo ${
+        compact
+          ? "is-hero-demo"
+          : ""
+      }`}
+      aria-label={t("home.aiExperienceEyebrow")}
+    >
+      <div
+        className="rentora-ai-product-demo-glow"
+        aria-hidden="true"
+      />
+
+      <div className="rentora-ai-demo-topline">
+        <span>
+          <Sparkles size={15} aria-hidden="true" />
+          Rentora AI
+        </span>
+
+        <i aria-hidden="true" />
       </div>
 
-      {property ? <ProductPreviewCard property={property} main /> : <div className="rentora-home-preview-skeleton" />}
-      {secondaryProperty && <ProductPreviewCard property={secondaryProperty} />}
-      <span className="rentora-home-preview-orbit is-one" aria-hidden="true" />
-      <span className="rentora-home-preview-orbit is-two" aria-hidden="true" />
+      <p className="rentora-ai-demo-label">
+        {t("home.aiDemoPrompt")}
+      </p>
+
+      <p className="rentora-ai-demo-query">
+        “{t("home.aiDemoQuery")}
+        <span
+          className="rentora-ai-demo-cursor"
+          aria-hidden="true"
+        />
+        ”
+      </p>
+
+      <div className="rentora-ai-demo-reading">
+        <span
+          className="rentora-ai-demo-scan"
+          aria-hidden="true"
+        />
+
+        <Bot size={16} aria-hidden="true" />
+
+        {t("home.aiDemoReading")}
+      </div>
+
+      <div className="rentora-ai-demo-criteria">
+        {criteria.map((criterion, index) => (
+          <span
+            key={`${criterion}-${index}`}
+            style={{
+              animationDelay:
+                `${300 + index * 120}ms`,
+            }}
+          >
+            <Check size={14} aria-hidden="true" />
+
+            {criterion}
+          </span>
+        ))}
+      </div>
+
+      <Link
+        href="/properties"
+        className="rentora-ai-demo-action"
+      >
+        {t("home.exploreHomes")}
+
+        <ArrowRight size={16} />
+      </Link>
     </div>
   );
 }
 
-function ProductPreviewCard({ property, main = false }: { property: Property; main?: boolean }) {
-  const { t } = useI18n();
-  const image = property.images?.[0]?.url;
+/* =========================================================
+   WHY RENTORA
+   ========================================================= */
+
+function WhyReason({
+  number,
+  icon: Icon,
+  title,
+  copy,
+}: {
+  number: string;
+  icon: typeof Sparkles;
+  title: string;
+  copy: string;
+}) {
   return (
-    <Link href={`/properties/${property.id}`} className={`rentora-home-preview-card ${main ? "is-main" : "is-secondary"}`}>
-      <div className="rentora-home-preview-image">
-        {image ? <img src={image} alt="" /> : <div />}
+    <article className={extraStyles.whyReason}>
+      <span className={extraStyles.whyNumber}>
+        {number}
+      </span>
+
+      <span className={extraStyles.whyIcon}>
+        <Icon size={18} />
+      </span>
+
+      <div>
+        <h3>{title}</h3>
+        <p>{copy}</p>
       </div>
-      <div className="rentora-home-preview-card-copy">
-        <strong>{priceOf(property)}</strong>
-        <span>{cityOf(property.city)} · {property.rooms} {t("common.rooms")}</span>
-      </div>
+
+      <ArrowRight
+        size={17}
+        className={extraStyles.whyArrow}
+      />
+    </article>
+  );
+}
+
+/* =========================================================
+   DECISION
+   ========================================================= */
+
+function DecisionStep({
+  number,
+  href,
+  icon: Icon,
+  title,
+  copy,
+}: {
+  number: string;
+  href: string;
+  icon: typeof Heart;
+  title: string;
+  copy: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className={decisionStyles.step}
+    >
+      <span className={decisionStyles.stepNumber}>
+        {number}
+      </span>
+
+      <span className={decisionStyles.stepIcon}>
+        <Icon size={17} />
+      </span>
+
+      <span className={decisionStyles.stepContent}>
+        <strong>{title}</strong>
+        <small>{copy}</small>
+      </span>
+
+      <ArrowRight
+        className={decisionStyles.stepArrow}
+        size={16}
+      />
     </Link>
   );
 }
 
-function MapListingOverlay({ property }: { property: Property }) {
-  const { t } = useI18n();
-  const image = property.images?.[0]?.url;
+function SavedRow({
+  location,
+  price,
+  meta,
+}: {
+  location: string;
+  price: string;
+  meta: string;
+}) {
   return (
-    <Link href={`/properties/${property.id}`} className="rentora-home-map-overlay">
-      <div>{image ? <img src={image} alt="" /> : <span />}</div>
-      <p>{priceOf(property)}</p>
-      <small>{cityOf(property.city)} · {property.rooms} {t("common.rooms")}</small>
-    </Link>
+    <div className={decisionStyles.savedRow}>
+      <span className={decisionStyles.propertyMark}>
+        <MapPin size={14} />
+      </span>
+
+      <div>
+        <strong>{location}</strong>
+        <small>{meta}</small>
+      </div>
+
+      <span className={decisionStyles.price}>
+        {price}
+      </span>
+    </div>
   );
 }
 
-function JourneyPoint({ icon: Icon, number, title, text }: { icon: typeof Search; number: string; title: string; text: string }) {
-  return <article>
-    <div><span>{number}</span><Icon size={21} /></div>
-    <h3>{title}</h3>
-    <p>{text}</p>
-  </article>;
+/* =========================================================
+   OWNER
+   ========================================================= */
+
+function OwnerListing({
+  city,
+  status,
+  views,
+  active = false,
+}: {
+  city: string;
+  status: string;
+  views: string;
+  active?: boolean;
+}) {
+  return (
+    <div className={extraStyles.ownerListing}>
+      <span className={extraStyles.ownerPropertyIcon}>
+        <MapPin size={14} />
+      </span>
+
+      <div className={extraStyles.ownerListingCopy}>
+        <strong>{city}</strong>
+        <small>{status}</small>
+      </div>
+
+      <span
+        className={`${extraStyles.ownerStatus} ${
+          active
+            ? extraStyles.ownerStatusActive
+            : ""
+        }`}
+      >
+        <i />
+        {active ? "●" : "○"}
+      </span>
+
+      <span className={extraStyles.ownerViews}>
+        <Eye size={13} />
+        {views}
+      </span>
+    </div>
+  );
 }
 
-export function Empty({ label }: { label: string }) {
+/* =========================================================
+   EXISTING HELPERS
+   ========================================================= */
+
+export function Empty({
+  label,
+}: {
+  label: string;
+}) {
   const { t } = useI18n();
-  return <div className="rentora-home-empty"><p>{label}</p><span>{t("search.emptyHint")}</span></div>;
+
+  return (
+    <div className="rentora-home-empty">
+      <p>{label}</p>
+
+      <span>
+        {t("search.emptyHint")}
+      </span>
+    </div>
+  );
 }
 
-export function ErrorBlock({ message, retry }: { message: string; retry: () => void }) {
+export function ErrorBlock({
+  message,
+  retry,
+}: {
+  message: string;
+  retry: () => void;
+}) {
   const { t } = useI18n();
-  return <div className="rentora-home-error"><p>{message}</p><button onClick={retry}>{t("common.tryAgain")}</button></div>;
+
+  return (
+    <div className="rentora-home-error">
+      <p>{message}</p>
+
+      <button
+        type="button"
+        onClick={retry}
+      >
+        {t("common.tryAgain")}
+      </button>
+    </div>
+  );
 }

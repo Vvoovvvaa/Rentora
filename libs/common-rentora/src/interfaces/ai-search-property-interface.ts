@@ -1,51 +1,51 @@
 import { PropertySort } from 'apps/web/types/models';
 import {
-    ArmeniaCity,
-    PropertyCategory,
-    PropertyFeature,
-    PropertyCondition,
-    BuildingType,
-    propertyListing,
+  ArmeniaCity,
+  PropertyCategory,
+  PropertyFeature,
+  PropertyCondition,
+  BuildingType,
+  propertyListing,
 } from '../enums';
 
 import { PropertyCurrency } from '../enums/property-currency';
 
 export interface SearchPropertiesArgs {
-    city: ArmeniaCity | null;
+  city: ArmeniaCity | null;
 
-    category: PropertyCategory | null;
+  category: PropertyCategory | null;
 
-    listing: propertyListing | null;
+  listing: propertyListing | null;
 
-    minPrice: number | null;
+  minPrice: number | null;
 
-    maxPrice: number | null;
+  maxPrice: number | null;
 
-    currency: PropertyCurrency | null;
+  currency: PropertyCurrency | null;
 
-    rooms: number | null;
+  rooms: number | null;
 
-    bedrooms: number | null;
+  bedrooms: number | null;
 
-    bathrooms: number | null;
+  bathrooms: number | null;
 
-    minArea: number | null;
+  minArea: number | null;
 
-    maxArea: number | null;
+  maxArea: number | null;
 
-    minFloor: number | null;
+  minFloor: number | null;
 
-    maxFloor: number | null;
+  maxFloor: number | null;
 
-    minConstructionYear: number | null;
+  minConstructionYear: number | null;
 
-    maxConstructionYear: number | null;
+  maxConstructionYear: number | null;
 
-    condition: PropertyCondition | null;
+  condition: PropertyCondition | null;
 
-    buildingType: BuildingType | null;
+  buildingType: BuildingType | null;
 
-    features: PropertyFeature[] | null;
+  features: PropertyFeature[] | null;
 
-    sort: PropertySort | null
+  sort: PropertySort | null;
 }

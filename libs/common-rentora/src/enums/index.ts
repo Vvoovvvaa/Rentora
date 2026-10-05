@@ -14,5 +14,5 @@ export * from './property-listing';
 export * from './admin-role';
 export * from './property-admin';
 export * from './support';
-export * from './subscription-plan'
-export * from './subscription-status'
+export * from './subscription-plan';
+export * from './subscription-status';

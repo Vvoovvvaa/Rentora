@@ -8,10 +8,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 
-import {
-  Server,
-  Socket,
-} from 'socket.io';
+import { Server, Socket } from 'socket.io';
 
 import { WsAuthGuard } from '@app/common-rentora/guard';
 import { AuthUserPayload } from '@app/common-rentora/interfaces';
@@ -36,20 +33,14 @@ export class ChatGateway {
   @WebSocketServer()
   server: Server;
 
-  constructor(
-    private readonly chatService: ChatService,
-  ) {}
+  constructor(private readonly chatService: ChatService) {}
 
   handleConnection(socket: Socket): void {
-    console.log(
-      `User connected: ${socket.id}`,
-    );
+    console.log(`User connected: ${socket.id}`);
   }
 
   handleDisconnect(socket: Socket): void {
-    console.log(
-      `User disconnected: ${socket.id}`,
-    );
+    console.log(`User disconnected: ${socket.id}`);
   }
 
   @UseGuards(WsAuthGuard)
@@ -62,18 +53,11 @@ export class ChatGateway {
   ) {
     const userId = socket.user.id;
 
-    await this.chatService.checkRoomAccess(
-      roomId,
-      userId,
-    );
+    await this.chatService.checkRoomAccess(roomId, userId);
 
-    await socket.join(
-      roomId.toString(),
-    );
+    await socket.join(roomId.toString());
 
-    console.log(
-      `User ${userId} joined room ${roomId}`,
-    );
+    console.log(`User ${userId} joined room ${roomId}`);
 
     return {
       success: true,
@@ -91,24 +75,15 @@ export class ChatGateway {
   ) {
     const userId = socket.user.id;
 
-    await this.chatService.checkRoomAccess(
-      data.roomId,
-      userId,
-    );
+    await this.chatService.checkRoomAccess(data.roomId, userId);
 
-    const message =
-      await this.chatService.createMessage({
-        roomId: data.roomId,
-        senderId: userId,
-        text: data.text,
-      });
+    const message = await this.chatService.createMessage({
+      roomId: data.roomId,
+      senderId: userId,
+      text: data.text,
+    });
 
-    this.server
-      .to(data.roomId.toString())
-      .emit(
-        'newMessage',
-        message,
-      );
+    this.server.to(data.roomId.toString()).emit('newMessage', message);
 
     return message;
   }
@@ -123,13 +98,8 @@ export class ChatGateway {
   ) {
     const userId = socket.user.id;
 
-    await this.chatService.checkRoomAccess(
-      roomId,
-      userId,
-    );
+    await this.chatService.checkRoomAccess(roomId, userId);
 
-    return this.chatService.getMessages(
-      roomId,
-    );
+    return this.chatService.getMessages(roomId);
   }
 }

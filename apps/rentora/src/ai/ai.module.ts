@@ -6,6 +6,6 @@ import { SearchModule } from '../search/search.module';
 @Module({
   providers: [AiService],
   controllers: [AiController],
-  imports: [SearchModule]
+  imports: [SearchModule],
 })
 export class AiModule {}

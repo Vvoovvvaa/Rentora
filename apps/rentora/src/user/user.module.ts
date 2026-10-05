@@ -23,7 +23,8 @@ import { AnalyticModule } from '../analytic/analytic.module';
       Favorites,
       Property,
     ]),
-    EmailModule,AnalyticModule
+    EmailModule,
+    AnalyticModule,
   ],
   controllers: [UserController],
   providers: [UserService, UploadService],

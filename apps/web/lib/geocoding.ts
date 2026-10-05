@@ -202,7 +202,9 @@ type CoordinateInput = {
  * Normalizes API coordinates once before any map receives them. Invalid or missing
  * values deliberately return null: markers must never be moved to a city fallback.
  */
-export function getValidCoordinates(value?: CoordinateInput | null): GeocodingCoordinates | null {
+export function getValidCoordinates(
+  value?: CoordinateInput | null,
+): GeocodingCoordinates | null {
   const latitude = Number(value?.latitude);
   const longitude = Number(value?.longitude);
 

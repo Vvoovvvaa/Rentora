@@ -16,11 +16,7 @@ import {
 
 import { InjectRepository } from '@nestjs/typeorm';
 
-import {
-  DataSource,
-  MoreThan,
-  Repository,
-} from 'typeorm';
+import { DataSource, MoreThan, Repository } from 'typeorm';
 
 @Injectable()
 export class SubscriptionService {
@@ -41,31 +37,24 @@ export class SubscriptionService {
   // CURRENT USER PLAN
   // =====================================================
 
-  async getUserPlan(
-    userId: number,
-  ): Promise<SubscripptionPlanEnum> {
-    const subscription =
-      await this.userSubscriptionRepo.findOne({
-        where: {
-          user: {
-            id: userId,
-          },
-
-          status:
-            SubscriptionStatusEnum.ACTIVE,
-
-          expiresAt: MoreThan(new Date()),
+  async getUserPlan(userId: number): Promise<SubscripptionPlanEnum> {
+    const subscription = await this.userSubscriptionRepo.findOne({
+      where: {
+        user: {
+          id: userId,
         },
 
-        order: {
-          createdAt: 'DESC',
-        },
-      });
+        status: SubscriptionStatusEnum.ACTIVE,
 
-    return (
-      subscription?.plan ??
-      SubscripptionPlanEnum.FREE
-    );
+        expiresAt: MoreThan(new Date()),
+      },
+
+      order: {
+        createdAt: 'DESC',
+      },
+    });
+
+    return subscription?.plan ?? SubscripptionPlanEnum.FREE;
   }
 
   // =====================================================
@@ -87,12 +76,11 @@ export class SubscriptionService {
   async getPlanConfig(
     plan: SubscripptionPlanEnum,
   ): Promise<SubscriptionConfig> {
-    const config =
-      await this.subscriptionConfigRepo.findOne({
-        where: {
-          plan,
-        },
-      });
+    const config = await this.subscriptionConfigRepo.findOne({
+      where: {
+        plan,
+      },
+    });
 
     if (!config) {
       throw new InternalServerErrorException(
@@ -107,11 +95,8 @@ export class SubscriptionService {
   // USER CONFIG
   // =====================================================
 
-  async getUserConfig(
-    userId: number,
-  ): Promise<SubscriptionConfig> {
-    const plan =
-      await this.getUserPlan(userId);
+  async getUserConfig(userId: number): Promise<SubscriptionConfig> {
+    const plan = await this.getUserPlan(userId);
 
     return this.getPlanConfig(plan);
   }
@@ -120,39 +105,30 @@ export class SubscriptionService {
   // MY SUBSCRIPTION
   // =====================================================
 
-  async getMySubscription(
-    userId: number,
-  ) {
-    const subscription =
-      await this.userSubscriptionRepo.findOne({
-        where: {
-          user: {
-            id: userId,
-          },
-
-          status:
-            SubscriptionStatusEnum.ACTIVE,
-
-          expiresAt: MoreThan(new Date()),
+  async getMySubscription(userId: number) {
+    const subscription = await this.userSubscriptionRepo.findOne({
+      where: {
+        user: {
+          id: userId,
         },
 
-        order: {
-          createdAt: 'DESC',
-        },
-      });
+        status: SubscriptionStatusEnum.ACTIVE,
+
+        expiresAt: MoreThan(new Date()),
+      },
+
+      order: {
+        createdAt: 'DESC',
+      },
+    });
 
     if (!subscription) {
-      const config =
-        await this.getPlanConfig(
-          SubscripptionPlanEnum.FREE,
-        );
+      const config = await this.getPlanConfig(SubscripptionPlanEnum.FREE);
 
       return {
-        plan:
-          SubscripptionPlanEnum.FREE,
+        plan: SubscripptionPlanEnum.FREE,
 
-        status:
-          SubscriptionStatusEnum.ACTIVE,
+        status: SubscriptionStatusEnum.ACTIVE,
 
         autoRenew: false,
 
@@ -163,10 +139,7 @@ export class SubscriptionService {
       };
     }
 
-    const config =
-      await this.getPlanConfig(
-        subscription.plan,
-      );
+    const config = await this.getPlanConfig(subscription.plan);
 
     return {
       id: subscription.id,
@@ -175,14 +148,11 @@ export class SubscriptionService {
 
       status: subscription.status,
 
-      autoRenew:
-        subscription.autoRenew,
+      autoRenew: subscription.autoRenew,
 
-      startedAt:
-        subscription.startedAt,
+      startedAt: subscription.startedAt,
 
-      expiresAt:
-        subscription.expiresAt,
+      expiresAt: subscription.expiresAt,
 
       config,
     };
@@ -194,145 +164,108 @@ export class SubscriptionService {
   // УДАЛИТЬ после подключения настоящей оплаты
   // =====================================================
 
-  async testPurchase(
-    userId: number,
-    plan: SubscripptionPlanEnum,
-  ) {
-    if (
-      plan === SubscripptionPlanEnum.FREE
-    ) {
-      throw new BadRequestException(
-        'FREE plan cannot be purchased',
-      );
+  async testPurchase(userId: number, plan: SubscripptionPlanEnum) {
+    if (plan === SubscripptionPlanEnum.FREE) {
+      throw new BadRequestException('FREE plan cannot be purchased');
     }
 
-    const user =
-      await this.userRepo.findOne({
-        where: {
-          id: userId,
-        },
-      });
+    const user = await this.userRepo.findOne({
+      where: {
+        id: userId,
+      },
+    });
 
     if (!user) {
-      throw new NotFoundException(
-        'User not found',
-      );
+      throw new NotFoundException('User not found');
     }
 
     // Проверяем, что такой тариф реально существует
-    const config =
-      await this.getPlanConfig(plan);
+    const config = await this.getPlanConfig(plan);
 
-    return this.dataSource.transaction(
-      async manager => {
-        const subscriptionRepo =
-          manager.getRepository(
-            UserSubscription,
-          );
+    return this.dataSource.transaction(async (manager) => {
+      const subscriptionRepo = manager.getRepository(UserSubscription);
 
-        const currentSubscription =
-          await subscriptionRepo.findOne({
-            where: {
-              user: {
-                id: userId,
-              },
-
-              status:
-                SubscriptionStatusEnum.ACTIVE,
-            },
-
-            order: {
-              createdAt: 'DESC',
-            },
-          });
-
-        /*
-         * Если старая подписка ещё помечена ACTIVE,
-         * закрываем её.
-         *
-         * Позже при настоящих платежах здесь будет
-         * отдельная логика upgrade/downgrade.
-         */
-        if (currentSubscription) {
-          currentSubscription.status =
-            SubscriptionStatusEnum.CANCELED;
-
-          currentSubscription.autoRenew =
-            false;
-
-          await subscriptionRepo.save(
-            currentSubscription,
-          );
-        }
-
-        const startedAt = new Date();
-
-        /*
-         * Пока тестируем месячную подписку
-         * как 30 дней.
-         *
-         * Позже expiresAt будет определяться
-         * уже логикой настоящей оплаты.
-         */
-        const expiresAt =
-          new Date(startedAt);
-
-        expiresAt.setDate(
-          expiresAt.getDate() + 30,
-        );
-
-        const subscription =
-          subscriptionRepo.create({
-            user,
-
-            plan,
-
-            status:
-              SubscriptionStatusEnum.ACTIVE,
-
-            autoRenew: false,
-
-            startedAt,
-
-            expiresAt,
-          });
-
-        const saved =
-          await subscriptionRepo.save(
-            subscription,
-          );
-
-        return {
-          message:
-            'Test subscription activated',
-
-          subscription: {
-            id: saved.id,
-            plan: saved.plan,
-            status: saved.status,
-            startedAt:
-              saved.startedAt,
-            expiresAt:
-              saved.expiresAt,
+      const currentSubscription = await subscriptionRepo.findOne({
+        where: {
+          user: {
+            id: userId,
           },
 
-          config: {
-            price: config.price,
+          status: SubscriptionStatusEnum.ACTIVE,
+        },
 
-            maxProperties:
-              config.maxProperties,
+        order: {
+          createdAt: 'DESC',
+        },
+      });
 
-            advancedAnalytics:
-              config.advancedAnalytics,
+      /*
+       * Если старая подписка ещё помечена ACTIVE,
+       * закрываем её.
+       *
+       * Позже при настоящих платежах здесь будет
+       * отдельная логика upgrade/downgrade.
+       */
+      if (currentSubscription) {
+        currentSubscription.status = SubscriptionStatusEnum.CANCELED;
 
-            monthlyBumps:
-              config.monthlyBumps,
+        currentSubscription.autoRenew = false;
 
-            prioritySearch:
-              config.prioritySearch,
-          },
-        };
-      },
-    );
+        await subscriptionRepo.save(currentSubscription);
+      }
+
+      const startedAt = new Date();
+
+      /*
+       * Пока тестируем месячную подписку
+       * как 30 дней.
+       *
+       * Позже expiresAt будет определяться
+       * уже логикой настоящей оплаты.
+       */
+      const expiresAt = new Date(startedAt);
+
+      expiresAt.setDate(expiresAt.getDate() + 30);
+
+      const subscription = subscriptionRepo.create({
+        user,
+
+        plan,
+
+        status: SubscriptionStatusEnum.ACTIVE,
+
+        autoRenew: false,
+
+        startedAt,
+
+        expiresAt,
+      });
+
+      const saved = await subscriptionRepo.save(subscription);
+
+      return {
+        message: 'Test subscription activated',
+
+        subscription: {
+          id: saved.id,
+          plan: saved.plan,
+          status: saved.status,
+          startedAt: saved.startedAt,
+          expiresAt: saved.expiresAt,
+        },
+
+        config: {
+          price: config.price,
+
+          maxProperties: config.maxProperties,
+
+          advancedAnalytics: config.advancedAnalytics,
+
+          monthlyBumps: config.monthlyBumps,
+
+          prioritySearch: config.prioritySearch,
+        },
+      };
+    });
   }
 }

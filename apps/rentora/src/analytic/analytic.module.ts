@@ -1,48 +1,26 @@
 import { Module } from '@nestjs/common';
 
-import {
-  TypeOrmModule,
-} from '@nestjs/typeorm';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
-import {
-  Property,
-  PropertyAnalytic,
-  PropertyViews,
-} from '@app/common-rentora';
+import { Property, PropertyAnalytic, PropertyViews } from '@app/common-rentora';
 
-import {
-  AnalyticService,
-} from './analytic.service';
+import { AnalyticService } from './analytic.service';
 
-import {
-  AnalyticController,
-} from './analytic.controller';
+import { AnalyticController } from './analytic.controller';
 
-import {
-  SubscriptionModule,
-} from '../subscription/subscription.module';
+import { SubscriptionModule } from '../subscription/subscription.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
-      Property,
-      PropertyViews,
-      PropertyAnalytic,
-    ]),
+    TypeOrmModule.forFeature([Property, PropertyViews, PropertyAnalytic]),
 
     SubscriptionModule,
   ],
 
-  controllers: [
-    AnalyticController,
-  ],
+  controllers: [AnalyticController],
 
-  providers: [
-    AnalyticService,
-  ],
+  providers: [AnalyticService],
 
-  exports: [
-    AnalyticService,
-  ],
+  exports: [AnalyticService],
 })
 export class AnalyticModule {}

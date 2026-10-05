@@ -9,7 +9,10 @@ import { ChatService } from './chat.service';
 import { AnalyticModule } from '../analytic/analytic.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Message, ChatRoom, Property]), AnalyticModule],
+  imports: [
+    TypeOrmModule.forFeature([Message, ChatRoom, Property]),
+    AnalyticModule,
+  ],
   providers: [ChatGateway, ChatService],
   controllers: [ChatController],
   exports: [ChatService],

@@ -7,6 +7,7 @@ import "./home-story.css";
 import "./system-polish.css";
 import "./subscription.css";
 import "./explore-home-polish.css";
+import "./home-redesign.css";
 
 export const metadata: Metadata = {
   title: "Rentora — find a place you’ll love",

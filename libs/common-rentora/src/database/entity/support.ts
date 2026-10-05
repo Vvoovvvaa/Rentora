@@ -23,7 +23,7 @@ export class Support extends Base {
   @Column()
   message: string;
 
-  @Column({ nullable: true, name: "admin_response" })
+  @Column({ nullable: true, name: 'admin_response' })
   adminRespone?: string;
 
   @ManyToOne(() => User, (user) => user.support, { onDelete: 'CASCADE' })

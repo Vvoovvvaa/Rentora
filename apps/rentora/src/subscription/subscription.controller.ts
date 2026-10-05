@@ -1,25 +1,13 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Post,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 
-import {
-  AuthGuard,
-  AuthUser,
-} from '@app/common-rentora';
+import { AuthGuard, AuthUser } from '@app/common-rentora';
 
 import { SubscriptionService } from './subscription.service';
 import { ChangeUserPlanDto } from './dto/change-user-plan.dto';
 
 @Controller('subscription')
 export class SubscriptionController {
-  constructor(
-    private readonly subscriptionService:
-      SubscriptionService,
-  ) {}
+  constructor(private readonly subscriptionService: SubscriptionService) {}
 
   // =====================================================
   // AVAILABLE PLANS
@@ -40,9 +28,7 @@ export class SubscriptionController {
     @AuthUser('id')
     userId: number,
   ) {
-    return this.subscriptionService.getMySubscription(
-      userId,
-    );
+    return this.subscriptionService.getMySubscription(userId);
   }
 
   // =====================================================
@@ -60,9 +46,6 @@ export class SubscriptionController {
     @Body()
     dto: ChangeUserPlanDto,
   ) {
-    return this.subscriptionService.testPurchase(
-      userId,
-      dto.plan,
-    );
+    return this.subscriptionService.testPurchase(userId, dto.plan);
   }
 }

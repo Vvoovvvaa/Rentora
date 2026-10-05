@@ -95,10 +95,7 @@ export class ChatService {
     }));
   }
 
-  async createRoom(data: {
-    propertyId: number;
-    clientId: number;
-  }) {
+  async createRoom(data: { propertyId: number; clientId: number }) {
     const property = await this.propertyRepository.findOne({
       where: {
         id: data.propertyId,
@@ -109,15 +106,11 @@ export class ChatService {
     });
 
     if (!property) {
-      throw new BadRequestException(
-        this.t('chat.PROPERTY_NOT_FOUND'),
-      );
+      throw new BadRequestException(this.t('chat.PROPERTY_NOT_FOUND'));
     }
 
     if (property.owner.id === data.clientId) {
-      throw new BadRequestException(
-        this.t('chat.CANNOT_CHAT_WITH_YOURSELF'),
-      );
+      throw new BadRequestException(this.t('chat.CANNOT_CHAT_WITH_YOURSELF'));
     }
 
     const existingRoom = await this.chatRoomRepository.findOne({
@@ -192,18 +185,11 @@ export class ChatService {
     });
 
     if (!room) {
-      throw new BadRequestException(
-        this.t('chat.ROOM_NOT_FOUND'),
-      );
+      throw new BadRequestException(this.t('chat.ROOM_NOT_FOUND'));
     }
 
-    if (
-      room.owner.id !== userId &&
-      room.client.id !== userId
-    ) {
-      throw new ForbiddenException(
-        this.t('chat.ACCESS_DENIED'),
-      );
+    if (room.owner.id !== userId && room.client.id !== userId) {
+      throw new ForbiddenException(this.t('chat.ACCESS_DENIED'));
     }
 
     return true;

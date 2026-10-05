@@ -15,7 +15,12 @@ export class Admin extends Base {
   @Column({ unique: true })
   name: string;
 
-  @Column({ type: 'enum', enum: adminRoleEnum, default: adminRoleEnum.admin, name: "admin_role" })
+  @Column({
+    type: 'enum',
+    enum: adminRoleEnum,
+    default: adminRoleEnum.admin,
+    name: 'admin_role',
+  })
   adminRole: adminRoleEnum;
 
   @OneToOne(() => AdminSecretcode, (code) => code.admin, {

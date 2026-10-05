@@ -42,11 +42,14 @@ import {
   CreatePropertyView,
   DetailView,
   EditPropertyView,
-  ListingsView,
   MessagesView,
   NeedLogin,
   ProfileView,
 } from "./views";
+
+import {
+  ListingsView,
+} from "./listings-view";
 
 import {
   CompareBar,
@@ -137,115 +140,115 @@ function LocalizedRentoraClient() {
       <SubscriptionProvider>
         <CompareProvider>
           <RentoraAiProvider>
-          <AppShell>
-            {path === "/" ? (
-              <HomeView />
-            ) : path ===
-              "/account-blocked" ? (
-              <AccountBlockedPage />
-            ) : path ===
-                "/login" ||
-              path ===
-                "/register" ||
-              path ===
-                "/verify-email" ||
-              path ===
-                "/forgot-password" ? (
-              <AuthView
-                mode={path.slice(
-                  1,
-                )}
-              />
-            ) : path ===
-              "/search" ? (
-              <SearchView />
-            ) : path ===
-              "/map" ? (
-              <MapSearchView />
-            ) : path ===
-              "/my-properties/map" ? (
-              <NeedLogin>
-                <MapSearchView
-                  scope="mine"
+            <AppShell>
+              {path === "/" ? (
+                <HomeView />
+              ) : path ===
+                "/account-blocked" ? (
+                <AccountBlockedPage />
+              ) : path ===
+                  "/login" ||
+                path ===
+                  "/register" ||
+                path ===
+                  "/verify-email" ||
+                path ===
+                  "/forgot-password" ? (
+                <AuthView
+                  mode={path.slice(
+                    1,
+                  )}
                 />
-              </NeedLogin>
-            ) : isAnalyticsPage ? (
-              <NeedLogin>
-                <PropertyAnalyticsView
+              ) : path ===
+                "/search" ? (
+                <SearchView />
+              ) : path ===
+                "/map" ? (
+                <MapSearchView />
+              ) : path ===
+                "/my-properties/map" ? (
+                <NeedLogin>
+                  <MapSearchView
+                    scope="mine"
+                  />
+                </NeedLogin>
+              ) : isAnalyticsPage ? (
+                <NeedLogin>
+                  <PropertyAnalyticsView
+                    id={
+                      segments[2]
+                    }
+                  />
+                </NeedLogin>
+              ) : path ===
+                "/compare" ? (
+                <CompareView />
+              ) : path ===
+                "/support" ? (
+                <NeedLogin>
+                  <SupportView />
+                </NeedLogin>
+              ) : path ===
+                "/subscription" ? (
+                <SubscriptionPage />
+              ) : path ===
+                  "/properties" ||
+                path ===
+                  "/favorites" ||
+                path ===
+                  "/my-properties" ? (
+                <ListingsView
+                  kind={path.slice(
+                    1,
+                  )}
+                />
+              ) : path ===
+                "/properties/create" ? (
+                <CreatePropertyView />
+              ) : path ===
+                "/messages" ? (
+                <MessagesView />
+              ) : path ===
+                "/profile" ? (
+                <ProfileView />
+              ) : segments[1] ===
+                  "properties" &&
+                segments[3] ===
+                  "edit" ? (
+                <EditPropertyView
                   id={
                     segments[2]
                   }
                 />
-              </NeedLogin>
-            ) : path ===
-              "/compare" ? (
-              <CompareView />
-            ) : path ===
-              "/support" ? (
-              <NeedLogin>
-                <SupportView />
-              </NeedLogin>
-            ) : path ===
-              "/subscription" ? (
-              <SubscriptionPage />
-            ) : path ===
-                "/properties" ||
-              path ===
-                "/favorites" ||
-              path ===
-                "/my-properties" ? (
-              <ListingsView
-                kind={path.slice(
-                  1,
-                )}
-              />
-            ) : path ===
-              "/properties/create" ? (
-              <CreatePropertyView />
-            ) : path ===
-              "/messages" ? (
-              <MessagesView />
-            ) : path ===
-              "/profile" ? (
-              <ProfileView />
-            ) : segments[1] ===
-                "properties" &&
-              segments[3] ===
-                "edit" ? (
-              <EditPropertyView
-                id={
-                  segments[2]
-                }
-              />
-            ) : path.startsWith(
-                "/properties/",
-              ) ? (
-              <DetailView
-                id={
-                  segments[2]
-                }
-              />
-            ) : (
-              <div className="shell py-24">
-                <h1 className="text-4xl font-black">
-                  {t(
-                    "property.notFound",
-                  )}
-                </h1>
-              </div>
-            )}
-
-            {path !==
-              "/compare" &&
-              path !==
-                "/account-blocked" && (
-                <CompareBar />
+              ) : path.startsWith(
+                  "/properties/",
+                ) ? (
+                <DetailView
+                  id={
+                    segments[2]
+                  }
+                />
+              ) : (
+                <div className="shell py-24">
+                  <h1 className="text-4xl font-black">
+                    {t(
+                      "property.notFound",
+                    )}
+                  </h1>
+                </div>
               )}
-          </AppShell>
 
-          <RentoraAiPanel />
+              {path !==
+                "/compare" &&
+                path !==
+                  "/account-blocked" && (
+                  <CompareBar />
+                )}
+            </AppShell>
 
-          <RentoraAiFloatingButton />
+            <RentoraAiPanel />
+
+            <RentoraAiFloatingButton />
           </RentoraAiProvider>
         </CompareProvider>
       </SubscriptionProvider>

@@ -1,7 +1,10 @@
-import { SubscripptionPlanEnum, SubscriptionStatusEnum } from "@app/common-rentora/enums";
-import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
-import { User } from "./user";
-import { Base } from "./base";
+import {
+  SubscripptionPlanEnum,
+  SubscriptionStatusEnum,
+} from '@app/common-rentora/enums';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { User } from './user';
+import { Base } from './base';
 
 @Entity('user_subscriptions')
 export class UserSubscription extends Base {
@@ -39,12 +42,8 @@ export class UserSubscription extends Base {
   })
   expiresAt: Date | null;
 
-  @ManyToOne(
-    () => User,
-    user => user.subscriptions,
-    {
-      onDelete: 'CASCADE',
-    },
-  )
+  @ManyToOne(() => User, (user) => user.subscriptions, {
+    onDelete: 'CASCADE',
+  })
   user: User;
 }

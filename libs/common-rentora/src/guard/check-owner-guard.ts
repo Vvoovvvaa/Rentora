@@ -33,19 +33,12 @@ export class OwnerCheckGuard implements CanActivate {
       throw new UnauthorizedException('Unauthorized');
     }
 
-    const rawPropertyId =
-      request.params.propertyId ??
-      request.params.id;
+    const rawPropertyId = request.params.propertyId ?? request.params.id;
 
     const propertyId = Number(rawPropertyId);
 
-    if (
-      !Number.isInteger(propertyId) ||
-      propertyId <= 0
-    ) {
-      throw new ForbiddenException(
-        'Invalid property id',
-      );
+    if (!Number.isInteger(propertyId) || propertyId <= 0) {
+      throw new ForbiddenException('Invalid property id');
     }
 
     const property = await this.propertyRepo.findOne({
@@ -58,9 +51,7 @@ export class OwnerCheckGuard implements CanActivate {
     });
 
     if (!property) {
-      throw new ForbiddenException(
-        'Property not found',
-      );
+      throw new ForbiddenException('Property not found');
     }
 
     if (user.role === userRoles.ADMIN) {
@@ -71,8 +62,6 @@ export class OwnerCheckGuard implements CanActivate {
       return true;
     }
 
-    throw new ForbiddenException(
-      'You cannot access this resource',
-    );
+    throw new ForbiddenException('You cannot access this resource');
   }
 }

@@ -111,19 +111,19 @@ export class AuthService {
     await this.usersecurityRepo.save(security);
 
     if (user.gmail) {
-      try {
-        await this.senderservice.sendEmail({
+      void this.senderservice
+        .sendEmail({
           to: user.gmail,
           from: process.env.SMTP_FROM || 'no-reply@example.com',
-          subject: 'welcome message!',
-          template: 'welcome-message',
+          subject: 'Login Message',
+          template: 'login-message',
           context: {
             name: user.name || user.gmail || 'USER',
           },
+        })
+        .catch((error) => {
+          console.error('Email sending failed:', error);
         });
-      } catch (error) {
-        console.error('Email sending failed:', error);
-      }
     }
 
     const token = await this.generateToken(user);
@@ -216,16 +216,25 @@ export class AuthService {
       throw new UnauthorizedException(this.t('auth.INCORRECT_CREDENTIALS'));
     }
 
-    security.totalAttemps = 0;
-    security.temporaryBlockUntil = null;
-    user.accauntStatus = accauntSatus.ACTIVE;
+    if (
+      security.totalAttemps !== 0 ||
+      security.temporaryBlockUntil !== null
+    ) {
+      security.totalAttemps = 0;
+      security.temporaryBlockUntil = null;
 
-    await this.usersecurityRepo.save(security);
-    await this.userRepo.save(user);
+      await this.usersecurityRepo.save(security);
+    }
+
+    if (user.accauntStatus !== accauntSatus.ACTIVE) {
+      user.accauntStatus = accauntSatus.ACTIVE;
+
+      await this.userRepo.save(user);
+    }
 
     if (user.gmail) {
       try {
-        await this.senderservice.sendEmail({
+        void this.senderservice.sendEmail({
           to: user.gmail,
           from: process.env.SMTP_FROM || 'no-reply@example.com',
           subject: 'Login Message',
@@ -348,7 +357,7 @@ export class AuthService {
     });
 
     if (user.gmail) {
-      await this.senderservice.sendEmail({
+      void this.senderservice.sendEmail({
         to: user.gmail,
         from: process.env.SMTP_FROM || 'noreply@example.com',
         subject: 'Change Password',
@@ -384,7 +393,7 @@ export class AuthService {
     await this.secretCodeRepo.remove(secret);
 
     if (user.gmail) {
-      await this.senderservice.sendEmail({
+      void this.senderservice.sendEmail({
         to: user.gmail,
         from: process.env.SMTP_FROM || 'no-reply@example.com',
         subject: 'Password Changed',
@@ -398,16 +407,9 @@ export class AuthService {
     }
   }
   async logout(token: string) {
-    const payload =
-      await this.jwtservice.verifyAsync<JwtPayload>(
-        token,
-        {
-          secret:
-            this.configService.getOrThrow<string>(
-              'JWT_SECRET1',
-            ),
-        },
-      );
+    const payload = await this.jwtservice.verifyAsync<JwtPayload>(token, {
+      secret: this.configService.getOrThrow<string>('JWT_SECRET1'),
+    });
 
     if (!payload.jti || !payload.exp) {
       throw new UnauthorizedException('Invalid token');
@@ -417,11 +419,7 @@ export class AuthService {
     const ttl = payload.exp - now;
 
     if (ttl > 0) {
-      await this.redisservice.set(
-        `blacklist:token:${payload.jti}`,
-        '1',
-        ttl,
-      );
+      await this.redisservice.set(`blacklist:token:${payload.jti}`, '1', ttl);
     }
 
     return {

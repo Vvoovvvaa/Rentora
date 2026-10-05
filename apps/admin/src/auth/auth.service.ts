@@ -79,7 +79,8 @@ export class AdminAuthService {
     }
 
     if (admin.gmail) {
-      await this.senderservice.sendEmail({
+      try{
+      void this.senderservice.sendEmail({
         to: admin.gmail,
         from: process.env.SMTP_FROM || 'no-reply@example.com',
         subject: 'Welcome Admin',
@@ -89,6 +90,9 @@ export class AdminAuthService {
           year: new Date().getFullYear(),
         },
       });
+    } catch(error){
+        throw new BadRequestException("Please try again later")
+    }
     }
 
     return await this.generateToken(admin);

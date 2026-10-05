@@ -22,7 +22,7 @@ import { SubscriptionConfig } from '@app/common-rentora/database/entity/subscrip
       PropertyPriceHistory,
       PropertyViews,
       UserSubscription,
-      SubscriptionConfig
+      SubscriptionConfig,
     ]),
     EmailModule,
   ],

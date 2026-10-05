@@ -66,9 +66,7 @@ export class AiService {
       };
     }
 
-    const args = JSON.parse(
-      functionCall.arguments,
-    ) as SearchPropertiesArgs;
+    const args = JSON.parse(functionCall.arguments) as SearchPropertiesArgs;
 
     const searchDto = this.mapAiArgsToSearchDto(args);
 

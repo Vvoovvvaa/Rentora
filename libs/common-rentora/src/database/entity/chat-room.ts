@@ -13,8 +13,7 @@ import { Message } from './message';
 import { Base } from './base';
 
 @Entity('chat-room')
-export class ChatRoom extends Base{
-
+export class ChatRoom extends Base {
   @ManyToOne(() => Property, (property) => property.chatRooms, {
     onDelete: 'CASCADE',
   })
@@ -33,7 +32,6 @@ export class ChatRoom extends Base{
   @JoinColumn({ name: 'clientId' })
   client: User;
 
-  @OneToMany(() => Message,message => message.chatRomms )
-  message: Message[]
-
+  @OneToMany(() => Message, (message) => message.chatRomms)
+  message: Message[];
 }
