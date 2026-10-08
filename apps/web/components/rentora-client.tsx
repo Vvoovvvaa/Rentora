@@ -95,6 +95,13 @@ import {
   SubscriptionPage,
 } from "./subscription-page";
 
+import {
+  AgenciesPage,
+  AgencyPublicPage,
+  CreateAgencyPage,
+  MyAgencyPage,
+} from "./agency-pages";
+
 export function RentoraClient() {
   return (
     <I18nProvider>
@@ -191,6 +198,21 @@ function LocalizedRentoraClient() {
               ) : path ===
                 "/subscription" ? (
                 <SubscriptionPage />
+              ) : path ===
+                "/agency/create" ? (
+                <NeedLogin>
+                  <CreateAgencyPage />
+                </NeedLogin>
+              ) : path ===
+                "/my-agency" ? (
+                <NeedLogin>
+                  <MyAgencyPage />
+                </NeedLogin>
+              ) : path ===
+                "/agencies" ? (
+                <AgenciesPage />
+              ) : segments[1] === "agency" && segments[2] ? (
+                <AgencyPublicPage id={segments[2]} />
               ) : path ===
                   "/properties" ||
                 path ===

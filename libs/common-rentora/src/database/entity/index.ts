@@ -15,3 +15,5 @@ export * from './admin';
 export * from './admin-secret-code';
 export * from './property-views';
 export * from './analytik';
+export * from './agency'
+export * from './agency-image'

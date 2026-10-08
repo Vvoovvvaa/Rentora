@@ -171,7 +171,7 @@ export class AdminAuthService {
     await this.adminrepo.save(admin);
 
     if (admin.gmail) {
-      await this.senderservice.sendEmail({
+      void this.senderservice.sendEmail({
         to: admin.gmail,
         from: process.env.SMTP_FROM || 'no-reply@Renotra.com',
         subject: 'Password Succesfuly changed',
@@ -186,7 +186,7 @@ export class AdminAuthService {
     const superAdminEmail = process.env.SUPER_ADMIN;
 
     if (superAdminEmail) {
-      await this.senderservice.sendEmail({
+      void this.senderservice.sendEmail({
         to: superAdminEmail,
         from: process.env.SMTP_FROM || 'no-reply@Renotra.com',
         subject: 'Renotra Admin changed password',
@@ -225,7 +225,7 @@ export class AdminAuthService {
     await this.secretCodeRepo.save(generated);
 
     if (admin.gmail) {
-      await this.senderservice.sendEmail({
+      void this.senderservice.sendEmail({
         to: admin.gmail,
         from: process.env.SMTP_FROM || 'no-replyRenotra.com',
         subject: 'Verifiaction Code',
@@ -278,7 +278,7 @@ export class AdminAuthService {
     await this.secretCodeRepo.remove(secret);
 
     if (admin.gmail) {
-      await this.senderservice.sendEmail({
+      void this.senderservice.sendEmail({
         to: admin.gmail,
         from: process.env.SMTP_FROM || 'no-reply@Renotra.com',
         subject: 'Password Changed',
@@ -293,7 +293,7 @@ export class AdminAuthService {
     const SuperGmail = process.env.SUPER_ADMIN;
 
     if (SuperGmail) {
-      await this.senderservice.sendEmail({
+      void this.senderservice.sendEmail({
         to: SuperGmail,
         from: process.env.SMTP_FROM || 'no-reply@Renotra.com',
         subject: 'Admin Changed Password',

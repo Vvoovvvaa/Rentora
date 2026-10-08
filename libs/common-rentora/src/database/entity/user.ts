@@ -21,6 +21,7 @@ import { PropertyViews } from './property-views';
 import { ChatRoom } from './chat-room';
 import { Message } from './message';
 import { UserSubscription } from './subscription-plan';
+import { Agency } from './agency';
 
 @Entity('users')
 export class User extends Base {
@@ -107,4 +108,7 @@ export class User extends Base {
     onDelete: 'CASCADE',
   })
   subscriptions: UserSubscription[];
+
+  @OneToMany(() => Agency, agency => agency.owner, {onDelete: "CASCADE"})
+  agency: Agency[]
 }

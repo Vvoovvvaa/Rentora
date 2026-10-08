@@ -32,6 +32,7 @@ import {
 } from "./property-presentation";
 
 import styles from "./properties-catalog.module.css";
+import { AgencyBadge } from "./agency-brand";
 
 export const labels = categoryLabels;
 
@@ -239,6 +240,8 @@ export function PropertyCard({
 
               {cityOf(property.city)}
             </p>
+
+            {property.agency && <span className={styles.propertyAgency}><AgencyBadge agency={property.agency}/></span>}
           </div>
 
           <div className={styles.propertySpecs}>

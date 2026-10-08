@@ -834,6 +834,9 @@
   font-weight: 630;
 }
 
+.propertyAgency { display: inline-flex; max-width: 100%; margin-top: .35rem; }
+.propertyAgency > :global(*) { min-width: 0; }
+
 .propertyLocation svg {
   flex: 0 0 auto;
   color: #a97851;

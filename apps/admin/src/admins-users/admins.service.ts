@@ -85,7 +85,7 @@ export class AdminsService {
     await this.userRepo.save(user);
 
     if (user.gmail) {
-      await this.senderService.sendEmail({
+      void this.senderService.sendEmail({
         to: user.gmail,
         from: process.env.SMTP_FROM || 'no-reply@Renotra.com',
         subject: 'Your accaunt are blocked',
@@ -122,7 +122,7 @@ export class AdminsService {
     await this.userRepo.save(user);
 
     if (user.gmail) {
-      await this.senderService.sendEmail({
+      void this.senderService.sendEmail({
         to: user.gmail,
         from: process.env.SMTP_FROM || 'no-reply@Renotra.com',
         subject: 'Your accaunt are Unblocked',

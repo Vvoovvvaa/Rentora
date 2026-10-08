@@ -3,6 +3,7 @@ import { PropertiesController } from './properties.controller';
 import { PropertiesService } from './properties.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import {
+  Agency,
   Property,
   PropertyImage,
   PropertyViews,
@@ -29,6 +30,7 @@ import { SubscriptionModule } from '../subscription/subscription.module';
       PropertyViews,
       UserSubscription,
       SubscriptionConfig,
+      Agency,
     ]),
     UploadModule,
     EmailModule,

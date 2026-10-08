@@ -19,6 +19,8 @@ export class SearchService {
       .createQueryBuilder('property')
       .leftJoinAndSelect('property.images', 'images')
       .leftJoinAndSelect('property.owner', 'owner')
+      .leftJoinAndSelect('property.agency', 'agency')
+      .leftJoinAndSelect('agency.image', 'agencyImage')
       .where('property.status = :status', { status: PropertyStatus.ACTIVE })
       .andWhere('property.publishing = :publishing', {
         publishing: PropertyPublishing.ACTIVE,

@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Camera, CheckCircle2, Heart, LayoutGrid, LogOut, Mail, MessageCircle, UserRound } from "lucide-react";
+import { Building2, Camera, CheckCircle2, Heart, LayoutGrid, LogOut, Mail, MessageCircle, UserRound } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
-import { apiMessage, userApi } from "@/lib/api";
+import { agencyApi, apiMessage, userApi } from "@/lib/api";
+import type { Agency } from "@/types/models";
 import { PhoneInput } from "./phone-input";
 import { useI18n } from "@/context/i18n-context";
 import { useSubscription } from "@/context/subscription-context";
@@ -21,8 +22,11 @@ export function ProfilePage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [saving, setSaving] = useState(false);
+  const [agency, setAgency] = useState<Agency | null>(null);
+  const [agencyLoading, setAgencyLoading] = useState(true);
 
   useEffect(() => () => { if (photoPreview) URL.revokeObjectURL(photoPreview); }, [photoPreview]);
+  useEffect(() => { agencyApi.mine().then(setAgency).catch(() => setAgency(null)).finally(() => setAgencyLoading(false)); }, []);
 
   const selectPhoto = (file: File | null) => {
     setPhoto(file);
@@ -67,6 +71,7 @@ export function ProfilePage() {
     { href: "/my-properties", label: t("navigation.myListings"), icon: LayoutGrid },
     { href: "/favorites", label: t("navigation.savedHomes"), icon: Heart },
     { href: "/messages", label: t("navigation.messages"), icon: MessageCircle },
+    { href: agency ? "/my-agency" : "/agency/create", label: agency ? t("agency.myAgency") : t("agency.create"), icon: Building2 },
   ];
 
   return <main className="profile-page"><div className="shell profile-shell">
@@ -96,6 +101,8 @@ export function ProfilePage() {
         </form>
 
         {subscriptionLoading ? <div className="skeleton h-28 rounded-2xl" /> : subscription && <section className="profile-subscription-card" aria-label={t("subscription.currentPlan")}><div><p>{t("subscription.currentPlan")}</p><h3>{t(`subscription.planNames.${subscription.plan}`)}</h3><small>{t("subscription.activeListings", { count: subscription.config.maxProperties })}{subscription.expiresAt && subscription.plan !== "FREE" ? ` · ${subscription.autoRenew ? t("subscription.renewsOn", { date: formatDate(subscription.expiresAt) }) : t("subscription.validUntil", { date: formatDate(subscription.expiresAt) })}` : ""}</small></div><Link href="/subscription">{t("subscription.managePlan")}</Link></section>}
+
+        <section className="profile-subscription-card profile-agency-entry"><div><p>{t("agency.eyebrow")}</p><h3>{agencyLoading ? t("common.loading") : agency ? agency.name : t("agency.createYourAgency")}</h3><small>{agency ? t("agency.dashboardCopy") : t("agency.createCopy")}</small></div><Link href={agency ? "/my-agency" : "/agency/create"}>{agency ? t("agency.myAgency") : t("agency.create")}</Link></section>
 
         <section className="profile-account-card"><div><p className="eyebrow">{t("profile.eyebrow")}</p><h2>{t("profile.title")}</h2></div><dl><div><dt>{t("profile.email")}</dt><dd>{user?.gmailStatus === "VERIFIED" ? t("profile.verifiedEmail") : t("common.notAvailable")}</dd></div><div><dt>{t("property.status")}</dt><dd>{user?.accauntStatus === "ACTIVE" ? t("status.ACTIVE") : user?.accauntStatus || t("common.notAvailable")}</dd></div></dl></section>
       </div>

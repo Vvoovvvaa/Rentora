@@ -117,7 +117,7 @@ export class UserService {
     await this.userRepo.save(user);
 
     if (user.gmail) {
-      await this.senderservice.sendEmail({
+      void this.senderservice.sendEmail({
         to: user.gmail,
         from: process.env.SMTP_FROM || 'no-reply@example.com',
         subject: 'Password is changed',
@@ -143,7 +143,7 @@ export class UserService {
     await this.userRepo.save(user);
 
     if (user.gmail) {
-      await this.senderservice.sendEmail({
+      void this.senderservice.sendEmail({
         to: dto.gmail,
         from: process.env.SMTP_FROM || 'no-ropely@example.com',
         subject: 'change gmail',
@@ -160,7 +160,7 @@ export class UserService {
   async viewMyProfile(userId: number) {
     const user = await this.userRepo.findOne({
       where: { id: userId },
-      relations: { image: true, properties: true },
+      relations: { image: true, properties: { agency: { image: true } } },
     });
 
     if (!user) {
@@ -254,7 +254,9 @@ export class UserService {
     const user = await this.userRepo.findOne({ where: { id: userId } });
     const favorites = await this.favoritesRepo.find({
       where: { user: { id: userId } },
-      relations: { property: { images: true, owner: true } },
+      relations: {
+        property: { images: true, owner: true, agency: { image: true } },
+      },
     });
 
     if (!user) {

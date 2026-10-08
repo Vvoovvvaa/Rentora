@@ -123,7 +123,11 @@ export class ChatService {
         },
       },
       relations: {
-        property: true,
+        property: {
+          agency: {
+            image: true,
+          },
+        },
         owner: true,
         client: true,
       },
@@ -163,7 +167,11 @@ export class ChatService {
         },
       ],
       relations: {
-        property: true,
+        property: {
+          agency: {
+            image: true,
+          },
+        },
         owner: true,
         client: true,
       },

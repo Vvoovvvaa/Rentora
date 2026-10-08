@@ -1,4 +1,5 @@
 import {
+  Agency,
   EmailStatusEnum,
   Property,
   PropertyImage,
@@ -49,6 +50,9 @@ export class PropertiesService {
     @InjectRepository(PropertyViews)
     private readonly propertyViews: Repository<PropertyViews>,
 
+    @InjectRepository(Agency)
+    private readonly agencyRepo: Repository<Agency>,
+
     private readonly uploadservice: UploadService,
     private readonly senderservice: SenderService,
     private readonly i18n: I18nService,
@@ -67,9 +71,28 @@ export class PropertiesService {
     dto: CreatePropertyDto,
     files: Express.Multer.File[],
   ) {
+    let agency: Agency | null = null;
+
     const user = await this.userRepo.findOne({
       where: { id: userId },
     });
+
+    if (dto.agencyId !== undefined) {
+      agency = await this.agencyRepo.findOne({
+        where: { id: dto.agencyId },
+        relations: { owner: true },
+      });
+
+      if (!agency) {
+        throw new NotFoundException('Agency Not Found');
+      }
+
+      if (agency.owner.id !== userId) {
+        throw new ForbiddenException(
+          'You cannot create a property for this agency',
+        );
+      }
+    }
 
     if (!user) {
       throw new BadRequestException(this.t('property.USER_NOT_FOUND'));
@@ -81,10 +104,14 @@ export class PropertiesService {
 
     await this.checkActivePropertyLimit(userId);
 
+    const propertyData = { ...dto };
+    delete propertyData.agencyId;
+
     const property = this.propertyRepo.create({
-      ...dto,
+      ...propertyData,
       owner: user,
       status: PropertyStatus.ACTIVE,
+      agency: agency ?? undefined,
     });
 
     const savedProperty = await this.propertyRepo.save(property);
@@ -132,7 +159,7 @@ export class PropertiesService {
 
     return this.propertyRepo.findOne({
       where: { id: savedProperty.id },
-      relations: { images: true },
+      relations: { images: true, agency: { image: true } },
     });
   }
 
@@ -148,7 +175,13 @@ export class PropertiesService {
     const oldPrice = Number(property.price);
     const oldCurrency = property.currency;
 
-    Object.assign(property, dto);
+    // Agency assignment is intentionally create-only. Dropping unknown runtime
+    // fields here protects the relation even when a client bypasses DTO metadata.
+    const propertyData = { ...dto } as changePropertyDto & {
+      agencyId?: number;
+    };
+    delete propertyData.agencyId;
+    Object.assign(property, propertyData);
 
     const savedProperty = await this.propertyRepo.save(property);
     const priceChanged =
@@ -172,7 +205,7 @@ export class PropertiesService {
   async myProperties(userId: number) {
     return await this.propertyRepo.find({
       where: { owner: { id: userId } },
-      relations: { images: true, owner: true },
+      relations: { images: true, owner: true, agency: { image: true } },
     });
   }
 
@@ -198,6 +231,8 @@ export class PropertiesService {
       .leftJoinAndSelect('property.images', 'images')
       .leftJoin('property.owner', 'owner')
       .leftJoinAndSelect('owner.image', 'ownerImage')
+      .leftJoinAndSelect('property.agency', 'agency')
+      .leftJoinAndSelect('agency.image', 'agencyImage')
       .addSelect(['owner.id', 'owner.name', 'owner.phone', 'owner.gmailStatus'])
       .where('property.id = :propId', { propId })
       .andWhere('property.status = :status', { status: PropertyStatus.ACTIVE })
@@ -225,7 +260,7 @@ export class PropertiesService {
   async allProperties() {
     const property = await this.propertyRepo.find({
       where: { status: PropertyStatus.ACTIVE },
-      relations: { owner: true, images: true },
+      relations: { owner: true, images: true, agency: { image: true } },
     });
     return property;
   }
@@ -317,6 +352,7 @@ export class PropertiesService {
         relations: {
           images: true,
           owner: true,
+          agency: { image: true },
         },
       }),
 
@@ -325,6 +361,7 @@ export class PropertiesService {
         relations: {
           images: true,
           owner: true,
+          agency: { image: true },
         },
       }),
     ]);
@@ -395,7 +432,7 @@ export class PropertiesService {
 
     const report = await this.reportRepo.find({
       where: { user: { id: userid } },
-      relations: { property: true },
+      relations: { property: { agency: { image: true } } },
     });
 
     if (!report) {
@@ -421,6 +458,8 @@ export class PropertiesService {
     const query = this.propertyRepo
       .createQueryBuilder('property')
       .leftJoinAndSelect('property.images', 'images')
+      .leftJoinAndSelect('property.agency', 'agency')
+      .leftJoinAndSelect('agency.image', 'agencyImage')
       .where('property.status = :status', { status: PropertyStatus.ACTIVE })
       .andWhere('property.publishing = :publishing', {
         publishing: PropertyPublishing.ACTIVE,
@@ -458,6 +497,8 @@ export class PropertiesService {
       .innerJoin('property.owner', 'owner')
 
       .leftJoinAndSelect('property.images', 'images')
+      .leftJoinAndSelect('property.agency', 'agency')
+      .leftJoinAndSelect('agency.image', 'agencyImage')
 
       .where('owner.id = :userId', {
         userId,

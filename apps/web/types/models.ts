@@ -250,6 +250,27 @@ export interface PropertyImage {
   publicId?: string;
 }
 
+export interface AgencyImage {
+  id: number;
+  url: string;
+  size?: number;
+  publicId?: string;
+}
+
+export interface Agency {
+  id: number;
+  name: string;
+  description: string;
+  phone: string;
+  email: string;
+  address: string;
+  website?: string | null;
+  verified: boolean;
+  image?: AgencyImage | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 /**
  * A persisted asking-price snapshot returned by
  * GET /properties/:id/price-history.
@@ -291,6 +312,7 @@ export interface Property {
   createdAt?: string;
   updatedAt?: string;
   owner?: User;
+  agency?: Agency | null;
   images?: PropertyImage[];
 }
 

@@ -2,6 +2,7 @@ import axios from 'axios';
 
 import type {
   Admin,
+  Agency,
   AiChatRequest,
   AiChatResponse,
   AuthResponse,
@@ -370,6 +371,32 @@ export const propertiesApi = {
     api
       .post<MessageResponse>(`/properties/report/${propertyId}`, data)
       .then((response) => response.data),
+};
+
+/*
+ * ============================================================
+ * Agency
+ * ============================================================
+ */
+
+export const agencyApi = {
+  create: (data: FormData) =>
+    api.post<MessageResponse>('/agency/create', data).then((response) => response.data),
+
+  mine: () =>
+    api.get<Agency>('/agency/my').then((response) => response.data),
+
+  one: (id: string | number) =>
+    api.get<Agency>(`/agency/one/${id}`).then((response) => response.data),
+
+  all: () =>
+    api.get<Agency[]>('/agency/all').then((response) => response.data),
+
+  change: (data: FormData) =>
+    api.patch<MessageResponse>('/agency/change', data).then((response) => response.data),
+
+  delete: (id: number) =>
+    api.delete<MessageResponse>(`/agency/${id}`).then((response) => response.data),
 };
 
 /*

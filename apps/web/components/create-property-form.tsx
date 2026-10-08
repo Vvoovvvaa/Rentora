@@ -1,11 +1,11 @@
 "use client";
 
-import { Check, ImagePlus, LoaderCircle, Trash2, UploadCloud } from "lucide-react";
+import { Building2, Check, ImagePlus, LoaderCircle, Trash2, UploadCloud, UserRound } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { apiMessage, propertiesApi } from "@/lib/api";
-import type { BuildingType, Currency, PropertyCategory, PropertyCondition, PropertyFeature, PropertyListing } from "@/types/models";
+import { agencyApi, apiMessage, propertiesApi } from "@/lib/api";
+import type { Agency, BuildingType, Currency, PropertyCategory, PropertyCondition, PropertyFeature, PropertyListing } from "@/types/models";
 import { CustomSelect } from "./custom-select";
 import { currencyOptions, getBuildingOptions, getCategoryOptions, getCityOptions, getConditionOptions, getFeatureGroups, getListingOptions } from "./property-form-options";
 import { LocationPicker } from "./location-picker";
@@ -38,6 +38,9 @@ export function CreatePropertyForm() {
   const [dragging, setDragging] = useState(false);
   const [activeListings, setActiveListings] = useState<number | null>(null);
   const [limitBlocked, setLimitBlocked] = useState(false);
+  const [agency, setAgency] = useState<Agency | null>(null);
+  const [agencyLoading, setAgencyLoading] = useState(true);
+  const [publishingAs, setPublishingAs] = useState<"personal" | "agency">("personal");
   const previews = useMemo(() => photos.map((file) => ({ file, url: URL.createObjectURL(file) })), [photos]);
 
   useEffect(() => () => previews.forEach(({ url }) => URL.revokeObjectURL(url)), [previews]);
@@ -46,6 +49,9 @@ export function CreatePropertyForm() {
       void propertiesApi.mine().then((items) => setActiveListings(items.filter((item) => item.status === "active").length)).catch(() => setActiveListings(null));
     }, 0);
     return () => window.clearTimeout(timer);
+  }, []);
+  useEffect(() => {
+    agencyApi.mine().then(setAgency).catch(() => setAgency(null)).finally(() => setAgencyLoading(false));
   }, []);
   const update = <K extends Exclude<keyof CreatePropertyForm, "features">>(key: K, value: CreatePropertyForm[K]) => {
     setForm((current) => ({ ...current, [key]: value }));
@@ -88,6 +94,7 @@ export function CreatePropertyForm() {
       const data = new FormData();
       const scalarFields: Array<Exclude<keyof CreatePropertyForm, "features">> = ["title", "description", "city", "category", "listing", "price", "currency", "rooms", "area", "bedrooms", "bathrooms", "floor", "totalFloors", "constructionYear", "ceilingHeight", "condition", "buildingType", "address", "latitude", "longitude"];
       scalarFields.forEach((key) => { const value = form[key]; if (value !== "") data.append(key, value); });
+      if (publishingAs === "agency" && agency) data.append("agencyId", String(agency.id));
       form.features.forEach((feature) => data.append("features", feature));
       photos.forEach((photo) => data.append("photos", photo));
       await propertiesApi.create(data);
@@ -106,6 +113,7 @@ export function CreatePropertyForm() {
   return <form onSubmit={submit} className="create-property-layout">
     <main className="create-property-sections">
       {subscription && <section className="create-subscription-limit" aria-live="polite"><div><strong>{t("subscription.listingsUsed", { used: activeListings ?? "—", max: subscription.config.maxProperties })}</strong><p>{limitBlocked ? t("subscription.listingLimitCopy") : t(`subscription.planNames.${subscription.plan}`)}</p></div>{limitBlocked && <Link href="/subscription" className="btn-secondary">{t("subscription.viewPlans")}</Link>}</section>}
+      <section className="create-section agency-publishing-section"><div className="section-heading"><p className="eyebrow">{t("agency.publishingAs")}</p><h2>{t("agency.publishingAs")}</h2><p>{t("agency.publishingCopy")}</p></div>{agencyLoading ? <div className="skeleton h-24 rounded-2xl"/> : agency ? <div className="agency-publishing-options"><button type="button" onClick={() => setPublishingAs("personal")} className={publishingAs === "personal" ? "is-selected" : ""} aria-pressed={publishingAs === "personal"}><UserRound size={19}/><span><strong>{t("agency.personalProfile")}</strong><small>{t("agency.personalCopy")}</small></span><Check size={17}/></button><button type="button" onClick={() => setPublishingAs("agency")} className={publishingAs === "agency" ? "is-selected" : ""} aria-pressed={publishingAs === "agency"}><span className="agency-publishing-logo">{agency.image?.url ? <img src={agency.image.url} alt=""/> : <Building2 size={18}/>}</span><span><strong>{agency.name}</strong><small>{agency.verified ? t("agency.verified") : t("agency.agency")}</small></span><Check size={17}/></button></div> : <div className="agency-publishing-empty"><Building2 size={22}/><div><strong>{t("agency.noAgency")}</strong><p>{t("agency.publishPrompt")}</p></div><Link href="/agency/create" className="btn-secondary">{t("agency.create")}</Link></div>}</section>
       <section className="create-section"><div className="section-heading"><p className="eyebrow">01 · {t("create.basic")}</p><h2>{t("create.basic")}</h2><p>{t("create.basicCopy")}</p></div><div className="create-grid two"><Field label={t("create.listingTitle")} error={errors.title}><input value={form.title} onChange={(event) => update("title", event.target.value)} className="field"/></Field><Field label={t("create.homeType")}><CustomSelect value={form.category} onChange={(value) => update("category", value as PropertyCategory)} options={categoryOptions} placeholder={t("create.chooseType")} allowEmpty={false}/></Field><Field label={t("create.listingPurpose")} error={errors.listing}><CustomSelect value={form.listing} onChange={(value) => update("listing", value as PropertyListing | "")} options={listingOptions} placeholder={t("create.choosePurpose")}/></Field><Field label={t("property.city")}><CustomSelect value={form.city} onChange={(value) => update("city", value)} options={citySelectOptions} placeholder={t("create.chooseCity")} allowEmpty={false}/></Field><Field label={t("create.description")} hint={`${form.description.length}/30`} error={errors.description}><textarea value={form.description} minLength={30} onChange={(event) => update("description", event.target.value)} className="field min-h-40"/></Field></div></section>
       <section className="create-section"><div className="section-heading"><p className="eyebrow">02 · {t("create.location")}</p><h2>{t("create.location")}</h2><p>{t("create.locationCopy")}</p></div><LocationPicker city={form.city} address={form.address} latitude={form.latitude} longitude={form.longitude} error={errors.address} onChange={(location) => { setForm((current) => ({ ...current, ...location })); setErrors((current) => ({ ...current, address: undefined })); }}/></section>
       <section className="create-section"><div className="section-heading"><p className="eyebrow">03 · {t("create.price")}</p><h2>{t("create.price")}</h2><p>{t("create.priceCopy")}</p></div><div className="create-grid price-grid"><Field label={t("create.price")} error={errors.price}><input value={form.price} onChange={(event) => update("price", event.target.value.replace(/[^\d.]/g, ""))} className="field" inputMode="decimal" placeholder="0"/></Field><Field label={t("create.currency")}><CustomSelect value={form.currency} onChange={(value) => update("currency", value as Currency)} options={currencyOptions} placeholder={t("create.currency")} allowEmpty={false}/></Field></div></section>

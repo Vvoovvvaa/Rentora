@@ -12,7 +12,7 @@ export class PhotoValidator {
 
     if (file.size > MAX_SIZE) {
       throw new BadRequestException(
-        `file - ${file.originalname},maximum file size 5MB`,
+        `file - ${file.originalname},maximum file size 20MB`,
       );
     }
 

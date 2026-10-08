@@ -16,6 +16,8 @@ import { IDbcongif } from '@app/common-rentora/models';
 import {
   Admin,
   AdminSecretcode,
+  Agency,
+  AgencyImage,
   Favorites,
   Property,
   PropertyAnalytic,
@@ -43,6 +45,7 @@ import { AnalyticModule } from './analytic/analytic.module';
 import { UserSubscription } from '@app/common-rentora/database/entity/subscription-plan';
 import { SubscriptionConfig } from '@app/common-rentora/database/entity/subscription-config';
 import { SubscriptionModule } from './subscription/subscription.module';
+import { AgencyModule } from './agency/agency.module';
 
 @Module({
   imports: [
@@ -57,6 +60,7 @@ import { SubscriptionModule } from './subscription/subscription.module';
     AiModule,
     AnalyticModule,
     SubscriptionModule,
+    AgencyModule,
 
     I18nModule.forRoot({
       fallbackLanguage: 'en',
@@ -105,6 +109,8 @@ import { SubscriptionModule } from './subscription/subscription.module';
             PropertyAnalytic,
             UserSubscription,
             SubscriptionConfig,
+            Agency,
+            AgencyImage
           ],
           autoLoadEntities: true,
           synchronize: true,
@@ -114,7 +120,7 @@ import { SubscriptionModule } from './subscription/subscription.module';
     }),
   ],
 
-  controllers: [AppController],
+  controllers: [AppController,],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }

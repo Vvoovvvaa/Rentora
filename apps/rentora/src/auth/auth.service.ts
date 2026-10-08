@@ -281,7 +281,7 @@ export class AuthService {
 
     await this.secretCodeRepo.save(generated);
 
-    await this.senderservice.sendEmail({
+    void this.senderservice.sendEmail({
       to: user.gmail,
       from: process.env.SMTP_FROM || 'no-reply@example.com',
       subject: 'Verify Email',

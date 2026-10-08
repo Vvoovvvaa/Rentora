@@ -68,6 +68,7 @@ import {
 } from "./property-presentation";
 
 import styles from "./property-detail.module.css";
+import { AgencyCompact } from "./agency-brand";
 
 type DetailFact = {
   icon: typeof BedDouble;
@@ -1029,6 +1030,15 @@ export function PropertyDetailView({
                     )}
                   </div>
                 </div>
+
+                {property.agency && (
+                  <div className={styles.agencyListing}>
+                    <p>{t("agency.listedBy")}</p>
+                    <AgencyCompact agency={property.agency}/>
+                    <span>{property.agency.description}</span>
+                    <Link href={`/agency/${property.agency.id}`} className={styles.agencyLink}>{t("agency.view")}</Link>
+                  </div>
+                )}
               </div>
 
               <div

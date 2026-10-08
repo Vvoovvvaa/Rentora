@@ -877,6 +877,17 @@
   padding: 1rem 1.25rem;
 }
 
+.agencyListing {
+  display: grid;
+  gap: 0.48rem;
+  border-top: 1px solid #eee2d6;
+  padding: 1rem 1.25rem;
+}
+
+.agencyListing > p { margin: 0; color: #a08f81; font-size: 0.59rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
+.agencyListing > span { color: #756153; font-size: 0.72rem; line-height: 1.55; }
+.agencyLink { color: #735038; font-size: 0.72rem; font-weight: 800; text-decoration: none; }
+
 .ownerMeta span {
   display: flex;
   align-items: center;

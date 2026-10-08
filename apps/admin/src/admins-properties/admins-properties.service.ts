@@ -28,7 +28,9 @@ export class AdminsPropertiesService {
   }
 
   async viewProperties() {
-    return this.propertyrepo.find({ relations: { owner: true, images: true } });
+    return this.propertyrepo.find({
+      relations: { owner: true, images: true, agency: { image: true } },
+    });
   }
 
   async viewOneProperty(propertyId: number, adminId: number) {
@@ -40,7 +42,7 @@ export class AdminsPropertiesService {
 
     const property = await this.propertyrepo.findOne({
       where: { id: propertyId },
-      relations: { owner: true, images: true },
+      relations: { owner: true, images: true, agency: { image: true } },
     });
 
     if (!property) {
@@ -101,7 +103,7 @@ export class AdminsPropertiesService {
   async viewPropertyListing() {
     return this.propertyrepo.find({
       where: { publishing: PropertyPublishing.PENDING },
-      relations: { owner: true, images: true },
+      relations: { owner: true, images: true, agency: { image: true } },
     });
   }
 

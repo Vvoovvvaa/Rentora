@@ -24,6 +24,7 @@ import {
   Min,
   MinLength,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreatePropertyDto {
   @IsString()
@@ -123,4 +124,10 @@ export class CreatePropertyDto {
   @IsLongitude()
   @IsNotEmpty()
   longitude: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  agencyId?: number;
 }

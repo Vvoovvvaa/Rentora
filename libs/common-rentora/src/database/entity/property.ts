@@ -21,6 +21,7 @@ import { PropertyPriceHistory } from './price-history';
 import { PropertyViews } from './property-views';
 import { ChatRoom } from './chat-room';
 import { PropertyAnalytic } from './analytik';
+import { Agency } from './agency';
 
 @Entity('property')
 export class Property extends Base {
@@ -182,4 +183,10 @@ export class Property extends Base {
     onDelete: 'CASCADE',
   })
   analytic: PropertyAnalytic[];
+
+  @ManyToOne(() => Agency, (agency) => agency.properties, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  agency?: Agency;
 }
