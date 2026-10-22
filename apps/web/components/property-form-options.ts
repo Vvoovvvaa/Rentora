@@ -75,6 +75,7 @@ const cities = [
   'APARAN',
   'TALIN',
 ] as const;
+
 const categories: PropertyCategory[] = [
   'apartament',
   'house',
@@ -85,11 +86,13 @@ const categories: PropertyCategory[] = [
   'garage',
   'warehouse',
 ];
+
 const listings: PropertyListing[] = [
   'SALE',
   'RENT_LONG_TERM',
   'RENT_SHORT_TERM',
 ];
+
 const conditions: PropertyCondition[] = [
   'NEW',
   'EXCELLENT',
@@ -98,6 +101,7 @@ const conditions: PropertyCondition[] = [
   'NEEDS_RENOVATION',
   'UNDER_CONSTRUCTION',
 ];
+
 const buildings: BuildingType[] = [
   'MONOLITH',
   'STONE',
@@ -112,6 +116,7 @@ type FeatureGroupDefinition = {
   icon: LucideIcon;
   features: PropertyFeature[];
 };
+
 const featureGroupDefinitions: FeatureGroupDefinition[] = [
   {
     id: 'parkingBuilding',
@@ -237,23 +242,29 @@ const featureGroupDefinitions: FeatureGroupDefinition[] = [
 
 export const getCityOptions = () =>
   cities.map((value) => ({ value, label: cityOf(value) }));
+
 export const getCategoryOptions = () =>
   categories.map((value) => ({ value, label: categoryLabels[value] || value }));
+
 export const currencyOptions: Array<{ value: Currency; label: string }> = [
   { value: 'dram', label: 'AMD ֏' },
   { value: 'dollar', label: 'USD $' },
   { value: 'euro', label: 'EUR €' },
   { value: 'rubli', label: 'RUB ₽' },
 ];
+
 export const getListingOptions = () =>
   listings.map((value) => ({ value, label: getListingLabel(value) }));
+
 export const getConditionOptions = () =>
   conditions.map((value) => ({
     value,
     label: conditionLabels[value] || value,
   }));
+
 export const getBuildingOptions = () =>
   buildings.map((value) => ({ value, label: buildingLabels[value] || value }));
+
 export const getFeatureGroups = (
   labelForGroup: (id: string) => string,
 ): FeatureGroup[] =>

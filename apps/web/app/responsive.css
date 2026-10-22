@@ -769,3 +769,177 @@ select:focus-visible {
     animation: none;
   }
 }
+
+
+/* ==========================================
+   MY LISTINGS — CONSISTENT ACTION BUTTONS
+========================================== */
+
+.owner-property-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 8px;
+  padding: 12px;
+  border-top: 1px solid #ebe1d6;
+  background: #fcf8f3;
+}
+
+/* All action buttons use the same typography and dimensions. */
+.owner-property-actions > a,
+.owner-property-actions > button {
+  box-sizing: border-box;
+  display: inline-flex;
+  width: 100%;
+  min-width: 0;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin: 0;
+  padding: 0 10px;
+
+  border-radius: 11px;
+  font-family: inherit !important;
+  font-size: 12px !important;
+  font-weight: 750 !important;
+  line-height: 1.2 !important;
+  letter-spacing: 0 !important;
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+
+  cursor: pointer;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+/* Make all icons consistent. */
+.owner-property-actions > a svg,
+.owner-property-actions > button svg {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 15px;
+}
+
+/* VIEW — primary action */
+.owner-property-actions > .btn-primary {
+  border: 1px solid #4b382a;
+  background: #4b382a;
+  color: #fffaf4;
+  box-shadow: 0 3px 8px rgb(75 56 42 / 9%);
+}
+
+.owner-property-actions > .btn-primary:hover {
+  border-color: #654a36;
+  background: #654a36;
+  transform: translateY(-1px);
+}
+
+/* ANALYTICS AND EDIT — secondary actions */
+.owner-property-actions > .btn-secondary {
+  border: 1px solid #e6d9ca;
+  background: #fffdfa;
+  color: #5e4938;
+}
+
+.owner-property-actions > .btn-secondary:hover {
+  border-color: #cbb49a;
+  background: #f7eee4;
+  transform: translateY(-1px);
+}
+
+/* BOOST — same typography, consistent premium styling */
+.owner-property-actions > button:not(.owner-archive-action):not(.owner-restore-action) {
+  border: 1px solid #654832;
+  background: #4b382a;
+  color: #fffaf4;
+  font-family: inherit !important;
+  font-size: 12px !important;
+  font-weight: 750 !important;
+  letter-spacing: 0 !important;
+}
+
+.owner-property-actions > button:not(.owner-archive-action):not(.owner-restore-action):hover {
+  border-color: #8b6238;
+  background: #654832;
+  transform: translateY(-1px);
+}
+
+/* ARCHIVE — full-width bottom row */
+.owner-property-actions > .owner-archive-action,
+.owner-property-actions > .owner-restore-action {
+  grid-column: 1 / -1;
+  display: inline-flex;
+  width: 100%;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin: 0;
+  padding: 0 12px;
+
+  border-radius: 11px;
+  font-family: inherit !important;
+  font-size: 12px !important;
+  font-weight: 750 !important;
+  line-height: 1.2 !important;
+  letter-spacing: 0 !important;
+  text-decoration: none;
+}
+
+.owner-property-actions > .owner-archive-action {
+  border: 1px solid #dfcabb;
+  background: transparent;
+  color: #795c47;
+}
+
+.owner-property-actions > .owner-archive-action:hover:not(:disabled) {
+  border-color: #c69f82;
+  background: #f8eee5;
+  color: #694832;
+}
+
+.owner-property-actions > .owner-restore-action {
+  border: 1px solid #c9dcc8;
+  background: #f3f8f0;
+  color: #3e7047;
+}
+
+.owner-property-actions > .owner-restore-action:hover:not(:disabled) {
+  border-color: #9ebd9e;
+  background: #e9f4e6;
+  color: #305f39;
+}
+
+/* Disabled actions */
+.owner-property-actions > button:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+  transform: none;
+}
+
+/* Keyboard focus */
+.owner-property-actions > a:focus-visible,
+.owner-property-actions > button:focus-visible {
+  outline: 3px solid rgb(167 125 84 / 35%);
+  outline-offset: 2px;
+}
+
+@media (max-width: 480px) {
+  .owner-property-actions {
+    gap: 7px;
+    padding: 10px;
+  }
+
+  .owner-property-actions > a,
+  .owner-property-actions > button {
+    min-height: 39px;
+    padding-inline: 7px;
+    font-size: 11px !important;
+  }
+}

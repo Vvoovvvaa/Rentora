@@ -5,10 +5,15 @@ import { PropertySort } from '@app/common-rentora/enums';
 
 import { SearchDto } from './dto/search.dto';
 
+interface PropertyFilterOptions {
+  prioritizeBoops?: boolean;
+}
+
 export function applyPropertyFilters(
   query: SelectQueryBuilder<Property>,
   dto: SearchDto,
-) {
+  options: PropertyFilterOptions = {},
+): SelectQueryBuilder<Property> {
   // City
   if (dto.city) {
     query.andWhere('property.city = :city', {
@@ -71,7 +76,7 @@ export function applyPropertyFilters(
     });
   }
 
-  // Exact area — old public search support
+  // Exact area
   if (dto.area !== undefined) {
     query.andWhere('property.area = :area', {
       area: dto.area,
@@ -91,7 +96,7 @@ export function applyPropertyFilters(
     });
   }
 
-  // Exact floor — old public search support
+  // Exact floor
   if (dto.floor !== undefined) {
     query.andWhere('property.floor = :floor', {
       floor: dto.floor,
@@ -111,24 +116,33 @@ export function applyPropertyFilters(
     });
   }
 
-  // Exact construction year — old public search support
+  // Exact construction year
   if (dto.constructionYear !== undefined) {
-    query.andWhere('property.constructionYear = :constructionYear', {
-      constructionYear: dto.constructionYear,
-    });
+    query.andWhere(
+      'property.constructionYear = :constructionYear',
+      {
+        constructionYear: dto.constructionYear,
+      },
+    );
   }
 
   // Construction year range
   if (dto.minConstructionYear !== undefined) {
-    query.andWhere('property.constructionYear >= :minConstructionYear', {
-      minConstructionYear: dto.minConstructionYear,
-    });
+    query.andWhere(
+      'property.constructionYear >= :minConstructionYear',
+      {
+        minConstructionYear: dto.minConstructionYear,
+      },
+    );
   }
 
   if (dto.maxConstructionYear !== undefined) {
-    query.andWhere('property.constructionYear <= :maxConstructionYear', {
-      maxConstructionYear: dto.maxConstructionYear,
-    });
+    query.andWhere(
+      'property.constructionYear <= :maxConstructionYear',
+      {
+        maxConstructionYear: dto.maxConstructionYear,
+      },
+    );
   }
 
   // Condition
@@ -152,28 +166,52 @@ export function applyPropertyFilters(
     });
   }
 
-  // Sort
+  // Boosted properties first, when requested
+  if (options.prioritizeBoops) {
+    query.orderBy('property.boops', 'DESC');
+  }
+
+  // Apply the selected sorting
+  const sortBy = (
+    column: string,
+    direction: 'ASC' | 'DESC',
+  ) => {
+    if (options.prioritizeBoops) {
+      query.addOrderBy(column, direction);
+    } else {
+      query.orderBy(column, direction);
+    }
+  };
+
   switch (dto.sort) {
     case PropertySort.PRICE_ASC:
-      query.orderBy('property.price', 'ASC');
+      sortBy('property.price', 'ASC');
       break;
 
     case PropertySort.PRICE_DESC:
-      query.orderBy('property.price', 'DESC');
+      sortBy('property.price', 'DESC');
       break;
 
     case PropertySort.NEWEST:
-      query.orderBy('property.createdAt', 'DESC');
+      sortBy('property.createdAt', 'DESC');
       break;
 
     case PropertySort.OLDEST:
-      query.orderBy('property.createdAt', 'ASC');
+      sortBy('property.createdAt', 'ASC');
       break;
 
     case PropertySort.MOST_VIEWED:
-      query.orderBy('property.view', 'DESC');
+      sortBy('property.view', 'DESC');
+      break;
+
+    default:
+      sortBy('property.createdAt', 'DESC');
       break;
   }
 
+  // Stable ordering for equal sort values
+  query.addOrderBy('property.id', 'DESC');
+
+  // Important: return the query builder
   return query;
 }

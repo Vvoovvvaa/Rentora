@@ -9,16 +9,21 @@ import {
 } from '@app/common-rentora/database/entity';
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { I18nContext, I18nService } from 'nestjs-i18n';
 
 import { CreatePropertyDto } from './dto/create-property.dto';
-import { PropertyPublishing, PropertyStatus } from '@app/common-rentora/enums';
+import {
+  accauntSatus,
+  PropertyPublishing,
+  PropertyStatus,
+} from '@app/common-rentora/enums';
 import { changePropertyDto } from './dto/change-property.dto';
 import { PhotoValidator } from '@app/common-rentora/helpers';
 import { UploadService } from '../upload/upload.service';
@@ -57,7 +62,8 @@ export class PropertiesService {
     private readonly senderservice: SenderService,
     private readonly i18n: I18nService,
     private readonly subscriptionService: SubscriptionService,
-  ) {}
+    private readonly dataSource: DataSource,
+  ) { }
 
   private t(key: string, args?: Record<string, any>): string {
     return this.i18n.t(key, {
@@ -85,6 +91,10 @@ export class PropertiesService {
 
       if (!agency) {
         throw new NotFoundException('Agency Not Found');
+      }
+
+      if (agency.verified === false) {
+        throw new ConflictException("Agency Not verified");
       }
 
       if (agency.owner.id !== userId) {
@@ -163,7 +173,11 @@ export class PropertiesService {
     });
   }
 
-  async changeProperty(userId: number, propId: number, dto: changePropertyDto) {
+  async changeProperty(
+    userId: number,
+    propId: number,
+    dto: changePropertyDto,
+  ) {
     const property = await this.propertyRepo.findOne({
       where: { id: propId, owner: { id: userId } },
     });
@@ -175,17 +189,20 @@ export class PropertiesService {
     const oldPrice = Number(property.price);
     const oldCurrency = property.currency;
 
-    // Agency assignment is intentionally create-only. Dropping unknown runtime
-    // fields here protects the relation even when a client bypasses DTO metadata.
+    // Agency assignment is intentionally create-only.
+    // Drop unknown runtime fields to protect the relation.
     const propertyData = { ...dto } as changePropertyDto & {
       agencyId?: number;
     };
+
     delete propertyData.agencyId;
     Object.assign(property, propertyData);
 
     const savedProperty = await this.propertyRepo.save(property);
+
     const priceChanged =
       dto.price !== undefined && Number(dto.price) !== oldPrice;
+
     const currencyChanged =
       dto.currency !== undefined && dto.currency !== oldCurrency;
 
@@ -199,12 +216,12 @@ export class PropertiesService {
       await this.priceHistoryRepo.save(history);
     }
 
-    return await this.propertyRepo.save(property);
+    return this.propertyRepo.save(property);
   }
 
   async myProperties(userId: number) {
-    return await this.propertyRepo.find({
-      where: { owner: { id: userId } },
+    return this.propertyRepo.find({
+      where: { owner: { id: userId, accauntStatus: accauntSatus.ACTIVE } },
       relations: { images: true, owner: true, agency: { image: true } },
     });
   }
@@ -221,7 +238,9 @@ export class PropertiesService {
     await this.propertyRepo.delete(property.id);
 
     return {
-      message: this.t('property.PROPERTY_DELETED', { title: property.title }),
+      message: this.t('property.PROPERTY_DELETED', {
+        title: property.title,
+      }),
     };
   }
 
@@ -233,9 +252,16 @@ export class PropertiesService {
       .leftJoinAndSelect('owner.image', 'ownerImage')
       .leftJoinAndSelect('property.agency', 'agency')
       .leftJoinAndSelect('agency.image', 'agencyImage')
-      .addSelect(['owner.id', 'owner.name', 'owner.phone', 'owner.gmailStatus'])
+      .addSelect([
+        'owner.id',
+        'owner.name',
+        'owner.phone',
+        'owner.gmailStatus',
+      ])
       .where('property.id = :propId', { propId })
-      .andWhere('property.status = :status', { status: PropertyStatus.ACTIVE })
+      .andWhere('property.status = :status', {
+        status: PropertyStatus.ACTIVE,
+      })
       .getOne();
 
     if (!property) {
@@ -249,7 +275,7 @@ export class PropertiesService {
     await this.propertyRepo.save(property);
 
     const propertyView = this.propertyViews.create({
-      property: property,
+      property,
     });
 
     await this.propertyViews.save(propertyView);
@@ -258,11 +284,19 @@ export class PropertiesService {
   }
 
   async allProperties() {
-    const property = await this.propertyRepo.find({
+    return this.propertyRepo.find({
       where: { status: PropertyStatus.ACTIVE },
-      relations: { owner: true, images: true, agency: { image: true } },
+      relations: {
+        owner: true,
+        images: true,
+        agency: { image: true },
+      },
+      // Boosted properties first, then newest properties.
+      order: {
+        boops: 'DESC',
+        createdAt: 'DESC',
+      },
     });
-    return property;
   }
 
   async achiveProperty(propid: number, userId: number) {
@@ -270,7 +304,10 @@ export class PropertiesService {
       where: { id: propid, owner: { id: userId } },
       relations: { owner: true },
     });
-    const user = await this.userRepo.findOne({ where: { id: userId } });
+
+    const user = await this.userRepo.findOne({
+      where: { id: userId },
+    });
 
     if (!property) {
       throw new BadRequestException(this.t('property.TRY_AGAIN_LATER'));
@@ -287,7 +324,9 @@ export class PropertiesService {
     }
 
     if (property.owner.id !== userId) {
-      throw new ForbiddenException(this.t('property.CANNOT_ARCHIVE_PROPERTY'));
+      throw new ForbiddenException(
+        this.t('property.CANNOT_ARCHIVE_PROPERTY'),
+      );
     }
 
     property.status = PropertyStatus.ARCHIVED;
@@ -297,13 +336,12 @@ export class PropertiesService {
       message: this.t('property.PROPERTY_ARCHIVED'),
     };
   }
+
   async restoreProperty(propid: number, userId: number) {
     const property = await this.propertyRepo.findOne({
       where: {
         id: propid,
-        owner: {
-          id: userId,
-        },
+        owner: { id: userId },
       },
       relations: {
         owner: true,
@@ -315,14 +353,17 @@ export class PropertiesService {
     }
 
     if (property.owner.id !== userId) {
-      throw new ForbiddenException(this.t('property.CANNOT_RESTORE_PROPERTY'));
+      throw new ForbiddenException(
+        this.t('property.CANNOT_RESTORE_PROPERTY'),
+      );
     }
 
     if (property.status !== PropertyStatus.ARCHIVED) {
-      throw new BadRequestException(this.t('property.PROPERTY_NOT_ARCHIVED'));
+      throw new BadRequestException(
+        this.t('property.PROPERTY_NOT_ARCHIVED'),
+      );
     }
 
-    // ВАЖНО
     await this.checkActivePropertyLimit(userId);
 
     property.status = PropertyStatus.ACTIVE;
@@ -333,8 +374,15 @@ export class PropertiesService {
       message: this.t('property.PROPERTY_RESTORED'),
     };
   }
-  async compareProperties(userId: number, propId1: number, propId2: number) {
-    const user = await this.userRepo.findOne({ where: { id: userId } });
+
+  async compareProperties(
+    userId: number,
+    propId1: number,
+    propId2: number,
+  ) {
+    const user = await this.userRepo.findOne({
+      where: { id: userId },
+    });
 
     if (!user) {
       throw new BadRequestException(this.t('property.TRY_AGAIN_LATER'));
@@ -367,7 +415,9 @@ export class PropertiesService {
     ]);
 
     if (!prop1 || !prop2) {
-      throw new BadRequestException(this.t('property.PROPERTIES_NOT_FOUND'));
+      throw new BadRequestException(
+        this.t('property.PROPERTIES_NOT_FOUND'),
+      );
     }
 
     return {
@@ -375,7 +425,6 @@ export class PropertiesService {
         ...prop1,
         pricePerSquareMeter: Number(prop1.price) / prop1.area,
       },
-
       secondProperty: {
         ...prop2,
         pricePerSquareMeter: Number(prop2.price) / prop2.area,
@@ -388,13 +437,17 @@ export class PropertiesService {
     userId: number,
     propId: number,
   ) {
-    const user = await this.userRepo.findOne({ where: { id: userId } });
+    const user = await this.userRepo.findOne({
+      where: { id: userId },
+    });
 
     if (!user) {
       throw new BadRequestException(this.t('property.TRY_AGAIN_LATER'));
     }
 
-    const prop = await this.propertyRepo.findOne({ where: { id: propId } });
+    const prop = await this.propertyRepo.findOne({
+      where: { id: propId },
+    });
 
     const oldReport = await this.reportRepo.findOne({
       where: {
@@ -412,7 +465,7 @@ export class PropertiesService {
     }
 
     const report = this.reportRepo.create({
-      user: user,
+      user,
       property: prop,
       reason: dto.report,
       description: dto.description,
@@ -424,7 +477,9 @@ export class PropertiesService {
   }
 
   async viewMyreports(userid: number) {
-    const user = await this.userRepo.findOne({ where: { id: userid } });
+    const user = await this.userRepo.findOne({
+      where: { id: userid },
+    });
 
     if (!user) {
       throw new BadRequestException(this.t('property.TRY_AGAIN_LATER'));
@@ -432,7 +487,9 @@ export class PropertiesService {
 
     const report = await this.reportRepo.find({
       where: { user: { id: userid } },
-      relations: { property: { agency: { image: true } } },
+      relations: {
+        property: { agency: { image: true } },
+      },
     });
 
     if (!report) {
@@ -460,7 +517,9 @@ export class PropertiesService {
       .leftJoinAndSelect('property.images', 'images')
       .leftJoinAndSelect('property.agency', 'agency')
       .leftJoinAndSelect('agency.image', 'agencyImage')
-      .where('property.status = :status', { status: PropertyStatus.ACTIVE })
+      .where('property.status = :status', {
+        status: PropertyStatus.ACTIVE,
+      })
       .andWhere('property.publishing = :publishing', {
         publishing: PropertyPublishing.ACTIVE,
       })
@@ -475,7 +534,9 @@ export class PropertiesService {
         east: dto.east,
       });
 
-    return applyPropertyFilters(query, dto).getMany();
+    return applyPropertyFilters(query, dto, {
+      prioritizeBoops: true,
+    }).getMany();
   }
 
   async viewMyPropertiesOnMap(userId: number, dto: PropertyMapDto) {
@@ -493,68 +554,52 @@ export class PropertiesService {
 
     const query = this.propertyRepo
       .createQueryBuilder('property')
-
       .innerJoin('property.owner', 'owner')
-
       .leftJoinAndSelect('property.images', 'images')
       .leftJoinAndSelect('property.agency', 'agency')
       .leftJoinAndSelect('agency.image', 'agencyImage')
-
-      .where('owner.id = :userId', {
-        userId,
-      })
-
+      .where('owner.id = :userId', { userId })
       .andWhere('property.latitude IS NOT NULL')
-
       .andWhere('property.longitude IS NOT NULL')
-
       .andWhere('property.latitude BETWEEN :south AND :north', {
         south: dto.south,
         north: dto.north,
       })
-
       .andWhere('property.longitude BETWEEN :west AND :east', {
         west: dto.west,
         east: dto.east,
       });
 
-    return await applyPropertyFilters(query, dto).getMany();
+    return applyPropertyFilters(query, dto).getMany();
   }
 
   async viewPriceHistory(propId: number) {
     const property = await this.propertyRepo.findOne({
-      where: {
-        id: propId,
-      },
+      where: { id: propId },
     });
 
     if (!property) {
       throw new NotFoundException('Property not found');
     }
 
-    const history = await this.priceHistoryRepo.find({
+    return this.priceHistoryRepo.find({
       where: {
-        property: {
-          id: propId,
-        },
+        property: { id: propId },
       },
       order: {
         createdAt: 'ASC',
       },
     });
-
-    return history;
   }
 
-  private async checkActivePropertyLimit(userId: number): Promise<void> {
+  private async checkActivePropertyLimit(
+    userId: number,
+  ): Promise<void> {
     const config = await this.subscriptionService.getUserConfig(userId);
 
     const activePropertiesCount = await this.propertyRepo.count({
       where: {
-        owner: {
-          id: userId,
-        },
-
+        owner: { id: userId },
         status: PropertyStatus.ACTIVE,
       },
     });
@@ -565,4 +610,65 @@ export class PropertiesService {
       );
     }
   }
+async activateBoops(userId: number, propertyId: number) {
+  return this.dataSource.transaction(async (manager) => {
+    const propertyRepo = manager.getRepository(Property);
+    const userRepo = manager.getRepository(User);
+
+    const property = await propertyRepo.findOne({
+      where: {
+        id: propertyId,
+        owner: { id: userId },
+      },
+      lock: { mode: 'pessimistic_write' },
+    });
+
+    if (!property) {
+      throw new NotFoundException(
+        'Property not found or does not belong to you',
+      );
+    }
+
+    if (property.boops) {
+      throw new BadRequestException(
+        'Boops are already activated for this property',
+      );
+    }
+
+    const user = await userRepo.findOne({
+      where: { id: userId },
+      lock: { mode: 'pessimistic_write' },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (user.boopsCount <= 0) {
+      throw new BadRequestException(
+        'You have no boops. Upgrade your plan or buy more boops.',
+      );
+    }
+
+    const startedAt = new Date();
+    const expiresAt = new Date(startedAt);
+
+    expiresAt.setDate(expiresAt.getDate() + 3);
+
+    user.boopsCount -= 1;
+
+    property.boops = true;
+    property.expiredAt = expiresAt;
+
+    await userRepo.save(user);
+    await propertyRepo.save(property);
+
+    return {
+      message: 'Boops activated successfully',
+      boopsRemaining: user.boopsCount,
+      propertyId: property.id,
+      expiresAt,
+    };
+  });
+}
 }

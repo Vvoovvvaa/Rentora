@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-
 import {
   BedDouble,
   Check,
@@ -10,13 +9,13 @@ import {
   MapPin,
   Maximize2,
   MoveUpRight,
+  Sparkles,
 } from "lucide-react";
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { apiMessage, userApi } from "@/lib/api";
-
 import type { Property } from "@/types/models";
 
 import { useAuth } from "@/context/auth-context";
@@ -51,7 +50,6 @@ export function PropertyCard({
   onFavorite,
 }: PropertyCardProps) {
   const { user } = useAuth();
-
   const { t } = useI18n();
 
   const {
@@ -61,28 +59,22 @@ export function PropertyCard({
 
   const router = useRouter();
 
-  const [saved, setSaved] =
-    useState(false);
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState("");
 
-  const [error, setError] =
-    useState("");
-
-  const image =
-    property.images?.[0]?.url;
-
-  const selected =
-    isSelected(property.id);
+  const image = property.images?.[0]?.url;
+  const selected = isSelected(property.id);
+  const boosted = Boolean(property.boops);
 
   const pricePerSquareMeter =
     property.area > 0
       ? Math.round(
-          Number(property.price) /
-            property.area,
+          Number(property.price) / property.area,
         )
       : undefined;
 
   const favorite = async (
-    event: React.MouseEvent,
+    event: React.MouseEvent<HTMLButtonElement>,
   ) => {
     event.preventDefault();
     event.stopPropagation();
@@ -95,25 +87,19 @@ export function PropertyCard({
     try {
       setError("");
 
-      const result =
-        await userApi.toggleFavorite(
-          property.id,
-        );
-
-      setSaved(
-        result.status === "added",
+      const result = await userApi.toggleFavorite(
+        property.id,
       );
 
+      setSaved(result.status === "added");
       onFavorite?.();
     } catch (reason) {
-      setError(
-        apiMessage(reason),
-      );
+      setError(apiMessage(reason));
     }
   };
 
   const compare = (
-    event: React.MouseEvent,
+    event: React.MouseEvent<HTMLButtonElement>,
   ) => {
     event.preventDefault();
     event.stopPropagation();
@@ -124,15 +110,19 @@ export function PropertyCard({
   return (
     <article
       aria-label={`${t("common.viewProperty")}: ${property.title}`}
-      className={styles.propertyCard}
+      className={[
+        styles.propertyCard,
+        boosted ? styles.propertyCardBoosted : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
     >
       <Link
         href={`/properties/${property.id}`}
         className={styles.propertyCardLink}
       >
-        {/* ==============================
-            IMAGE
-        ============================== */}
+        {/* IMAGE */}
+
         <div className={styles.propertyMedia}>
           {image ? (
             <img
@@ -141,9 +131,7 @@ export function PropertyCard({
               className={styles.propertyImage}
             />
           ) : (
-            <div
-              className={styles.propertyPlaceholder}
-            />
+            <div className={styles.propertyPlaceholder} />
           )}
 
           <div
@@ -151,53 +139,41 @@ export function PropertyCard({
             aria-hidden="true"
           />
 
-          {/* Badges */}
+          {/* BADGES */}
+
           <div className={styles.propertyBadges}>
-            <span
-              className={styles.propertyTypeBadge}
-            >
-              {labels[property.category] ||
-                property.category}
+            {boosted && (
+              <span className={styles.propertyBoostBadge}>
+                <Sparkles size={12} aria-hidden="true" />
+                BOOST
+              </span>
+            )}
+
+            <span className={styles.propertyTypeBadge}>
+              {labels[property.category] || property.category}
             </span>
 
             {property.listing && (
-              <span
-                className={
-                  styles.propertyListingBadge
-                }
-              >
-                {getListingLabel(
-                  property.listing,
-                )}
+              <span className={styles.propertyListingBadge}>
+                {getListingLabel(property.listing)}
               </span>
             )}
           </div>
 
-          {/* Price */}
+          {/* PRICE */}
+
           <div className={styles.propertyPriceLayer}>
             <div>
-              <span
-                className={
-                  styles.propertyPriceLabel
-                }
-              >
+              <span className={styles.propertyPriceLabel}>
                 {t("common.price")}
               </span>
 
-              <strong
-                className={
-                  styles.propertyPrice
-                }
-              >
+              <strong className={styles.propertyPrice}>
                 {priceOf(property)}
               </strong>
 
-              {pricePerSquareMeter && (
-                <span
-                  className={
-                    styles.propertySquarePrice
-                  }
-                >
+              {pricePerSquareMeter !== undefined && (
+                <span className={styles.propertySquarePrice}>
                   {formatMoney(
                     pricePerSquareMeter,
                     property.currency,
@@ -207,186 +183,112 @@ export function PropertyCard({
               )}
             </div>
 
-            <span
-              className={
-                styles.propertyOpenIndicator
-              }
-            >
-              <MoveUpRight
-                size={17}
-              />
+            <span className={styles.propertyOpenIndicator}>
+              <MoveUpRight size={17} />
             </span>
           </div>
         </div>
 
-        {/* ==============================
-            BODY
-        ============================== */}
+        {/* PROPERTY DETAILS */}
+
         <div className={styles.propertyBody}>
           <div className={styles.propertyMainInfo}>
             <h3 className={styles.propertyTitle}>
               {property.title}
             </h3>
 
-            <p
-              className={
-                styles.propertyLocation
-              }
-            >
-              <MapPin
-                size={14}
-                aria-hidden="true"
-              />
-
+            <p className={styles.propertyLocation}>
+              <MapPin size={14} aria-hidden="true" />
               {cityOf(property.city)}
             </p>
 
-            {property.agency && <span className={styles.propertyAgency}><AgencyBadge agency={property.agency}/></span>}
+            {property.agency && (
+              <span className={styles.propertyAgency}>
+                <AgencyBadge agency={property.agency} />
+              </span>
+            )}
           </div>
 
           <div className={styles.propertySpecs}>
             <span>
-              <BedDouble
-                size={15}
-                aria-hidden="true"
-              />
-
-              <strong>
-                {property.rooms}
-              </strong>
-
-              <small>
-                {t("common.rooms")}
-              </small>
+              <BedDouble size={15} aria-hidden="true" />
+              <strong>{property.rooms}</strong>
+              <small>{t("common.rooms")}</small>
             </span>
 
             <span>
-              <Maximize2
-                size={15}
-                aria-hidden="true"
-              />
-
-              <strong>
-                {property.area}
-              </strong>
-
+              <Maximize2 size={15} aria-hidden="true" />
+              <strong>{property.area}</strong>
               <small>m²</small>
             </span>
 
             {property.bedrooms ? (
               <span>
-                <BedDouble
-                  size={15}
-                  aria-hidden="true"
-                />
-
-                <strong>
-                  {property.bedrooms}
-                </strong>
-
-                <small>
-                  {t(
-                    "property.bedrooms",
-                  )}
-                </small>
+                <BedDouble size={15} aria-hidden="true" />
+                <strong>{property.bedrooms}</strong>
+                <small>{t("property.bedrooms")}</small>
               </span>
             ) : (
-              <span
-                className={
-                  styles.propertyExploreSpec
-                }
-              >
-                <MoveUpRight
-                  size={15}
-                  aria-hidden="true"
-                />
-
-                <strong>
-                  {t(
-                    "common.viewProperty",
-                  )}
-                </strong>
+              <span className={styles.propertyExploreSpec}>
+                <MoveUpRight size={15} aria-hidden="true" />
+                <strong>{t("common.viewProperty")}</strong>
               </span>
             )}
           </div>
         </div>
       </Link>
 
-      {/* ==============================
-          ACTIONS
-      ============================== */}
-      <div
-        className={
-          styles.propertyActions
-        }
-      >
+      {/* ACTIONS */}
+
+      <div className={styles.propertyActions}>
         <button
           type="button"
           onClick={compare}
-          className={`${styles.propertyAction} ${
-            selected
-              ? styles.propertyActionActive
-              : ""
-          }`}
+          className={[
+            styles.propertyAction,
+            selected ? styles.propertyActionActive : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
           aria-label={
             selected
-              ? t(
-                  "property.removeFromCompare",
-                )
-              : t(
-                  "compare.compareProperties",
-                )
+              ? t("property.removeFromCompare")
+              : t("compare.compareProperties")
           }
           aria-pressed={selected}
-          data-tip={t(
-            "property.compare",
-          )}
+          data-tip={t("property.compare")}
         >
           {selected ? (
-            <Check
-              size={17}
-              strokeWidth={3}
-            />
+            <Check size={17} strokeWidth={3} />
           ) : (
-            <GitCompare
-              size={17}
-            />
+            <GitCompare size={17} />
           )}
         </button>
 
         <button
           type="button"
           onClick={favorite}
-          className={`${styles.propertyAction} ${
-            saved
-              ? styles.propertyFavoriteActive
-              : ""
-          }`}
-          aria-label={t(
-            "property.saveHome",
-          )}
+          className={[
+            styles.propertyAction,
+            saved ? styles.propertyFavoriteActive : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+          aria-label={t("property.saveHome")}
           aria-pressed={saved}
-          data-tip={t(
-            "property.saveHome",
-          )}
+          data-tip={t("property.saveHome")}
         >
           <Heart
             size={17}
             className={
-              saved
-                ? styles.propertyHeartFilled
-                : ""
+              saved ? styles.propertyHeartFilled : ""
             }
           />
         </button>
       </div>
 
       {error && (
-        <p
-          className={
-            styles.propertyError
-          }
-        >
+        <p className={styles.propertyError}>
           {error}
         </p>
       )}
@@ -396,20 +298,12 @@ export function PropertyCard({
 
 export function PropertySkeleton() {
   return (
-    <div
-      className={
-        styles.propertySkeleton
-      }
-    >
+    <div className={styles.propertySkeleton}>
       <div
         className={`${styles.skeletonPulse} ${styles.skeletonImage}`}
       />
 
-      <div
-        className={
-          styles.skeletonBody
-        }
-      >
+      <div className={styles.skeletonBody}>
         <div
           className={`${styles.skeletonPulse} ${styles.skeletonTitle}`}
         />

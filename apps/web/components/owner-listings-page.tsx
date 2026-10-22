@@ -23,12 +23,14 @@ import {
   Maximize2,
   Pencil,
   Plus,
+  Sparkles,
   XCircle,
 } from "lucide-react";
 
 import {
   apiMessage,
   propertiesApi,
+  subscriptionApi,
 } from "@/lib/api";
 
 import type {
@@ -242,16 +244,18 @@ function OwnerPropertyCard({
   property,
   onArchive,
   onRestore,
+  onBoost,
   actionBusy,
+  boostBusy,
+  boopsBalance,
 }: {
   property: Property;
-  onArchive: (
-    property: Property,
-  ) => void;
-  onRestore: (
-    property: Property,
-  ) => void;
+  onArchive: (property: Property) => void;
+  onRestore: (property: Property) => void;
+  onBoost: (property: Property) => void;
   actionBusy: boolean;
+  boostBusy: boolean;
+  boopsBalance: number | null;
 }) {
   const { t } = useI18n();
 
@@ -314,6 +318,13 @@ function OwnerPropertyCard({
               {getListingLabel(
                 property.listing,
               )}
+            </span>
+          )}
+
+          {property.boops && property.status === "active" && property.publishing === "ACTIVE" && (
+            <span className="inline-flex items-center gap-1 rounded-full border border-amber-300 bg-amber-50 px-2 py-1 text-[10px] font-extrabold uppercase tracking-wider text-amber-900 shadow-sm">
+              <Sparkles size={11} aria-hidden="true" />
+              BOOST
             </span>
           )}
         </div>
@@ -443,6 +454,35 @@ function OwnerPropertyCard({
           )}
         </Link>
 
+        {property.boops && property.status === "active" && property.publishing === "ACTIVE" ? (
+          <span className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-sm font-bold text-amber-900">
+            <Sparkles size={15} aria-hidden="true" />
+            Boost active
+          </span>
+        ) : property.status === "active" && property.publishing === "ACTIVE" ? (
+          boopsBalance === 0 ? (
+            <Link
+              href="/subscription"
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-[#dbc4a9] bg-[#fbf5ed] px-3 py-2 text-sm font-semibold text-[#65482f] transition hover:bg-[#f3e7d8]"
+              aria-label="Get more listing boosts"
+            >
+              <Sparkles size={15} aria-hidden="true" />
+              Get boosts
+            </Link>
+          ) : (
+            <button
+              type="button"
+              onClick={() => onBoost(property)}
+              disabled={actionBusy || boostBusy || boopsBalance === null}
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-[#765638] bg-[#4b3628] px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#634832] disabled:cursor-not-allowed disabled:opacity-60"
+              aria-label={`Boost listing: ${property.title}`}
+            >
+              {boostBusy ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" /> : <Sparkles size={15} aria-hidden="true" />}
+              {boostBusy ? "Activating…" : boopsBalance === null ? "Loading balance…" : "Boost listing"}
+            </button>
+          )
+        ) : null}
+
         {property.status ===
         "archived" ? (
           <button
@@ -560,6 +600,19 @@ export function OwnerListingsPage() {
       null,
     );
 
+  const [boopsBalance, setBoopsBalance] = useState<number | null>(null);
+  const [boostTarget, setBoostTarget] = useState<Property | null>(null);
+  const [boostBusyId, setBoostBusyId] = useState<number | null>(null);
+
+  const loadBoopsBalance = async () => {
+    try {
+      const current = await subscriptionApi.me();
+      setBoopsBalance(Math.max(0, Number(current.boopsCount ?? 0)));
+    } catch {
+      setBoopsBalance(null);
+    }
+  };
+
   const load = () => {
     setLoading(true);
     setError("");
@@ -579,16 +632,12 @@ export function OwnerListingsPage() {
   };
 
   useEffect(() => {
-    const timer =
-      window.setTimeout(
-        load,
-        0,
-      );
+    const timer = window.setTimeout(() => {
+      load();
+      void loadBoopsBalance();
+    }, 0);
 
-    return () =>
-      window.clearTimeout(
-        timer,
-      );
+    return () => window.clearTimeout(timer);
   }, []);
 
   const counts = useMemo(
@@ -768,6 +817,33 @@ export function OwnerListingsPage() {
       }
     };
 
+  const activateBoost = async () => {
+    if (!boostTarget) return;
+
+    const target = boostTarget;
+    setBoostBusyId(target.id);
+    setError("");
+    setNotice("");
+
+    try {
+      const result = await propertiesApi.activateBoops(target.id);
+      setItems((current) =>
+        current.map((item) =>
+          item.id === target.id ? { ...item, boops: true } : item,
+        ),
+      );
+      setBoopsBalance(Math.max(0, Number(result.boopsRemaining)));
+      setNotice(`Boost activated for “${target.title}”. It will receive priority in public search.`);
+      setBoostTarget(null);
+    } catch (reason) {
+      setError(apiMessage(reason));
+      setBoostTarget(null);
+      void loadBoopsBalance();
+    } finally {
+      setBoostBusyId(null);
+    }
+  };
+
   const emptyCopy: Record<
     Exclude<
       OwnerFilter,
@@ -936,6 +1012,25 @@ export function OwnerListingsPage() {
                   : counts.archived}
               </strong>
             </span>
+          </div>
+        </section>
+
+        <section className="mb-6 flex flex-col gap-3 rounded-2xl border border-[#e8d7c3] bg-gradient-to-r from-[#fffaf3] via-white to-[#f8efe3] p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:p-5">
+          <div className="flex items-start gap-3">
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#4b3628] text-[#f8d9a8] shadow-sm">
+              <Sparkles size={20} aria-hidden="true" />
+            </span>
+            <div>
+              <h2 className="font-bold text-[#3f2e22]">Listing boosts</h2>
+              <p className="mt-1 text-sm text-[#806c5a]">Boost an eligible published listing to give it priority in search results.</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 sm:justify-end">
+            <div className="min-w-24 rounded-xl border border-[#ead9c5] bg-white px-4 py-2 text-center">
+              <strong className="block text-2xl font-extrabold tabular-nums text-[#4b3628]">{boopsBalance === null ? "—" : boopsBalance}</strong>
+              <span className="text-xs font-medium text-[#806c5a]">Available</span>
+            </div>
+            <Link href="/subscription" className="btn-secondary">Get more</Link>
           </div>
         </section>
 
@@ -1127,6 +1222,9 @@ export function OwnerListingsPage() {
                         onRestore={
                           restore
                         }
+                        onBoost={setBoostTarget}
+                        boostBusy={boostBusyId === property.id}
+                        boopsBalance={boopsBalance}
                         actionBusy={
                           actionId ===
                           property.id
@@ -1201,6 +1299,29 @@ export function OwnerListingsPage() {
               </div>
             )}
         </section>
+
+        {boostTarget && (
+          <div className="owner-confirm-backdrop" role="presentation">
+            <section className="owner-confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="boost-confirm-title">
+              <p className="eyebrow">Listing promotion</p>
+              <h2 id="boost-confirm-title">Boost this listing?</h2>
+              <p>“{boostTarget.title}” will receive priority in public search. One boost will be deducted from your balance.</p>
+              <div className="mt-4 flex items-center gap-3 rounded-xl border border-[#ead9c5] bg-[#fffaf3] p-3">
+                <Sparkles size={20} className="text-[#8e6037]" aria-hidden="true" />
+                <div>
+                  <strong className="block text-[#4b3628]">{boopsBalance ?? "—"} boosts available</strong>
+                  <span className="text-sm text-[#806c5a]">Balance after activation: {boopsBalance === null ? "—" : Math.max(0, boopsBalance - 1)}</span>
+                </div>
+              </div>
+              <div className="mt-5 flex flex-wrap justify-end gap-3">
+                <button type="button" className="btn-secondary" disabled={boostBusyId !== null} onClick={() => setBoostTarget(null)}>Cancel</button>
+                <button type="button" className="btn-primary" disabled={boostBusyId !== null || boopsBalance === null || boopsBalance < 1} onClick={() => void activateBoost()}>
+                  {boostBusyId === boostTarget.id ? "Activating…" : <><Sparkles size={15} /> Confirm boost</>}
+                </button>
+              </div>
+            </section>
+          </div>
+        )}
 
         {archiveTarget && (
           <div

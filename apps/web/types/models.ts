@@ -67,7 +67,11 @@ export type UserRole = 'user' | 'admin';
 export type AdminRole = 'SUPERADMIN' | 'AMDIN';
 
 export type PropertySort =
-  'PRICE_ASC' | 'PRICE_DESC' | 'NEWEST' | 'OLDEST' | 'MOST_VIEWED';
+  | 'PRICE_ASC'
+  | 'PRICE_DESC'
+  | 'NEWEST'
+  | 'OLDEST'
+  | 'MOST_VIEWED';
 
 export type SubscriptionPlanName = 'FREE' | 'PLUS' | 'PRO';
 
@@ -90,6 +94,10 @@ export interface CurrentSubscription {
   autoRenew: boolean;
   startedAt: string | null;
   expiresAt: string | null;
+
+  // Current user's remaining boost credits.
+  boopsCount?: number;
+
   config: SubscriptionPlan;
 }
 
@@ -102,7 +110,12 @@ export type ReportReason =
   | 'OTHER';
 
 export type SupportStatus =
-  'OPEN' | 'IN_PROGRESS' | 'WAITING_ADMIN' | 'RESOLVED' | 'CLOSED' | 'CANCELED';
+  | 'OPEN'
+  | 'IN_PROGRESS'
+  | 'WAITING_ADMIN'
+  | 'RESOLVED'
+  | 'CLOSED'
+  | 'CANCELED';
 
 export type SupportTicketType =
   | 'ACCOUNT'
@@ -124,7 +137,12 @@ export type PropertyCondition =
   | 'UNDER_CONSTRUCTION';
 
 export type BuildingType =
-  'STONE' | 'PANEL' | 'BRICK' | 'MONOLITH' | 'CONCRETE' | 'OTHER';
+  | 'STONE'
+  | 'PANEL'
+  | 'BRICK'
+  | 'MONOLITH'
+  | 'CONCRETE'
+  | 'OTHER';
 
 export type PropertyFeature =
   | 'PARKING'
@@ -236,6 +254,10 @@ export interface User {
   gmailStatus: EmailStatus;
   userRole: UserRole;
   accauntStatus: AccountStatus;
+
+  // Number of unused boost credits available to this user.
+  boopsCount?: number;
+
   createdAt?: string;
   updatedAt?: string;
   image?: UserImage;
@@ -290,6 +312,10 @@ export interface Property {
   status: PropertyStatus;
   publishing: PropertyPublishing;
   category: PropertyCategory;
+
+  // True when this property has an active boost.
+  boops: boolean;
+
   listing?: PropertyListing | null;
   price: number | string;
   currency: Currency;
@@ -385,39 +411,26 @@ export interface ChatMessage {
 
 export interface AiPropertyResult {
   id: number;
-
   title: string;
-
   description: string | null;
-
   city: ArmeniaCity;
-
   category: PropertyCategory;
-
   price: number | string;
-
   currency: Currency;
-
   rooms: number;
-
   area: number;
-
   image: string | null;
 }
 
 export interface AiChatRequest {
   message: string;
-
   previousResponseId?: string;
 }
 
 export interface AiChatResponse {
   message: string;
-
   properties: AiPropertyResult[];
-
   total?: number;
-
   responseId?: string;
 }
 
@@ -427,13 +440,9 @@ export type AiConversationMessageStatus = 'sending' | 'sent' | 'error';
 
 export interface AiConversationMessage {
   id: string;
-
   role: AiConversationRole;
-
   text: string;
-
   properties?: AiPropertyResult[];
-
   status?: AiConversationMessageStatus;
 }
 

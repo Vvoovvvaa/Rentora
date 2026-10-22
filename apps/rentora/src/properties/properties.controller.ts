@@ -124,4 +124,11 @@ export class PropertiesController {
   ) {
     return this.propertyservice.viewMyPropertiesOnMap(userId, dto);
   }
+
+
+  @Post("boops/:id")
+  @UseGuards(AuthGuard)
+  activateBoops(@AuthUser("id") userId:number, @Param("id") propId:number){
+    return this.propertyservice.activateBoops(userId,propId)
+  }
 }

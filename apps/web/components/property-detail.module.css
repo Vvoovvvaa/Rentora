@@ -1934,3 +1934,118 @@
     animation: none;
   }
 }
+
+/* Single-photo property slider: contained images keep every original ratio intact. */
+.gallerySlider {
+  position: relative;
+  display: grid;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  min-height: 22rem;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid #ded1c3;
+  border-radius: 1.6rem;
+  background: linear-gradient(145deg, #e9e0d4, #d9cdbf);
+  box-shadow: 0 1.5rem 4rem rgba(59, 39, 25, 0.12);
+}
+
+.galleryPhotoButton {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: zoom-in;
+}
+
+.gallerySlide {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  animation: galleryFadeIn 240ms ease both;
+}
+
+@keyframes galleryFadeIn {
+  from { opacity: 0.2; }
+  to { opacity: 1; }
+}
+
+.gallerySlider .galleryControl {
+  z-index: 3;
+  width: 2.8rem;
+  height: 2.8rem;
+  transition: transform 180ms ease, background 180ms ease, box-shadow 180ms ease;
+}
+
+.gallerySlider .galleryControl:hover {
+  background: #fffaf4;
+  box-shadow: 0 0.7rem 1.4rem rgba(44, 29, 19, 0.2);
+  transform: translateY(-50%) scale(1.06);
+}
+
+.gallerySlider .galleryCount {
+  z-index: 3;
+  top: 1rem;
+  right: 1rem;
+}
+
+.gallerySlider .galleryViewAll {
+  z-index: 3;
+}
+
+.lightboxPanel {
+  width: min(97vw, 104rem);
+  height: min(96vh, 68rem);
+}
+
+.lightboxBody {
+  padding: 1rem 5.5rem;
+}
+
+.lightboxImageWrap {
+  background: radial-gradient(circle at center, rgba(255, 250, 241, 0.035), transparent 64%);
+}
+
+.lightboxImage {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  animation: galleryFadeIn 180ms ease both;
+}
+
+.lightboxNav {
+  transition: transform 180ms ease, background 180ms ease;
+}
+
+.lightboxNav:hover {
+  background: rgba(255, 250, 242, 0.18);
+  transform: translateY(-50%) scale(1.06);
+}
+
+@media (max-width: 700px) {
+  .gallerySlider {
+    aspect-ratio: 4 / 3;
+    min-height: 0;
+    border-radius: 1.3rem;
+  }
+
+  .gallerySlider .galleryControl {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+
+  .lightboxBody {
+    padding: 1rem 3.5rem;
+  }
+}
+
+@media (max-width: 520px) {
+  .gallerySlider .galleryControlLeft { left: 0.65rem; }
+  .gallerySlider .galleryControlRight { right: 0.65rem; }
+  .gallerySlider .galleryViewAll { right: 0.65rem; bottom: 0.65rem; min-height: 2.4rem; padding: 0 0.65rem; font-size: 0.61rem; }
+  .gallerySlider .galleryCount { top: 0.65rem; right: 0.65rem; }
+  .lightboxBody { padding: 0.7rem 3rem; }
+}

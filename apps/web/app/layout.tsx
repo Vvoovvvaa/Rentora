@@ -10,8 +10,8 @@ import "./explore-home-polish.css";
 import "./home-redesign.css";
 
 export const metadata: Metadata = {
-  title: "Rentora — find a place you’ll love",
-  description: "A considered way to discover homes in Armenia.",
+  title: "Rentora — discover places to live across Armenia",
+  description: "Find real homes in Armenia with map search, comparison and direct conversations.",
   icons: {
     icon: [{ url: "/brand/rentora-symbol.png", type: "image/png", sizes: "512x512" }],
     apple: [{ url: "/brand/rentora-symbol.png", type: "image/png", sizes: "180x180" }],

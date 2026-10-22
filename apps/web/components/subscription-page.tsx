@@ -20,6 +20,7 @@ import { useSubscription } from "@/context/subscription-context";
 import { useI18n } from "@/context/i18n-context";
 import { apiMessage, subscriptionApi } from "@/lib/api";
 import type { SubscriptionPlan, SubscriptionPlanName } from "@/types/models";
+import styles from "./subscription-page.module.css";
 
 type PlanFeature = {
   icon: typeof HousePlus;
@@ -44,7 +45,7 @@ function PlanCard({
   isDevelopment: boolean;
   onSelect: (plan: SubscriptionPlan) => void;
 }) {
-  const { t, formatNumber } = useI18n();
+  const { t } = useI18n();
   const isCurrent = plan.plan === currentPlan;
   const isPlus = plan.plan === "PLUS";
   const isPro = plan.plan === "PRO";
@@ -73,45 +74,64 @@ function PlanCard({
     },
   ];
 
+  const cardClasses = [
+    styles.planCard,
+    isPlus ? styles.featured : "",
+    isPro ? styles.premium : "",
+    isCurrent ? styles.current : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   return (
     <article
-      className={`subscription-plan-card ${isPlus ? "is-featured" : ""} ${isPro ? "is-premium" : ""} ${isCurrent ? "is-current" : ""}`}
+      className={cardClasses}
       aria-label={t(`subscription.planNames.${plan.plan}`)}
       aria-current={isCurrent ? "true" : undefined}
     >
-      {isPlus && <span className="subscription-plan-tag">{t("subscription.recommended")}</span>}
-      <div className="subscription-plan-heading">
+      {isPlus && (
+        <span className={styles.planTag}>
+          <Sparkles size={12} aria-hidden="true" />
+          {t("subscription.recommended")}
+        </span>
+      )}
+
+      <div className={styles.planHeading}>
         <div>
-          <p className="eyebrow">{t("subscription.plan")}</p>
+          <p className={styles.planEyebrow}>{t("subscription.plan")}</p>
           <h2>{t(`subscription.planNames.${plan.plan}`)}</h2>
         </div>
-        <span className="subscription-plan-symbol" aria-hidden="true">
+        <span className={styles.planSymbol} aria-hidden="true">
           {isPro ? <Crown size={19} /> : isPlus ? <Sparkles size={18} /> : <HousePlus size={18} />}
         </span>
       </div>
 
-      <div className="subscription-price">
+      <div className={styles.price}>
         {plan.price === 0 ? (
           <strong>{t("subscription.freePrice")}</strong>
         ) : (
-          <strong>{formatNumber(plan.price)} <span>֏</span></strong>
+          <strong>
+            {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(plan.price / 362.21)}
+          </strong>
         )}
         <span>{t("subscription.perMonth")}</span>
       </div>
 
-      <ul className="subscription-features">
+      <ul className={styles.features}>
         {features.map(({ icon: Icon, label, included }) => (
-          <li className={included ? "is-included" : "is-muted"} key={label}>
-            <span><Icon size={16} aria-hidden="true" /></span>
+          <li className={included ? styles.included : styles.muted} key={label}>
+            <span className={styles.featureIcon}>
+              <Icon size={16} aria-hidden="true" />
+            </span>
             <span>{included ? label : t("subscription.notIncluded", { feature: label })}</span>
-            {included && <Check size={16} aria-hidden="true" />}
+            {included && <Check className={styles.featureCheck} size={16} aria-hidden="true" />}
           </li>
         ))}
       </ul>
 
       <button
         type="button"
-        className={isCurrent ? "subscription-current-button" : `subscription-select-button ${isUnavailable ? "is-unavailable" : ""}`}
+        className={`${styles.planButton} ${isCurrent ? styles.currentButton : ""} ${isUnavailable ? styles.unavailable : ""}`}
         disabled={isCurrent || Boolean(busyPlan) || isUnavailable}
         onClick={() => onSelect(plan)}
       >
@@ -132,14 +152,24 @@ function PlansSkeleton() {
   const { t } = useI18n();
 
   return (
-    <div className="subscription-plan-grid" aria-label={t("subscription.loadingPlans")}>
+    <div
+      className={styles.planGrid}
+      aria-label={t("subscription.loadingPlans")}
+    >
       {[1, 2, 3].map((item) => (
-        <div className="subscription-plan-card subscription-plan-skeleton" key={item}>
-          <div className="skeleton h-3 w-16" />
-          <div className="skeleton mt-4 h-8 w-28" />
-          <div className="skeleton mt-8 h-11 w-32" />
-          <div className="mt-8 grid gap-4">{[1, 2, 3, 4].map((line) => <div className="skeleton h-5" key={line} />)}</div>
-          <div className="skeleton mt-9 h-12" />
+        <div
+          className={`${styles.planCard} ${styles.skeletonCard}`}
+          key={item}
+        >
+          <div className={styles.skeletonLineSmall} />
+          <div className={styles.skeletonLineMedium} />
+          <div className={styles.skeletonLineLarge} />
+          <div className={styles.skeletonLines}>
+            {[1, 2, 3, 4].map((line) => (
+              <div className={styles.skeletonLine} key={line} />
+            ))}
+          </div>
+          <div className={styles.skeletonButton} />
         </div>
       ))}
     </div>
@@ -216,40 +246,78 @@ export function SubscriptionPage() {
   };
 
   return (
-    <main className="subscription-page">
-      <div className="shell subscription-shell">
-        <header className="subscription-hero">
-          <div>
-            <p className="eyebrow">{t("subscription.eyebrow")}</p>
+    <main className={styles.page}>
+      <div className={styles.shell}>
+        <header className={styles.hero}>
+          <div className={styles.heroCopy}>
+            <p className={styles.heroEyebrow}>
+              <span className={styles.eyebrowSparkle} aria-hidden="true"><Sparkles size={13} /></span>
+              {t("subscription.eyebrow")}
+            </p>
             <h1>{t("subscription.title")}</h1>
-            <p>{t("subscription.copy")}</p>
+            <p className={styles.heroDescription}>{t("subscription.copy")}</p>
+            <div className={styles.heroAccent} aria-hidden="true">
+              <span />
+              <span />
+              <span />
+            </div>
           </div>
-          {subscriptionLoading ? <div className="subscription-status-skeleton skeleton" /> : currentConfig ? (
-            <aside className="subscription-current-summary" aria-label={t("subscription.currentPlan")}>
-              <div>
+
+          <div className={styles.heroVisual} aria-hidden="true">
+            <div className={styles.orbitOuter} />
+            <div className={styles.orbitInner} />
+            <div className={styles.heroMonogram}>R</div>
+            <div className={styles.heroSparkle}><Sparkles size={17} /></div>
+          </div>
+
+          {subscriptionLoading ? (
+            <div className={`${styles.statusSkeleton} ${styles.skeletonCard}`} />
+          ) : currentConfig ? (
+            <aside
+              className={styles.currentSummary}
+              aria-label={t("subscription.currentPlan")}
+            >
+              <div className={styles.summaryTopline}>
                 <span>{t("subscription.currentPlan")}</span>
-                <strong>{t(`subscription.planNames.${subscription.plan}`)}</strong>
-                <p>{t("subscription.activeListings", { count: currentConfig.maxProperties })}</p>
-                {currentSummary && <small>{currentSummary}</small>}
+                <CalendarDays aria-hidden="true" size={18} />
               </div>
-              <CalendarDays aria-hidden="true" size={19} />
+              <strong>{t(`subscription.planNames.${subscription.plan}`)}</strong>
+              <p>{t("subscription.activeListings", { count: currentConfig.maxProperties })}</p>
+              <p className="mt-3 flex items-center gap-2 rounded-xl border border-amber-200/80 bg-amber-50/70 px-3 py-2 text-sm font-semibold text-amber-950">
+                <Sparkles size={15} aria-hidden="true" />
+                {subscription.boopsCount ?? 0} listing boosts available
+              </p>
+              {currentSummary && <small>{currentSummary}</small>}
+              <span className={styles.summaryShine} aria-hidden="true" />
             </aside>
           ) : null}
         </header>
 
-        {notice && <aside className={`subscription-notice is-${notice.tone}`} role="status">
-          {notice.tone === "success" && <CheckCircle2 aria-hidden="true" size={18} />}
-          <p>{notice.text}</p>
-        </aside>}
+        {notice && (
+          <aside
+            className={`${styles.notice} ${notice.tone === "success" ? styles.noticeSuccess : styles.noticeNeutral}`}
+            role="status"
+          >
+            {notice.tone === "success" && <CheckCircle2 aria-hidden="true" size={18} />}
+            <p>{notice.text}</p>
+          </aside>
+        )}
 
-        {loadingPlans ? <PlansSkeleton /> : plansError ? (
-          <section className="subscription-error" role="alert">
+        {loadingPlans ? (
+          <PlansSkeleton />
+        ) : plansError ? (
+          <section className={styles.error} role="alert">
             <h2>{t("subscription.unableToLoad")}</h2>
             <p>{t("subscription.planLoadError")}</p>
-            <button type="button" className="btn-secondary" onClick={() => void loadPlans()}>{t("common.tryAgain")}</button>
+            <button type="button" className={styles.retryButton} onClick={() => void loadPlans()}>
+              {t("common.tryAgain")}
+            </button>
           </section>
         ) : (
-          <section className="subscription-plan-grid" aria-label={t("subscription.title")}>
+          <section
+            className={styles.planGrid}
+            aria-label={t("subscription.title")}
+          >
             {plans.map((plan) => (
               <PlanCard
                 busyPlan={busyPlan}
@@ -263,8 +331,8 @@ export function SubscriptionPage() {
           </section>
         )}
 
-        <section className="subscription-footnote">
-          <BarChart3 size={18} aria-hidden="true" />
+        <section className={styles.footnote}>
+          <span className={styles.footnoteIcon}><BarChart3 size={17} aria-hidden="true" /></span>
           <p>{t("subscription.analyticsFootnote")}</p>
           {!user && <Link href="/login">{t("subscription.signInToChoose")}</Link>}
         </section>

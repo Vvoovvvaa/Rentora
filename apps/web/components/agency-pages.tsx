@@ -17,7 +17,6 @@ import {
   Plus,
   Trash2,
   UploadCloud,
-  Users,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -70,9 +69,11 @@ function ErrorNotice({ children }: { children: string }) {
 function AgencyForm({
   agency,
   onSaved,
+  showHeading = Boolean(agency),
 }: {
   agency?: Agency;
   onSaved?: (agency: Agency) => void;
+  showHeading?: boolean;
 }) {
   const { t } = useI18n();
   const router = useRouter();
@@ -187,19 +188,19 @@ function AgencyForm({
 
   return (
     <form className={styles.form} onSubmit={submit}>
-      <div className={styles.formTop}>
-        <div>
-          <span className={styles.formKicker}>
-            <Building2 size={14} />
-            {t("agency.eyebrow")}
-          </span>
-          <h2>{agency ? t("agency.editTitle") : t("agency.createTitle")}</h2>
-          <p>
-            {agency ? t("agency.editCopy") : t("agency.createCopy")}
-          </p>
+      {showHeading && (
+        <div className={styles.formTop}>
+          <div>
+            <span className={styles.formKicker}>
+              <Building2 size={14} />
+              {t("agency.eyebrow")}
+            </span>
+            <h2>{t("agency.editTitle")}</h2>
+            <p>{t("agency.editCopy")}</p>
+          </div>
+          <span className={styles.formStep}>02</span>
         </div>
-        <span className={styles.formStep}>{agency ? "02" : "01"}</span>
-      </div>
+      )}
 
       <section
         className={`${styles.uploadCard} ${dragging ? styles.uploadCardDragging : ""}`}
@@ -363,7 +364,7 @@ export function CreateAgencyPage() {
           <h1>{t("agency.createTitle")}</h1>
           <p>{t("agency.createCopy")}</p>
         </header>
-        <AgencyForm />
+        <AgencyForm showHeading={false} />
       </div>
     </main>
   );
@@ -531,14 +532,7 @@ export function MyAgencyPage() {
                 <span className={styles.statLabel}>{t("agency.views")}</span>
               </div>
 
-              <div className={`${styles.statCard} ${styles.statCardMuted}`}>
-                <span className={styles.statIcon}>
-                  <Users size={17} />
-                </span>
-                <strong>—</strong>
-                <span className={styles.statLabel}>{t("agency.agents")}</span>
-                <small>{t("agency.comingSoon")}</small>
-              </div>
+
             </section>
 
             <section className={styles.contactCard}>
@@ -618,7 +612,7 @@ export function MyAgencyPage() {
                 </span>
                 <div>
                   <h2>{t("agency.noProperties")}</h2>
-                  <p>{t("agency.noProperties")}</p>
+                  <p>{t("agency.discoverCopy")}</p>
                 </div>
                 <Link href="/properties/create" className="btn-primary">
                   <Plus size={16} />

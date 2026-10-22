@@ -1322,3 +1322,255 @@
     animation: none;
   }
 }
+
+/* ==========================================
+   RENTORA FEATURED / BOOSTED LISTINGS
+========================================== */
+
+.catalogShell {
+  width: 100%;
+  min-width: 0;
+}
+
+.featuredSection {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  margin-top: 2.5rem;
+  padding: clamp(1.15rem, 2.5vw, 2rem);
+  border: 1px solid #dfc18e;
+  border-radius: 1.7rem;
+  background:
+    radial-gradient(
+      circle at 95% 0%,
+      rgba(224, 188, 131, 0.32),
+      transparent 20rem
+    ),
+    linear-gradient(
+      140deg,
+      #fffaf1 0%,
+      #f7ecd9 52%,
+      #fbf7f0 100%
+    );
+  box-shadow:
+    0 1.2rem 3rem rgba(77, 51, 29, 0.08),
+    inset 0 1px rgba(255, 255, 255, 0.85);
+}
+
+.featuredSection::before {
+  position: absolute;
+  z-index: -1;
+  top: -6rem;
+  right: -4rem;
+  width: 17rem;
+  height: 17rem;
+  border: 1px solid rgba(159, 112, 57, 0.13);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 2rem rgba(159, 112, 57, 0.035),
+    0 0 0 4rem rgba(159, 112, 57, 0.025);
+  content: "";
+  pointer-events: none;
+}
+
+.featuredHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.25rem;
+}
+
+.featuredHeadingCopy {
+  max-width: 42rem;
+  min-width: 0;
+}
+
+.featuredEyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0;
+  color: #916534;
+  font-size: 0.67rem;
+  font-weight: 850;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.featuredEyebrow svg {
+  color: #b47d30;
+}
+
+.featuredTitle {
+  margin: 0.55rem 0 0;
+  color: #3c2a1e;
+  font-size: clamp(1.65rem, 2.6vw, 2.35rem);
+  font-weight: 820;
+  letter-spacing: -0.055em;
+  line-height: 1.1;
+}
+
+.featuredCopy {
+  max-width: 38rem;
+  margin: 0.65rem 0 0;
+  color: #806b56;
+  font-size: 0.82rem;
+  line-height: 1.65;
+}
+
+.featuredCount {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2.35rem;
+  border: 1px solid #e4c99c;
+  border-radius: 999px;
+  background: rgba(255, 253, 248, 0.78);
+  padding: 0.3rem 0.8rem;
+  color: #77552f;
+  font-size: 0.68rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.featuredCount svg {
+  color: #bd8a42;
+}
+
+.featuredGrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+  gap: clamp(0.85rem, 1.5vw, 1.2rem);
+  margin-top: 1.35rem;
+}
+
+.featuredGrid > * {
+  border-color: #d6b57c;
+  box-shadow:
+    0 0.8rem 1.7rem rgba(91, 60, 31, 0.1),
+    0 0 0 1px rgba(224, 188, 131, 0.12);
+}
+
+.featuredGrid > *:hover {
+  border-color: #b98a4c;
+  box-shadow:
+    0 1.25rem 2.5rem rgba(91, 60, 31, 0.15),
+    0 0 0 1px rgba(224, 188, 131, 0.22);
+}
+
+.featuredFootnote {
+  margin: 1rem 0 0;
+  color: #876b4b;
+  font-size: 0.7rem;
+  font-weight: 650;
+  line-height: 1.6;
+}
+
+.featuredOnlyNote {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  border: 1px solid #ead9b8;
+  border-radius: 0.9rem;
+  background: #fffaf0;
+  padding: 1rem;
+  color: #795a35;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* Give boosted cards a subtle gold outline in any catalogue. */
+
+.propertyCardBoosted {
+  border-color: #d5ae69;
+  box-shadow:
+    0 0.8rem 1.8rem rgba(125, 84, 36, 0.1),
+    0 0 0 1px rgba(223, 186, 120, 0.12);
+}
+
+.propertyCardBoosted:hover {
+  border-color: #b8873d;
+  box-shadow:
+    0 1.2rem 2.6rem rgba(125, 84, 36, 0.17),
+    0 0 0 1px rgba(223, 186, 120, 0.2);
+}
+
+.propertyBoostBadge {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  min-height: 1.68rem;
+  border: 1px solid rgba(255, 231, 187, 0.85);
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ffe5a8, #edc477);
+  padding: 0 0.62rem;
+  color: #543719;
+  font-size: 0.55rem;
+  font-weight: 900;
+  letter-spacing: 0.085em;
+  line-height: 1;
+  box-shadow: 0 0.2rem 0.65rem rgba(78, 48, 18, 0.12);
+}
+
+.propertyBoostBadge svg {
+  color: #84551f;
+}
+
+/* Clean up the vertical rhythm below featured homes. */
+
+.resultsSection {
+  margin-top: 3rem;
+}
+
+.propertyGrid {
+  align-items: stretch;
+}
+
+/* ==========================================
+   RESPONSIVE
+========================================== */
+
+@media (max-width: 1050px) {
+  .featuredGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
+  .featuredSection {
+    margin-top: 1.6rem;
+    padding: 1rem;
+    border-radius: 1.2rem;
+  }
+
+  .featuredHeader {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.9rem;
+  }
+
+  .featuredTitle {
+    font-size: 1.8rem;
+  }
+
+  .featuredGrid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .featuredCount {
+    min-height: 2rem;
+    font-size: 0.65rem;
+  }
+
+  .resultsSection {
+    margin-top: 2.2rem;
+  }
+}

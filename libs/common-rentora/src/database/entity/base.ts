@@ -13,4 +13,8 @@ export class Base {
 
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamp without time zone' })
   updatedAt: Date;
+
+  @CreateDateColumn({ name: 'expired_at', type: 'timestamp without time zone' })
+  expiredAt?: Date;
+
 }

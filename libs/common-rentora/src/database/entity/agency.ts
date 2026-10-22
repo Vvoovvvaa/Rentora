@@ -3,6 +3,7 @@ import { Base } from './base';
 import { User } from './user';
 import { Property } from './property';
 import { AgencyImage } from './agency-image';
+import { AgencyVerifyRejectionReason } from '@app/common-rentora/enums';
 
 @Entity()
 export class Agency extends Base {
@@ -26,6 +27,9 @@ export class Agency extends Base {
 
   @Column({ default: false })
   verified: boolean;
+
+  @Column({ type: 'text', nullable: true })
+  verificationRejectionReason: string | null;
 
   @ManyToOne(() => User, (user) => user.agency, { onDelete: 'CASCADE' })
   owner: User;

@@ -35,6 +35,11 @@ type MessageResponse = {
   message: string;
 };
 
+export type AdminAgency = Agency & {
+  verificationRejectionReason?: string | null;
+  owner?: Pick<User, 'id' | 'name' | 'gmail' | 'phone'> | null;
+};
+
 type ApiErrorResponse = {
   message?: string | string[];
 };
@@ -52,9 +57,7 @@ type ChatRoomApiResponse = {
 
 function normalizeChatRoom(room: ChatRoomApiResponse): ChatRoom {
   const propertyId = room.propertyId ?? room.property?.id;
-
   const ownerId = room.ownerId ?? room.owner?.id;
-
   const clientId = room.clientId ?? room.client?.id;
 
   if (
@@ -98,10 +101,14 @@ export function getSocketServerUrl(): string {
   try {
     const socketUrl = new URL(configured);
     const currentHost = window.location.hostname;
+
     const configuredIsLocal =
-      socketUrl.hostname === 'localhost' || socketUrl.hostname === '127.0.0.1';
+      socketUrl.hostname === 'localhost' ||
+      socketUrl.hostname === '127.0.0.1';
+
     const currentIsLocal =
-      currentHost === 'localhost' || currentHost === '127.0.0.1';
+      currentHost === 'localhost' ||
+      currentHost === '127.0.0.1';
 
     if (configuredIsLocal && !currentIsLocal) {
       socketUrl.hostname = currentHost;
@@ -133,7 +140,6 @@ api.interceptors.request.use((config) => {
 
 api.interceptors.response.use(
   (response) => response,
-
   (error: unknown) => {
     if (typeof window !== 'undefined') {
       const requestUrl = axios.isAxiosError(error)
@@ -141,7 +147,6 @@ api.interceptors.response.use(
         : '';
 
       const isPublicAuthRequest = requestUrl.startsWith('/auth/');
-
       const failure = isPublicAuthRequest ? null : getAuthFailureKind(error);
 
       if (failure && localStorage.getItem(USER_TOKEN_KEY)) {
@@ -235,9 +240,7 @@ export const authApi = {
 
   sendCode: (email: string) =>
     api
-      .post<MessageResponse>('/auth/sendCode', {
-        email,
-      })
+      .post<MessageResponse>('/auth/sendCode', { email })
       .then((response) => response.data),
 
   verify: (data: { gmail: string; code: string }) =>
@@ -247,9 +250,7 @@ export const authApi = {
 
   forgot: (gmail: string) =>
     api
-      .post<MessageResponse>('/auth/forget', {
-        gmail,
-      })
+      .post<MessageResponse>('/auth/forget', { gmail })
       .then((response) => response.data),
 
   newPassword: (data: { code: string; newPassword: string }) =>
@@ -258,12 +259,14 @@ export const authApi = {
       .then((response) => response.data),
 
   logout: () =>
-    api.post<MessageResponse>('/auth/logout').then((response) => response.data),
+    api
+      .post<MessageResponse>('/auth/logout')
+      .then((response) => response.data),
 };
 
 /*
  * ============================================================
- * Properties
+ * Subscriptions
  * ============================================================
  */
 
@@ -285,9 +288,17 @@ export const subscriptionApi = {
       .then((response) => response.data),
 };
 
+/*
+ * ============================================================
+ * Properties
+ * ============================================================
+ */
+
 export const propertiesApi = {
   all: () =>
-    api.get<Property[]>('/properties').then((response) => response.data),
+    api
+      .get<Property[]>('/properties')
+      .then((response) => response.data),
 
   map: (bounds: PropertyMapBounds, filters: SearchParams = {}) =>
     api
@@ -328,13 +339,13 @@ export const propertiesApi = {
 
   search: (params: SearchParams) =>
     api
-      .get<Property[]>('/search', {
-        params,
-      })
+      .get<Property[]>('/search', { params })
       .then((response) => response.data),
 
   mine: () =>
-    api.get<Property[]>('/properties/my').then((response) => response.data),
+    api
+      .get<Property[]>('/properties/my')
+      .then((response) => response.data),
 
   create: (data: FormData) =>
     api
@@ -371,6 +382,17 @@ export const propertiesApi = {
     api
       .post<MessageResponse>(`/properties/report/${propertyId}`, data)
       .then((response) => response.data),
+
+  // Activate a boost for one of the current user's properties.
+  activateBoops: (id: number) =>
+    api
+      .post<{
+        message: string;
+        boopsRemaining: number;
+        propertyId: number;
+        expiresAt: string;
+      }>(`/properties/boops/${id}`)
+      .then((response) => response.data),
 };
 
 /*
@@ -381,22 +403,34 @@ export const propertiesApi = {
 
 export const agencyApi = {
   create: (data: FormData) =>
-    api.post<MessageResponse>('/agency/create', data).then((response) => response.data),
+    api
+      .post<MessageResponse>('/agency/create', data)
+      .then((response) => response.data),
 
   mine: () =>
-    api.get<Agency>('/agency/my').then((response) => response.data),
+    api
+      .get<Agency>('/agency/my')
+      .then((response) => response.data),
 
   one: (id: string | number) =>
-    api.get<Agency>(`/agency/one/${id}`).then((response) => response.data),
+    api
+      .get<Agency>(`/agency/one/${id}`)
+      .then((response) => response.data),
 
   all: () =>
-    api.get<Agency[]>('/agency/all').then((response) => response.data),
+    api
+      .get<Agency[]>('/agency/all')
+      .then((response) => response.data),
 
   change: (data: FormData) =>
-    api.patch<MessageResponse>('/agency/change', data).then((response) => response.data),
+    api
+      .patch<MessageResponse>('/agency/change', data)
+      .then((response) => response.data),
 
   delete: (id: number) =>
-    api.delete<MessageResponse>(`/agency/${id}`).then((response) => response.data),
+    api
+      .delete<MessageResponse>(`/agency/${id}`)
+      .then((response) => response.data),
 };
 
 /*
@@ -406,10 +440,15 @@ export const agencyApi = {
  */
 
 export const userApi = {
-  me: () => api.get<User>('/user/me').then((response) => response.data),
+  me: () =>
+    api
+      .get<User>('/user/me')
+      .then((response) => response.data),
 
   update: (data: FormData) =>
-    api.post<User>('/user/change', data).then((response) => response.data),
+    api
+      .post<User>('/user/change', data)
+      .then((response) => response.data),
 
   favorites: () =>
     api
@@ -455,9 +494,7 @@ export const chatApi = {
 
   createRoom: (propertyId: number) =>
     api
-      .post<ChatRoomApiResponse>('/chat/room', {
-        propertyId,
-      })
+      .post<ChatRoomApiResponse>('/chat/room', { propertyId })
       .then((response) => normalizeChatRoom(response.data)),
 
   messages: (roomId: number) =>
@@ -483,10 +520,14 @@ export const supportApi = {
       .then((response) => response.data),
 
   mine: () =>
-    api.get<SupportTicket[]>('/support').then((response) => response.data),
+    api
+      .get<SupportTicket[]>('/support')
+      .then((response) => response.data),
 
   one: (id: number) =>
-    api.get<SupportTicket>(`/support/${id}`).then((response) => response.data),
+    api
+      .get<SupportTicket>(`/support/${id}`)
+      .then((response) => response.data),
 
   cancel: (id: number) =>
     api
@@ -542,7 +583,9 @@ export const adminUsersApi = {
       .then((response) => response.data),
 
   me: () =>
-    adminApiClient.get<Admin>('/admins/me').then((response) => response.data),
+    adminApiClient
+      .get<Admin>('/admins/me')
+      .then((response) => response.data),
 
   admins: () =>
     adminApiClient
@@ -623,9 +666,7 @@ export const adminSupportApi = {
   byStatus: (status: SupportStatus) =>
     adminApiClient
       .get<SupportTicket[]>('/support-admin/status', {
-        params: {
-          status,
-        },
+        params: { status },
       })
       .then((response) => response.data),
 
@@ -651,6 +692,46 @@ export const adminSupportApi = {
     adminApiClient
       .post<MessageResponse>(`/support-admin/response/${id}`, {
         message,
+      })
+      .then((response) => response.data),
+};
+
+/*
+ * ============================================================
+ * Admin Agencies
+ * ============================================================
+ */
+
+export const adminAgenciesApi = {
+  pending: () =>
+    adminApiClient
+      .get<AdminAgency[]>('/admins-agency/pending')
+      .then((response) => response.data),
+
+  verified: () =>
+    adminApiClient
+      .get<AdminAgency[]>('/admins-agency/confirms')
+      .then((response) => response.data),
+
+  rejected: () =>
+    adminApiClient
+      .get<AdminAgency[]>('/admins-agency/rejects')
+      .then((response) => response.data),
+
+  approve: (id: number) =>
+    adminApiClient
+      .post<MessageResponse>(`/admins-agency/confirm/${id}`)
+      .then((response) => response.data),
+
+  reject: (id: number, reason: string) =>
+    adminApiClient
+      .post<MessageResponse>(`/admins-agency/reject/${id}`, { reason })
+      .then((response) => response.data),
+
+  remove: (id: number, deleteReason: string) =>
+    adminApiClient
+      .delete<MessageResponse>(`/admins-agency/${id}`, {
+        data: { deleteReason },
       })
       .then((response) => response.data),
 };

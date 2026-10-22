@@ -121,9 +121,7 @@ export class AiService {
 
   private serializePropertyForAi(property: Property) {
     return {
-      id: property.id,
       title: property.title,
-      description: property.description?.slice(0, 300) ?? null,
       city: property.city,
       address: property.address,
       category: property.category,

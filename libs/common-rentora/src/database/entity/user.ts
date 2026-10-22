@@ -64,6 +64,9 @@ export class User extends Base {
   })
   accauntStatus: accauntSatus;
 
+  @Column({name: "boops_count", default: 0})
+  boopsCount: number
+
   @OneToOne(() => UserSecurity, (security) => security.user)
   security: UserSecurity;
 

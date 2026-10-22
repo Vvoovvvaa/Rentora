@@ -133,6 +133,9 @@ export class Property extends Base {
   @Column({ default: 0 })
   view: number;
 
+  @Column({default: false})
+  boops: boolean
+
   @Column({
     type: 'double precision',
     nullable: true,

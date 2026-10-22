@@ -3,7 +3,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import {
-  ArrowUpRight,
   Building2,
   ChevronDown,
   CircleHelp,
@@ -284,7 +283,7 @@ export function Header() {
 
   const agencyLabel =
     agencyState === "missing"
-      ? t("agency.createTitle")
+      ? t("agency.create")
       : t("agency.myAgency");
 
   const agencyChecking = agencyState === "checking";
@@ -357,25 +356,17 @@ export function Header() {
                 <div className="my-1 h-px bg-[#eee5da]" aria-hidden="true" />
 
                 <Link
-                  href="/my-agency"
+                  href={agencyState === "missing" ? "/agency/create" : "/my-agency"}
                   onClick={() => setAccountOpen(false)}
-                  className="!gap-2.5 !rounded-xl !border !border-[#eadcca] !bg-[#f8eee2] !px-2.5 !py-2.5 !text-[#503c2c] hover:!border-[#d8c0a5] hover:!bg-[#f3e6d6]"
+                  aria-current={
+                    pathname === "/my-agency" || pathname === "/agency/create"
+                      ? "page"
+                      : undefined
+                  }
                 >
-                  <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-[#ead8bd] text-[#79583b]">
-                    <Building2 size={17} />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <strong className="block truncate text-[.77rem] font-extrabold text-[#503c2c]">
-                      {agencyChecking ? t("agency.myAgency") : agencyLabel}
-                    </strong>
-                    <small className="mt-0.5 block text-[.62rem] font-bold uppercase tracking-[.12em] text-[#9b7a59]">
-                      {t("agency.eyebrow")}
-                    </small>
-                  </span>
-                  <ArrowUpRight size={15} className="shrink-0 text-[#96734e]" />
+                  <Building2 size={15} />
+                  {agencyChecking ? t("agency.myAgency") : agencyLabel}
                 </Link>
-
-                <div className="my-1 h-px bg-[#eee5da]" aria-hidden="true" />
 
                 {accountLinks.slice(1).map(({ href, label, icon: Icon }) => (
                   <Link
@@ -468,22 +459,17 @@ export function Header() {
                 </Link>
 
                 <Link
-                  href="/my-agency"
+                  href={agencyState === "missing" ? "/agency/create" : "/my-agency"}
                   onClick={() => setOpen(false)}
-                  className="nav-link mobile !border !border-[#e8dccf] !bg-[#f8f0e6] !text-[#503c2c] hover:!bg-[#f2e6d7]"
+                  className="nav-link mobile"
+                  aria-current={
+                    pathname === "/my-agency" || pathname === "/agency/create"
+                      ? "page"
+                      : undefined
+                  }
                 >
-                  <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-[#ead8bd] text-[#79583b]">
-                    <Building2 size={16} />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <strong className="block truncate text-[.78rem] font-extrabold">
-                      {agencyChecking ? t("agency.myAgency") : agencyLabel}
-                    </strong>
-                    <small className="mt-0.5 block text-[.61rem] font-bold uppercase tracking-[.1em] text-[#9b7a59]">
-                      {t("agency.eyebrow")}
-                    </small>
-                  </span>
-                  <ArrowUpRight size={14} className="shrink-0 text-[#96734e]" />
+                  <Building2 size={16} />
+                  {agencyChecking ? t("agency.myAgency") : agencyLabel}
                 </Link>
 
                 <Link

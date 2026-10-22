@@ -2,7 +2,7 @@ import {
   SubscripptionPlanEnum,
   SubscriptionStatusEnum,
 } from '@app/common-rentora/enums';
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, ManyToOne } from 'typeorm';
 import { User } from './user';
 import { Base } from './base';
 
