@@ -1,10 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import {
-  useRouter,
-  useSearchParams,
-} from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   useCallback,
   useEffect,
@@ -14,10 +11,8 @@ import {
 import {
   ArrowRight,
   Map,
-  MessageSquareMore,
   RotateCcw,
   Search,
-  ShieldCheck,
   Sparkles,
   UserRound,
   X,
@@ -88,7 +83,7 @@ function RequireLogin({
   if (loading) {
     return (
       <main className={styles.catalogPage}>
-        <div className="shell">
+        <div className={`shell ${styles.catalogShell}`}>
           <div
             className={`${styles.skeletonPulse} ${styles.loginSkeleton}`}
           />
@@ -101,16 +96,14 @@ function RequireLogin({
     return (
       <main className={styles.catalogPage}>
         <div className={`shell ${styles.loginRequired}`}>
-          <UserRound size={34} />
+          <span className={styles.loginIcon}>
+            <UserRound size={28} />
+          </span>
 
           <h1>{t("auth.welcomeBack")}</h1>
-
           <p>{t("auth.signInCopy")}</p>
 
-          <Link
-            href="/login"
-            className={styles.loginButton}
-          >
+          <Link href="/login" className={styles.loginButton}>
             {t("navigation.logIn")}
             <ArrowRight size={16} />
           </Link>
@@ -137,29 +130,15 @@ function PropertiesCatalog({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const title =
-    kind === "favorites"
-      ? "Saved homes"
-      : "Explore homes";
+  const isFavorites = kind === "favorites";
 
-  const subtitle =
-    kind === "favorites"
-      ? "Keep the homes you like close at hand and come back when you're ready."
-      : "Discover homes across Armenia, compare your options, and find a place that feels right.";
-
-  const eyebrow =
-    kind === "favorites"
-      ? "Favorites"
-      : "Properties";
-
-  // Load properties from the existing API.
   const load = useCallback(() => {
     setLoading(true);
     setError("");
 
     let request: Promise<Property[]>;
 
-    if (kind === "favorites") {
+    if (isFavorites) {
       request = userApi.favorites().then((result) =>
         result.map((favorite) => favorite.property),
       );
@@ -186,11 +165,9 @@ function PropertiesCatalog({
 
       parsed.forEach((value, key) => {
         if (numericKeys.has(key)) {
-          (data as Record<string, number>)[key] =
-            Number(value);
+          (data as Record<string, number>)[key] = Number(value);
         } else {
-          (data as Record<string, string>)[key] =
-            value;
+          (data as Record<string, string>)[key] = value;
         }
       });
 
@@ -209,7 +186,7 @@ function PropertiesCatalog({
       .finally(() => {
         setLoading(false);
       });
-  }, [kind, query]);
+  }, [isFavorites, query]);
 
   useEffect(() => {
     const timer = window.setTimeout(load, 0);
@@ -219,10 +196,8 @@ function PropertiesCatalog({
     };
   }, [load]);
 
-  // Boosted properties have priority.
-  // Preserve the existing API order inside each group.
   const sortedItems = useMemo(() => {
-    if (kind !== "properties") {
+    if (isFavorites) {
       return items;
     }
 
@@ -239,12 +214,10 @@ function PropertiesCatalog({
         return boostDifference || first.index - second.index;
       })
       .map(({ property }) => property);
-  }, [items, kind]);
+  }, [items, isFavorites]);
 
-  // The featured section appears only in the unfiltered public catalogue.
-  // Filtered results continue to use the normal search page.
   const canShowFeatured =
-    kind === "properties" && query.length === 0;
+    !isFavorites && query.length === 0;
 
   const allBoostedItems = useMemo(
     () =>
@@ -254,7 +227,6 @@ function PropertiesCatalog({
     [sortedItems],
   );
 
-  // Limit the featured shelf to three cards.
   const featuredItems = useMemo(
     () =>
       canShowFeatured
@@ -268,8 +240,6 @@ function PropertiesCatalog({
     !error &&
     featuredItems.length > 0;
 
-  // Remove only the cards already shown in the featured shelf.
-  // Additional boosted listings remain in the normal grid.
   const featuredIds = useMemo(
     () =>
       new Set(
@@ -288,9 +258,8 @@ function PropertiesCatalog({
     return sortedItems;
   }, [canShowFeatured, featuredIds, sortedItems]);
 
-  // Active filter chips.
   const chips = useMemo(() => {
-    if (kind !== "properties") {
+    if (isFavorites) {
       return [];
     }
 
@@ -329,19 +298,14 @@ function PropertiesCatalog({
         value,
         label: getFilterLabel(key, value),
       }));
-  }, [kind, query]);
+  }, [isFavorites, query]);
 
   const removeFilter = (key: string) => {
     const next = new URLSearchParams(query);
-
     next.delete(key);
 
     router.replace(
-      `/properties${
-        next.size
-          ? `?${next.toString()}`
-          : ""
-      }`,
+      `/properties${next.size ? `?${next.toString()}` : ""}`,
     );
   };
 
@@ -356,10 +320,6 @@ function PropertiesCatalog({
   return (
     <main className={styles.catalogPage}>
       <div className={`shell ${styles.catalogShell}`}>
-        {/* ==============================
-            CATALOG HERO
-        ============================== */}
-
         <section className={styles.catalogHero}>
           <div
             className={styles.catalogHeroGlow}
@@ -368,77 +328,45 @@ function PropertiesCatalog({
 
           <div className={styles.catalogHeroCopy}>
             <p className={styles.catalogEyebrow}>
-              {eyebrow}
+              {isFavorites ? "Favorites" : "Rentora"}
             </p>
 
-            <h1>{title}</h1>
+            <h1>
+              {isFavorites ? "Saved homes" : "Explore homes"}
+            </h1>
 
             <p className={styles.catalogHeroSubtitle}>
-              {subtitle}
+              {isFavorites
+                ? "Your saved properties."
+                : "Find your next home in Armenia."}
             </p>
+          </div>
 
-            {kind === "properties" && (
-              <div className={styles.catalogHeroPills}>
-                <span>
-                  <Sparkles size={14} />
-                  Smart discovery
-                </span>
-
-                <span>
-                  <Map size={14} />
-                  Explore on the map
-                </span>
-
-                <span>
-                  <MessageSquareMore size={14} />
-                  Contact owners directly
-                </span>
-
-                <span>
-                  <ShieldCheck size={14} />
-                  Browse with confidence
-                </span>
+          {!isFavorites && (
+            <div
+              className={styles.catalogHeroMark}
+              aria-hidden="true"
+            >
+              <span>AM</span>
+              <div>
+                <strong>Armenia</strong>
+                <small>Rentora</small>
               </div>
-            )}
-          </div>
-
-          <div
-            className={styles.catalogHeroMark}
-            aria-hidden="true"
-          >
-            <span>AM</span>
-
-            <div>
-              <strong>Armenia</strong>
-              <small>Rentora</small>
             </div>
-          </div>
+          )}
         </section>
 
-        {/* ==============================
-            SEARCH
-        ============================== */}
-
-        {kind === "properties" && (
-          <section
-            className={styles.catalogSearchWrapper}
-          >
+        {!isFavorites && (
+          <section className={styles.catalogSearchWrapper}>
             <div className={styles.catalogSearchIntro}>
-              <div>
-                <p>Find your next place</p>
-
-                <h3>
-                  Start broad, then narrow down by
-                  city, budget, and home type.
-                </h3>
-              </div>
+              <h2>Search properties</h2>
 
               <Link
                 href="/map"
                 className={styles.catalogInlineMapLink}
               >
                 <Map size={16} />
-                Browse on map
+                Map
               </Link>
             </div>
 
@@ -447,9 +375,10 @@ function PropertiesCatalog({
               submitPath="/properties"
             />
 
-            <div className={styles.catalogQuickLinks}>
-              <span>Popular:</span>
-
+            <nav
+              className={styles.catalogQuickLinks}
+              aria-label="Popular cities"
+            >
               <Link href="/properties?city=YEREVAN">
                 {cityOf("YEREVAN")}
               </Link>
@@ -465,13 +394,9 @@ function PropertiesCatalog({
               <Link href="/properties?city=SEVAN">
                 {cityOf("SEVAN")}
               </Link>
-            </div>
+            </nav>
           </section>
         )}
-
-        {/* ==============================
-            FEATURED / BOOSTED HOMES
-        ============================== */}
 
         {showFeatured && (
           <section
@@ -479,12 +404,10 @@ function PropertiesCatalog({
             aria-labelledby="featured-homes-title"
           >
             <div className={styles.featuredHeader}>
-              <div
-                className={styles.featuredHeadingCopy}
-              >
+              <div className={styles.featuredHeadingCopy}>
                 <p className={styles.featuredEyebrow}>
                   <Sparkles size={14} />
-                  Promoted on Rentora
+                  Promoted
                 </p>
 
                 <h2
@@ -493,20 +416,11 @@ function PropertiesCatalog({
                 >
                   Featured homes
                 </h2>
-
-                <p className={styles.featuredCopy}>
-                  Homes owners have boosted to make
-                  them easier to discover.
-                </p>
               </div>
 
               <span className={styles.featuredCount}>
                 <Sparkles size={14} />
-
-                {featuredItems.length} promoted{" "}
-                {featuredItems.length === 1
-                  ? "home"
-                  : "homes"}
+                {featuredItems.length}
               </span>
             </div>
 
@@ -520,75 +434,42 @@ function PropertiesCatalog({
                 />
               ))}
             </div>
-
-            {allBoostedItems.length >
-              featuredItems.length && (
-              <p className={styles.featuredFootnote}>
-                More promoted listings appear first
-                in the catalogue below.
-              </p>
-            )}
           </section>
         )}
 
-        {/* ==============================
-            REGULAR CATALOGUE
-        ============================== */}
-
         <section className={styles.resultsSection}>
           <header className={styles.resultsHeader}>
-            <div>
-              <p className={styles.resultsEyebrow}>
-                {kind === "favorites"
-                  ? "Your collection"
+            <div className={styles.resultsTitleRow}>
+              <h2>
+                {isFavorites
+                  ? "Saved homes"
                   : showFeatured
-                    ? "Discover more"
-                    : "Property listings"}
-              </p>
+                    ? "More homes"
+                    : "Available homes"}
+              </h2>
 
-              <div className={styles.resultsTitleRow}>
-                <h2>
-                  {kind === "favorites"
-                    ? "Saved homes"
-                    : showFeatured
-                      ? "More homes"
-                      : "Available homes"}
-                </h2>
-
-                {!loading && (
-                  <span className={styles.resultsCount}>
-                    {displayedCount}
-                  </span>
-                )}
-              </div>
-
-              <p className={styles.resultsHelper}>
-                {kind === "favorites"
-                  ? "Your saved homes stay here so you can return to them quickly."
-                  : showFeatured
-                    ? "Explore the rest of the catalogue. Promoted listings are highlighted above."
-                    : "Compare prices, locations, and features to find the right property."}
-              </p>
+              {!loading && (
+                <span className={styles.resultsCount}>
+                  {displayedCount}
+                </span>
+              )}
             </div>
 
             <div className={styles.resultsActions}>
-              {kind === "properties" && query && (
+              {!isFavorites && query && (
                 <button
                   type="button"
                   onClick={clearFilters}
                   className={styles.resetButton}
                 >
                   <RotateCcw size={15} />
-                  Reset filters
+                  Reset
                 </button>
               )}
 
-              <Link
-                href="/map"
-                className={styles.mapButton}
-              >
+              <Link href="/map" className={styles.mapButton}>
                 <Map size={16} />
-                Search on the map
+                Map
               </Link>
             </div>
           </header>
@@ -600,6 +481,7 @@ function PropertiesCatalog({
                   type="button"
                   key={`${chip.key}-${chip.value}`}
                   onClick={() => removeFilter(chip.key)}
+                  aria-label={`Remove filter: ${chip.label}`}
                 >
                   <span>{chip.label}</span>
                   <X size={13} />
@@ -617,11 +499,7 @@ function PropertiesCatalog({
 
               <div>
                 <strong>{error}</strong>
-
-                <button
-                  type="button"
-                  onClick={load}
-                >
+                <button type="button" onClick={load}>
                   {t("common.tryAgain")}
                 </button>
               </div>
@@ -640,46 +518,42 @@ function PropertiesCatalog({
                         key={property.id}
                         property={property}
                         onFavorite={
-                          kind === "favorites"
-                            ? load
-                            : undefined
+                          isFavorites ? load : undefined
                         }
                       />
                     ))}
               </div>
             )}
 
-          {!loading &&
-            !error &&
-            items.length === 0 && (
-              <div className={styles.catalogEmpty}>
-                <span>
-                  <Search size={24} />
-                </span>
+          {!loading && !error && items.length === 0 && (
+            <div className={styles.catalogEmpty}>
+              <span className={styles.emptyIcon}>
+                <Search size={24} />
+              </span>
 
-                <h3>
-                  {kind === "favorites"
-                    ? "No saved homes yet"
-                    : "No homes matched your filters"}
-                </h3>
+              <h3>
+                {isFavorites
+                  ? "No saved homes yet"
+                  : "No homes found"}
+              </h3>
 
-                <p>
-                  Try fewer filters, a different
-                  city, or reset the search to see
-                  more properties.
-                </p>
+              <p>
+                {isFavorites
+                  ? "Save properties you like to find them here."
+                  : "Try another city or remove some filters."}
+              </p>
 
-                {kind === "properties" && query && (
-                  <button
-                    type="button"
-                    onClick={clearFilters}
-                  >
-                    Reset filters
-                    <ArrowRight size={15} />
-                  </button>
-                )}
-              </div>
-            )}
+              {!isFavorites && query && (
+                <button
+                  type="button"
+                  onClick={clearFilters}
+                >
+                  Reset filters
+                  <ArrowRight size={15} />
+                </button>
+              )}
+            </div>
+          )}
 
           {!loading &&
             !error &&
@@ -688,8 +562,7 @@ function PropertiesCatalog({
             showFeatured && (
               <div className={styles.featuredOnlyNote}>
                 <Sparkles size={17} />
-                All available listings are featured
-                above.
+                All available homes are shown above.
               </div>
             )}
         </section>
@@ -701,7 +574,7 @@ function PropertiesCatalog({
 function getFilterLabel(
   key: string,
   value: string,
-) {
+): string {
   switch (key) {
     case "city":
       return cityOf(value);

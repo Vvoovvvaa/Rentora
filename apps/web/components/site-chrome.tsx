@@ -30,8 +30,8 @@ import { RentoraLogo } from "./rentora-logo";
 const isActive = (path: string, href: string) =>
   href === "/properties"
     ? path === "/properties" ||
-      path.startsWith("/properties/") ||
-      path === "/search"
+    path.startsWith("/properties/") ||
+    path === "/search"
     : path === href || path.startsWith(`${href}/`);
 
 type AgencyMenuState = "checking" | "exists" | "missing" | "error";
@@ -157,7 +157,7 @@ function LanguageFlag({ src }: { src: string }) {
 }
 
 export function Header() {
-  const { user, signOut } = useAuth();
+  const { user, loading, signOut } = useAuth();
   const { t } = useI18n();
   const pathname = usePathname();
   const params = useSearchParams();
@@ -182,8 +182,8 @@ export function Header() {
 
   const agencyRefreshKey =
     pathname === "/my-agency" ||
-    pathname === "/agency/create" ||
-    pathname === "/profile"
+      pathname === "/agency/create" ||
+      pathname === "/profile"
       ? pathname
       : "";
 
@@ -337,8 +337,14 @@ export function Header() {
                 <UserRound size={16} />
               </span>
               <span className="max-w-24 truncate text-sm font-bold text-stone-700">
-                {user?.name || "Unnamed"}
-              </span>
+                {loading ? (
+                  <span
+                    className="inline-block h-3.5 w-14 animate-pulse rounded bg-stone-200"
+                    aria-label="Loading account"
+                  />
+                ) : (
+                  user?.name || "Unnamed"
+                )}              </span>
               <ChevronDown size={15} />
             </button>
 
@@ -347,7 +353,7 @@ export function Header() {
                 <Link
                   href="/profile"
                   onClick={() => setAccountOpen(false)}
-                  
+
                 >
                   <UserRound size={15} />
                   {t("navigation.profile")}
