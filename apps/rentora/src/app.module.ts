@@ -46,6 +46,7 @@ import { UserSubscription } from '@app/common-rentora/database/entity/subscripti
 import { SubscriptionConfig } from '@app/common-rentora/database/entity/subscription-config';
 import { SubscriptionModule } from './subscription/subscription.module';
 import { AgencyModule } from './agency/agency.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -61,6 +62,9 @@ import { AgencyModule } from './agency/agency.module';
     AnalyticModule,
     SubscriptionModule,
     AgencyModule,
+
+    ScheduleModule.forRoot(),
+
 
     I18nModule.forRoot({
       fallbackLanguage: 'en',

@@ -54,7 +54,8 @@ type OwnerFilter =
   | "published"
   | "pending"
   | "rejected"
-  | "archived";
+  | "archived"
+  | "expired";
 
 type OwnerSort =
   | "newest"
@@ -66,75 +67,57 @@ function listingState(
   property: Property,
   t: (key: string) => string,
 ) {
-  if (
-    property.status ===
-    "archived"
-  ) {
+  if (property.status === "expired") {
     return {
-      key: "archived",
-      label: t(
-        "myListings.archived",
-      ),
-      icon: Archive,
-    };
-  }
-
-  if (
-    property.publishing ===
-    "PENDING"
-  ) {
-    return {
-      key: "pending",
-      label: t(
-        "myListings.pending",
-      ),
+      key: "expired",
+      label: t("myListings.expired"),
       icon: Clock3,
     };
   }
 
-  if (
-    property.publishing ===
-    "REJECTED"
-  ) {
+  if (property.status === "archived") {
+    return {
+      key: "archived",
+      label: t("myListings.archived"),
+      icon: Archive,
+    };
+  }
+
+  if (property.publishing === "PENDING") {
+    return {
+      key: "pending",
+      label: t("myListings.pending"),
+      icon: Clock3,
+    };
+  }
+
+  if (property.publishing === "REJECTED") {
     return {
       key: "rejected",
-      label: t(
-        "myListings.rejected",
-      ),
+      label: t("myListings.rejected"),
       icon: XCircle,
     };
   }
 
-  if (
-    property.status === "sold"
-  ) {
+  if (property.status === "sold") {
     return {
       key: "published",
-      label: t(
-        "status.SOLD",
-      ),
+      label: t("status.SOLD"),
       icon: CheckCircle2,
     };
   }
 
-  if (
-    property.status ===
-    "rented"
-  ) {
+  if (property.status === "rented") {
     return {
       key: "published",
-      label: t(
-        "status.RENTED",
-      ),
+      label: t("status.RENTED"),
       icon: CheckCircle2,
     };
   }
 
   return {
     key: "published",
-    label: t(
-      "myListings.published",
-    ),
+    label: t("myListings.published"),
     icon: CheckCircle2,
   };
 }
@@ -147,40 +130,27 @@ function matchesFilter(
     return true;
   }
 
-  if (
-    filter === "archived"
-  ) {
-    return (
-      property.status ===
-      "archived"
-    );
+  if (filter === "archived") {
+    return property.status === "archived";
   }
 
-  if (
-    filter === "pending"
-  ) {
-    return (
-      property.publishing ===
-      "PENDING"
-    );
+  if (filter === "expired") {
+    return property.status === "expired";
   }
 
-  if (
-    filter === "rejected"
-  ) {
-    return (
-      property.publishing ===
-      "REJECTED"
-    );
+  if (filter === "pending") {
+    return property.publishing === "PENDING";
+  }
+
+  if (filter === "rejected") {
+    return property.publishing === "REJECTED";
   }
 
   return (
-    property.status !==
-      "archived" &&
-    property.publishing !==
-      "PENDING" &&
-    property.publishing !==
-      "REJECTED"
+    property.status !== "archived" &&
+    property.status !== "expired" &&
+    property.publishing !== "PENDING" &&
+    property.publishing !== "REJECTED"
   );
 }
 
@@ -188,56 +158,27 @@ function sortListings(
   items: Property[],
   sort: OwnerSort,
 ) {
-  return [...items].sort(
-    (first, second) => {
-      if (
-        sort === "price-asc"
-      ) {
-        return (
-          Number(
-            first.price,
-          ) -
-          Number(
-            second.price,
-          )
-        );
-      }
+  return [...items].sort((first, second) => {
+    if (sort === "price-asc") {
+      return Number(first.price) - Number(second.price);
+    }
 
-      if (
-        sort === "price-desc"
-      ) {
-        return (
-          Number(
-            second.price,
-          ) -
-          Number(
-            first.price,
-          )
-        );
-      }
+    if (sort === "price-desc") {
+      return Number(second.price) - Number(first.price);
+    }
 
-      const firstTime =
-        first.createdAt
-          ? new Date(
-              first.createdAt,
-            ).getTime()
-          : 0;
+    const firstTime = first.createdAt
+      ? new Date(first.createdAt).getTime()
+      : 0;
 
-      const secondTime =
-        second.createdAt
-          ? new Date(
-              second.createdAt,
-            ).getTime()
-          : 0;
+    const secondTime = second.createdAt
+      ? new Date(second.createdAt).getTime()
+      : 0;
 
-      return sort ===
-        "oldest"
-        ? firstTime -
-            secondTime
-        : secondTime -
-            firstTime;
-    },
-  );
+    return sort === "oldest"
+      ? firstTime - secondTime
+      : secondTime - firstTime;
+  });
 }
 
 function OwnerPropertyCard({
@@ -259,42 +200,31 @@ function OwnerPropertyCard({
 }) {
   const { t } = useI18n();
 
-  const image =
-    property.images?.[0]?.url;
+  const image = property.images?.[0]?.url;
 
-  const state =
-    listingState(
-      property,
-      t,
-    );
+  const state = listingState(property, t);
 
-  const StatusIcon =
-    state.icon;
+  const StatusIcon = state.icon;
 
   const pricePerSquareMeter =
     property.area > 0
-      ? Math.round(
-          Number(
-            property.price,
-          ) / property.area,
-        )
+      ? Math.round(Number(property.price) / property.area)
       : undefined;
 
   return (
     <article
       className={`owner-property-card ${
-        state.key ===
-        "archived"
+        state.key === "archived"
           ? "is-archived"
-          : ""
+          : state.key === "expired"
+            ? "is-expired"
+            : ""
       }`}
     >
       <Link
         href={`/properties/${property.id}`}
         className="owner-property-image"
-        aria-label={`${t(
-          "common.viewProperty",
-        )}: ${property.title}`}
+        aria-label={`${t("common.viewProperty")}: ${property.title}`}
       >
         {image ? (
           <img
@@ -307,63 +237,50 @@ function OwnerPropertyCard({
 
         <div className="owner-property-image-top">
           <span>
-            {categoryLabels[
-              property.category
-            ] ||
+            {categoryLabels[property.category] ||
               property.category}
           </span>
 
           {property.listing && (
             <span>
-              {getListingLabel(
-                property.listing,
-              )}
+              {getListingLabel(property.listing)}
             </span>
           )}
 
-          {property.boops && property.status === "active" && property.publishing === "ACTIVE" && (
-            <span className="inline-flex items-center gap-1 rounded-full border border-amber-300 bg-amber-50 px-2 py-1 text-[10px] font-extrabold uppercase tracking-wider text-amber-900 shadow-sm">
-              <Sparkles size={11} aria-hidden="true" />
-              BOOST
-            </span>
-          )}
+          {property.boops &&
+            property.status === "active" &&
+            property.publishing === "ACTIVE" && (
+              <span className="inline-flex items-center gap-1 rounded-full border border-amber-300 bg-amber-50 px-2 py-1 text-[10px] font-extrabold uppercase tracking-wider text-amber-900 shadow-sm">
+                <Sparkles size={11} aria-hidden="true" />
+                BOOST
+              </span>
+            )}
         </div>
 
         <span
           className={`owner-status-badge is-${state.key}`}
         >
-          <StatusIcon
-            size={13}
-          />
-
+          <StatusIcon size={13} />
           {state.label}
         </span>
 
         <div className="owner-property-price">
           <small>
-            {t(
-              "common.price",
-            )}
+            {t("common.price")}
           </small>
 
           <strong>
-            {priceOf(
-              property,
-            )}
+            {priceOf(property)}
           </strong>
 
           {pricePerSquareMeter && (
             <span>
-              {t(
-                "property.pricePerSquareMeter",
-                {
-                  price:
-                    formatMoney(
-                      pricePerSquareMeter,
-                      property.currency,
-                    ),
-                },
-              )}
+              {t("property.pricePerSquareMeter", {
+                price: formatMoney(
+                  pricePerSquareMeter,
+                  property.currency,
+                ),
+              })}
             </span>
           )}
         </div>
@@ -380,39 +297,24 @@ function OwnerPropertyCard({
 
           <p>
             <MapPin size={14} />
-            {cityOf(
-              property.city,
-            )}
+            {cityOf(property.city)}
           </p>
         </Link>
 
         <div className="owner-property-facts">
           <span>
-            <BedDouble
-              size={15}
-            />
-
-            {property.rooms}{" "}
-            {t(
-              "common.rooms",
-            )}
+            <BedDouble size={15} />
+            {property.rooms} {t("common.rooms")}
           </span>
 
           <span>
-            <Maximize2
-              size={15}
-            />
-
+            <Maximize2 size={15} />
             {property.area} m²
           </span>
 
           <span>
             <Eye size={15} />
-
-            {property.views}{" "}
-            {t(
-              "common.views",
-            )}
+            {property.views} {t("common.views")}
           </span>
         </div>
       </div>
@@ -422,13 +324,8 @@ function OwnerPropertyCard({
           href={`/properties/${property.id}`}
           className="btn-primary"
         >
-          <ExternalLink
-            size={15}
-          />
-
-          {t(
-            "myListings.view",
-          )}
+          <ExternalLink size={15} />
+          {t("myListings.view")}
         </Link>
 
         <Link
@@ -436,10 +333,7 @@ function OwnerPropertyCard({
           className="btn-secondary"
           aria-label={`Analytics: ${property.title}`}
         >
-          <BarChart3
-            size={15}
-          />
-
+          <BarChart3 size={15} />
           Analytics
         </Link>
 
@@ -448,18 +342,18 @@ function OwnerPropertyCard({
           className="btn-secondary"
         >
           <Pencil size={15} />
-
-          {t(
-            "myListings.edit",
-          )}
+          {t("myListings.edit")}
         </Link>
 
-        {property.boops && property.status === "active" && property.publishing === "ACTIVE" ? (
+        {property.boops &&
+        property.status === "active" &&
+        property.publishing === "ACTIVE" ? (
           <span className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-sm font-bold text-amber-900">
             <Sparkles size={15} aria-hidden="true" />
             Boost active
           </span>
-        ) : property.status === "active" && property.publishing === "ACTIVE" ? (
+        ) : property.status === "active" &&
+          property.publishing === "ACTIVE" ? (
           boopsBalance === 0 ? (
             <Link
               href="/subscription"
@@ -473,66 +367,54 @@ function OwnerPropertyCard({
             <button
               type="button"
               onClick={() => onBoost(property)}
-              disabled={actionBusy || boostBusy || boopsBalance === null}
+              disabled={
+                actionBusy ||
+                boostBusy ||
+                boopsBalance === null
+              }
               className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-[#765638] bg-[#4b3628] px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#634832] disabled:cursor-not-allowed disabled:opacity-60"
               aria-label={`Boost listing: ${property.title}`}
             >
-              {boostBusy ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" /> : <Sparkles size={15} aria-hidden="true" />}
-              {boostBusy ? "Activating…" : boopsBalance === null ? "Loading balance…" : "Boost listing"}
+              {boostBusy ? (
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+              ) : (
+                <Sparkles size={15} aria-hidden="true" />
+              )}
+
+              {boostBusy
+                ? "Activating…"
+                : boopsBalance === null
+                  ? "Loading balance…"
+                  : "Boost listing"}
             </button>
           )
         ) : null}
 
-        {property.status ===
-        "archived" ? (
+        {property.status === "archived" ? (
           <button
             type="button"
-            onClick={() =>
-              onRestore(
-                property,
-              )
-            }
-            disabled={
-              actionBusy
-            }
+            onClick={() => onRestore(property)}
+            disabled={actionBusy}
             className="owner-restore-action"
           >
-            <ArchiveRestore
-              size={15}
-            />
+            <ArchiveRestore size={15} />
 
             {actionBusy
-              ? t(
-                  "common.loading",
-                )
-              : t(
-                  "myListings.restore",
-                )}
+              ? t("common.loading")
+              : t("myListings.restore")}
           </button>
         ) : (
           <button
             type="button"
-            onClick={() =>
-              onArchive(
-                property,
-              )
-            }
-            disabled={
-              actionBusy
-            }
+            onClick={() => onArchive(property)}
+            disabled={actionBusy}
             className="owner-archive-action"
           >
-            <Archive
-              size={15}
-            />
+            <Archive size={15} />
 
             {actionBusy
-              ? t(
-                  "common.loading",
-                )
-              : t(
-                  "myListings.archive",
-                )}
+              ? t("common.loading")
+              : t("myListings.archive")}
           </button>
         )}
       </footer>
@@ -543,71 +425,40 @@ function OwnerPropertyCard({
 export function OwnerListingsPage() {
   const { t } = useI18n();
 
-  const [
-    items,
-    setItems,
-  ] = useState<Property[]>([]);
+  const [items, setItems] = useState<Property[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [limitError, setLimitError] = useState(false);
+  const [notice, setNotice] = useState("");
 
-  const [
-    loading,
-    setLoading,
-  ] = useState(true);
+  const [filter, setFilter] =
+    useState<OwnerFilter>("all");
 
-  const [
-    error,
-    setError,
-  ] = useState("");
+  const [sort, setSort] =
+    useState<OwnerSort>("newest");
 
-  const [
-    limitError,
-    setLimitError,
-  ] = useState(false);
+  const [archiveTarget, setArchiveTarget] =
+    useState<Property | null>(null);
 
-  const [
-    notice,
-    setNotice,
-  ] = useState("");
+  const [actionId, setActionId] =
+    useState<number | null>(null);
 
-  const [
-    filter,
-    setFilter,
-  ] =
-    useState<OwnerFilter>(
-      "all",
-    );
+  const [boopsBalance, setBoopsBalance] =
+    useState<number | null>(null);
 
-  const [
-    sort,
-    setSort,
-  ] =
-    useState<OwnerSort>(
-      "newest",
-    );
+  const [boostTarget, setBoostTarget] =
+    useState<Property | null>(null);
 
-  const [
-    archiveTarget,
-    setArchiveTarget,
-  ] =
-    useState<Property | null>(
-      null,
-    );
-
-  const [
-    actionId,
-    setActionId,
-  ] =
-    useState<number | null>(
-      null,
-    );
-
-  const [boopsBalance, setBoopsBalance] = useState<number | null>(null);
-  const [boostTarget, setBoostTarget] = useState<Property | null>(null);
-  const [boostBusyId, setBoostBusyId] = useState<number | null>(null);
+  const [boostBusyId, setBoostBusyId] =
+    useState<number | null>(null);
 
   const loadBoopsBalance = async () => {
     try {
       const current = await subscriptionApi.me();
-      setBoopsBalance(Math.max(0, Number(current.boopsCount ?? 0)));
+
+      setBoopsBalance(
+        Math.max(0, Number(current.boopsCount ?? 0)),
+      );
     } catch {
       setBoopsBalance(null);
     }
@@ -621,14 +472,8 @@ export function OwnerListingsPage() {
     propertiesApi
       .mine()
       .then(setItems)
-      .catch((reason) =>
-        setError(
-          apiMessage(reason),
-        ),
-      )
-      .finally(() =>
-        setLoading(false),
-      );
+      .catch((reason) => setError(apiMessage(reason)))
+      .finally(() => setLoading(false));
   };
 
   useEffect(() => {
@@ -644,64 +489,39 @@ export function OwnerListingsPage() {
     () => ({
       all: items.length,
 
-      published:
-        items.filter(
-          (item) =>
-            matchesFilter(
-              item,
-              "published",
-            ),
-        ).length,
+      published: items.filter(
+        (item) => matchesFilter(item, "published"),
+      ).length,
 
-      pending:
-        items.filter(
-          (item) =>
-            matchesFilter(
-              item,
-              "pending",
-            ),
-        ).length,
+      pending: items.filter(
+        (item) => matchesFilter(item, "pending"),
+      ).length,
 
-      rejected:
-        items.filter(
-          (item) =>
-            matchesFilter(
-              item,
-              "rejected",
-            ),
-        ).length,
+      rejected: items.filter(
+        (item) => matchesFilter(item, "rejected"),
+      ).length,
 
-      archived:
-        items.filter(
-          (item) =>
-            matchesFilter(
-              item,
-              "archived",
-            ),
-        ).length,
+      archived: items.filter(
+        (item) => matchesFilter(item, "archived"),
+      ).length,
+
+      expired: items.filter(
+        (item) => matchesFilter(item, "expired"),
+      ).length,
     }),
     [items],
   );
 
-  const visibleItems =
-    useMemo(
-      () =>
-        sortListings(
-          items.filter(
-            (item) =>
-              matchesFilter(
-                item,
-                filter,
-              ),
-          ),
-          sort,
+  const visibleItems = useMemo(
+    () =>
+      sortListings(
+        items.filter((item) =>
+          matchesFilter(item, filter),
         ),
-      [
-        filter,
-        items,
         sort,
-      ],
-    );
+      ),
+    [filter, items, sort],
+  );
 
   const filters: Array<{
     key: OwnerFilter;
@@ -709,131 +529,122 @@ export function OwnerListingsPage() {
   }> = [
     {
       key: "all",
-      label: t(
-        "myListings.all",
-      ),
+      label: t("myListings.all"),
     },
     {
       key: "published",
-      label: t(
-        "myListings.published",
-      ),
+      label: t("myListings.published"),
     },
     {
       key: "pending",
-      label: t(
-        "myListings.pending",
-      ),
+      label: t("myListings.pending"),
     },
     {
       key: "rejected",
-      label: t(
-        "myListings.rejected",
-      ),
+      label: t("myListings.rejected"),
     },
     {
       key: "archived",
-      label: t(
-        "myListings.archived",
-      ),
+      label: t("myListings.archived"),
+    },
+    {
+      key: "expired",
+      label: t("myListings.expired"),
     },
   ];
 
-  const archive =
-    async () => {
-      if (
-        !archiveTarget
-      ) {
-        return;
-      }
+  const archive = async () => {
+    if (!archiveTarget) {
+      return;
+    }
 
-      setActionId(
-        archiveTarget.id,
+    setActionId(archiveTarget.id);
+    setNotice("");
+
+    try {
+      await propertiesApi.archive(archiveTarget.id);
+
+      setNotice(t("myListings.archived"));
+      setArchiveTarget(null);
+
+      load();
+    } catch (reason) {
+      setError(apiMessage(reason));
+      setArchiveTarget(null);
+    } finally {
+      setActionId(null);
+    }
+  };
+
+  const restore = async (property: Property) => {
+    setActionId(property.id);
+    setNotice("");
+    setError("");
+    setLimitError(false);
+
+    try {
+      await propertiesApi.restore(property.id);
+
+      setNotice(t("myListings.restore"));
+      load();
+    } catch (reason) {
+      const message = apiMessage(reason);
+
+      const status = (
+        reason as {
+          response?: {
+            status?: number;
+          };
+        }
+      ).response?.status;
+
+      const reachedLimit =
+        status === 403 &&
+        /limit|subscription|active propert/i.test(message);
+
+      setLimitError(reachedLimit);
+
+      setError(
+        reachedLimit
+          ? t("subscription.listingLimitCopy")
+          : message,
       );
-
-      setNotice("");
-
-      try {
-        await propertiesApi.archive(
-          archiveTarget.id,
-        );
-
-        setNotice(
-          t(
-            "myListings.archived",
-          ),
-        );
-
-        setArchiveTarget(
-          null,
-        );
-
-        load();
-      } catch (reason) {
-        setError(
-          apiMessage(reason),
-        );
-
-        setArchiveTarget(
-          null,
-        );
-      } finally {
-        setActionId(null);
-      }
-    };
-
-  const restore =
-    async (
-      property: Property,
-    ) => {
-      setActionId(
-        property.id,
-      );
-
-      setNotice("");
-      setError("");
-      setLimitError(false);
-
-      try {
-        await propertiesApi.restore(
-          property.id,
-        );
-
-        setNotice(
-          t(
-            "myListings.restore",
-          ),
-        );
-
-        load();
-      } catch (reason) {
-        const message = apiMessage(reason);
-        const status = (reason as { response?: { status?: number } }).response?.status;
-        const reachedLimit = status === 403 && /limit|subscription|active propert/i.test(message);
-        setLimitError(reachedLimit);
-        setError(reachedLimit ? t("subscription.listingLimitCopy") : message);
-      } finally {
-        setActionId(null);
-      }
-    };
+    } finally {
+      setActionId(null);
+    }
+  };
 
   const activateBoost = async () => {
-    if (!boostTarget) return;
+    if (!boostTarget) {
+      return;
+    }
 
     const target = boostTarget;
+
     setBoostBusyId(target.id);
     setError("");
     setNotice("");
 
     try {
-      const result = await propertiesApi.activateBoops(target.id);
+      const result =
+        await propertiesApi.activateBoops(target.id);
+
       setItems((current) =>
         current.map((item) =>
-          item.id === target.id ? { ...item, boops: true } : item,
+          item.id === target.id
+            ? { ...item, boops: true }
+            : item,
         ),
       );
-      setBoopsBalance(Math.max(0, Number(result.boopsRemaining)));
-      setNotice(`Boost activated for “${target.title}”. It will receive priority in public search.`);
+
+      setBoopsBalance(
+        Math.max(0, Number(result.boopsRemaining)),
+      );
+
+      setNotice(
+        `Boost activated for “${target.title}”. It will receive priority in public search.`,
+      );
+
       setBoostTarget(null);
     } catch (reason) {
       setError(apiMessage(reason));
@@ -845,46 +656,32 @@ export function OwnerListingsPage() {
   };
 
   const emptyCopy: Record<
-    Exclude<
-      OwnerFilter,
-      "all"
-    >,
+    Exclude<OwnerFilter, "all">,
     [string, string]
   > = {
     published: [
-      t(
-        "myListings.noListings",
-      ),
-      t(
-        "myListings.copy",
-      ),
+      t("myListings.noListings"),
+      t("myListings.copy"),
     ],
 
     pending: [
-      t(
-        "myListings.noListings",
-      ),
-      t(
-        "myListings.copy",
-      ),
+      t("myListings.noListings"),
+      t("myListings.copy"),
     ],
 
     rejected: [
-      t(
-        "myListings.noListings",
-      ),
-      t(
-        "myListings.copy",
-      ),
+      t("myListings.noListings"),
+      t("myListings.copy"),
     ],
 
     archived: [
-      t(
-        "myListings.noListings",
-      ),
-      t(
-        "myListings.copy",
-      ),
+      t("myListings.noListings"),
+      t("myListings.copy"),
+    ],
+
+    expired: [
+      t("myListings.noExpiredListings"),
+      t("myListings.expiredCopy"),
     ],
   };
 
@@ -895,21 +692,15 @@ export function OwnerListingsPage() {
           <header className="owner-listings-intro">
             <div>
               <p className="eyebrow">
-                {t(
-                  "myListings.eyebrow",
-                )}
+                {t("myListings.eyebrow")}
               </p>
 
               <h1>
-                {t(
-                  "myListings.title",
-                )}
+                {t("myListings.title")}
               </h1>
 
               <p>
-                {t(
-                  "myListings.copy",
-                )}
+                {t("myListings.copy")}
               </p>
             </div>
 
@@ -918,98 +709,60 @@ export function OwnerListingsPage() {
                 href="/my-properties/map"
                 className="btn-secondary"
               >
-                <Map
-                  size={16}
-                />
-
-                {t(
-                  "myListings.mapView",
-                )}
+                <Map size={16} />
+                {t("myListings.mapView")}
               </Link>
 
               <Link
                 href="/properties/create"
                 className="btn-primary"
               >
-                <Plus
-                  size={16}
-                />
-
-                {t(
-                  "myListings.createListing",
-                )}
+                <Plus size={16} />
+                {t("myListings.createListing")}
               </Link>
             </div>
           </header>
 
           <div className="owner-summary-row">
             <span>
-              <b>
-                {t(
-                  "myListings.all",
-                )}
-              </b>
-
+              <b>{t("myListings.all")}</b>
               <strong>
-                {loading
-                  ? "—"
-                  : counts.all}
+                {loading ? "—" : counts.all}
               </strong>
             </span>
 
             <span>
-              <b>
-                {t(
-                  "myListings.published",
-                )}
-              </b>
-
+              <b>{t("myListings.published")}</b>
               <strong>
-                {loading
-                  ? "—"
-                  : counts.published}
+                {loading ? "—" : counts.published}
               </strong>
             </span>
 
             <span>
-              <b>
-                {t(
-                  "myListings.pending",
-                )}
-              </b>
-
+              <b>{t("myListings.pending")}</b>
               <strong>
-                {loading
-                  ? "—"
-                  : counts.pending}
+                {loading ? "—" : counts.pending}
               </strong>
             </span>
 
             <span>
-              <b>
-                {t(
-                  "myListings.rejected",
-                )}
-              </b>
-
+              <b>{t("myListings.rejected")}</b>
               <strong>
-                {loading
-                  ? "—"
-                  : counts.rejected}
+                {loading ? "—" : counts.rejected}
               </strong>
             </span>
 
             <span>
-              <b>
-                {t(
-                  "myListings.archived",
-                )}
-              </b>
-
+              <b>{t("myListings.archived")}</b>
               <strong>
-                {loading
-                  ? "—"
-                  : counts.archived}
+                {loading ? "—" : counts.archived}
+              </strong>
+            </span>
+
+            <span>
+              <b>{t("myListings.expired")}</b>
+              <strong>
+                {loading ? "—" : counts.expired}
               </strong>
             </span>
           </div>
@@ -1020,17 +773,35 @@ export function OwnerListingsPage() {
             <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#4b3628] text-[#f8d9a8] shadow-sm">
               <Sparkles size={20} aria-hidden="true" />
             </span>
+
             <div>
-              <h2 className="font-bold text-[#3f2e22]">Listing boosts</h2>
-              <p className="mt-1 text-sm text-[#806c5a]">Boost an eligible published listing to give it priority in search results.</p>
+              <h2 className="font-bold text-[#3f2e22]">
+                Listing boosts
+              </h2>
+
+              <p className="mt-1 text-sm text-[#806c5a]">
+                Boost an eligible published listing to give it priority in search results.
+              </p>
             </div>
           </div>
+
           <div className="flex items-center gap-3 sm:justify-end">
             <div className="min-w-24 rounded-xl border border-[#ead9c5] bg-white px-4 py-2 text-center">
-              <strong className="block text-2xl font-extrabold tabular-nums text-[#4b3628]">{boopsBalance === null ? "—" : boopsBalance}</strong>
-              <span className="text-xs font-medium text-[#806c5a]">Available</span>
+              <strong className="block text-2xl font-extrabold tabular-nums text-[#4b3628]">
+                {boopsBalance === null ? "—" : boopsBalance}
+              </strong>
+
+              <span className="text-xs font-medium text-[#806c5a]">
+                Available
+              </span>
             </div>
-            <Link href="/subscription" className="btn-secondary">Get more</Link>
+
+            <Link
+              href="/subscription"
+              className="btn-secondary"
+            >
+              Get more
+            </Link>
           </div>
         </section>
 
@@ -1038,30 +809,20 @@ export function OwnerListingsPage() {
           <div className="owner-listings-section-head">
             <div>
               <h2>
-                {t(
-                  "myListings.title",
-                )}
+                {t("myListings.title")}
               </h2>
 
               <p>
                 {loading
-                  ? t(
-                      "common.loading",
-                    )
-                  : t(
-                      "search.listingsFound",
-                      {
-                        count:
-                          visibleItems.length,
-                      },
-                    )}
+                  ? t("common.loading")
+                  : t("search.listingsFound", {
+                      count: visibleItems.length,
+                    })}
               </p>
             </div>
 
             <p>
-              {t(
-                "myListings.copy",
-              )}
+              {t("myListings.copy")}
             </p>
           </div>
 
@@ -1069,92 +830,57 @@ export function OwnerListingsPage() {
             <div
               className="owner-filter-tabs"
               role="tablist"
-              aria-label={t(
-                "property.status",
-              )}
+              aria-label={t("property.status")}
             >
-              {filters.map(
-                (item) => (
-                  <button
-                    key={
-                      item.key
-                    }
-                    type="button"
-                    role="tab"
-                    aria-selected={
-                      filter ===
-                      item.key
-                    }
-                    className={
-                      filter ===
-                      item.key
-                        ? "is-active"
-                        : ""
-                    }
-                    onClick={() =>
-                      setFilter(
-                        item.key,
-                      )
-                    }
-                  >
-                    {
-                      item.label
-                    }
+              {filters.map((item) => (
+                <button
+                  key={item.key}
+                  type="button"
+                  role="tab"
+                  aria-selected={filter === item.key}
+                  className={
+                    filter === item.key
+                      ? "is-active"
+                      : ""
+                  }
+                  onClick={() => setFilter(item.key)}
+                >
+                  {item.label}
 
-                    <span>
-                      {
-                        counts[
-                          item
-                            .key
-                        ]
-                      }
-                    </span>
-                  </button>
-                ),
-              )}
+                  <span>
+                    {counts[item.key]}
+                  </span>
+                </button>
+              ))}
             </div>
 
             <label className="owner-sort">
               <span>
-                {t(
-                  "search.sortListings",
-                )}
+                {t("search.sortListings")}
               </span>
 
               <select
                 value={sort}
-                onChange={(
-                  event,
-                ) =>
+                onChange={(event) =>
                   setSort(
-                    event
-                      .target
-                      .value as OwnerSort,
+                    event.target.value as OwnerSort,
                   )
                 }
               >
                 <option value="newest">
-                  {t(
-                    "search.newest",
-                  )}
+                  {t("search.newest")}
                 </option>
 
                 <option value="oldest">
-                  {t(
-                    "search.oldest",
-                  )}
+                  {t("search.oldest")}
                 </option>
 
                 <option value="price-desc">
-                  {t(
-                    "search.highToLow",
-                  )}
+                  {t("search.highToLow")}
                 </option>
 
                 <option value="price-asc">
-                  {t(
-                    "search.lowToHigh",
-                  )}
+                  {t("search.lowToHigh")}
                 </option>
               </select>
             </label>
@@ -1174,9 +900,7 @@ export function OwnerListingsPage() {
               className="owner-listings-error"
               role="alert"
             >
-              <p>
-                {error}
-              </p>
+              <p>{error}</p>
 
               <button
                 type="button"
@@ -1184,54 +908,39 @@ export function OwnerListingsPage() {
               >
                 Try again
               </button>
-              {limitError && <Link href="/subscription" className="btn-secondary">{t("subscription.viewPlans")}</Link>}
+
+              {limitError && (
+                <Link
+                  href="/subscription"
+                  className="btn-secondary"
+                >
+                  {t("subscription.viewPlans")}
+                </Link>
+              )}
             </div>
           )}
 
           {!error && (
             <div className="owner-property-grid">
               {loading
-                ? [
-                    1,
-                    2,
-                    3,
-                  ].map(
-                    (item) => (
-                      <div
-                        className="owner-property-skeleton"
-                        key={
-                          item
-                        }
-                      />
-                    ),
-                  )
-                : visibleItems.map(
-                    (
-                      property,
-                    ) => (
-                      <OwnerPropertyCard
-                        key={
-                          property.id
-                        }
-                        property={
-                          property
-                        }
-                        onArchive={
-                          setArchiveTarget
-                        }
-                        onRestore={
-                          restore
-                        }
-                        onBoost={setBoostTarget}
-                        boostBusy={boostBusyId === property.id}
-                        boopsBalance={boopsBalance}
-                        actionBusy={
-                          actionId ===
-                          property.id
-                        }
-                      />
-                    ),
-                  )}
+                ? [1, 2, 3].map((item) => (
+                    <div
+                      className="owner-property-skeleton"
+                      key={item}
+                    />
+                  ))
+                : visibleItems.map((property) => (
+                    <OwnerPropertyCard
+                      key={property.id}
+                      property={property}
+                      onArchive={setArchiveTarget}
+                      onRestore={restore}
+                      onBoost={setBoostTarget}
+                      boostBusy={boostBusyId === property.id}
+                      boopsBalance={boopsBalance}
+                      actionBusy={actionId === property.id}
+                    />
+                  ))}
             </div>
           )}
 
@@ -1239,33 +948,22 @@ export function OwnerListingsPage() {
             !error &&
             !items.length && (
               <div className="owner-listings-empty">
-                <LayoutGrid
-                  size={28}
-                />
+                <LayoutGrid size={28} />
 
                 <h2>
-                  {t(
-                    "myListings.noListings",
-                  )}
+                  {t("myListings.noListings")}
                 </h2>
 
                 <p>
-                  {t(
-                    "myListings.copy",
-                  )}
+                  {t("myListings.copy")}
                 </p>
 
                 <Link
                   href="/properties/create"
                   className="btn-primary"
                 >
-                  <Plus
-                    size={16}
-                  />
-
-                  {t(
-                    "myListings.createListing",
-                  )}
+                  <Plus size={16} />
+                  {t("myListings.createListing")}
                 </Link>
               </div>
             )}
@@ -1276,47 +974,92 @@ export function OwnerListingsPage() {
             !visibleItems.length && (
               <div className="owner-listings-empty compact">
                 <h2>
-                  {filter ===
-                  "all"
-                    ? t(
-                        "myListings.noListings",
-                      )
-                    : emptyCopy[
-                        filter
-                      ][0]}
+                  {filter === "all"
+                    ? t("myListings.noListings")
+                    : emptyCopy[filter][0]}
                 </h2>
 
                 <p>
-                  {filter ===
-                  "all"
-                    ? t(
-                        "myListings.copy",
-                      )
-                    : emptyCopy[
-                        filter
-                      ][1]}
+                  {filter === "all"
+                    ? t("myListings.copy")
+                    : emptyCopy[filter][1]}
                 </p>
               </div>
             )}
         </section>
 
         {boostTarget && (
-          <div className="owner-confirm-backdrop" role="presentation">
-            <section className="owner-confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="boost-confirm-title">
-              <p className="eyebrow">Listing promotion</p>
-              <h2 id="boost-confirm-title">Boost this listing?</h2>
-              <p>“{boostTarget.title}” will receive priority in public search. One boost will be deducted from your balance.</p>
+          <div
+            className="owner-confirm-backdrop"
+            role="presentation"
+          >
+            <section
+              className="owner-confirm-dialog"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="boost-confirm-title"
+            >
+              <p className="eyebrow">
+                Listing promotion
+              </p>
+
+              <h2 id="boost-confirm-title">
+                Boost this listing?
+              </h2>
+
+              <p>
+                “{boostTarget.title}” will receive priority in public search. One boost will be deducted from your balance.
+              </p>
+
               <div className="mt-4 flex items-center gap-3 rounded-xl border border-[#ead9c5] bg-[#fffaf3] p-3">
-                <Sparkles size={20} className="text-[#8e6037]" aria-hidden="true" />
+                <Sparkles
+                  size={20}
+                  className="text-[#8e6037]"
+                  aria-hidden="true"
+                />
+
                 <div>
-                  <strong className="block text-[#4b3628]">{boopsBalance ?? "—"} boosts available</strong>
-                  <span className="text-sm text-[#806c5a]">Balance after activation: {boopsBalance === null ? "—" : Math.max(0, boopsBalance - 1)}</span>
+                  <strong className="block text-[#4b3628]">
+                    {boopsBalance ?? "—"} boosts available
+                  </strong>
+
+                  <span className="text-sm text-[#806c5a]">
+                    Balance after activation:{" "}
+                    {boopsBalance === null
+                      ? "—"
+                      : Math.max(0, boopsBalance - 1)}
+                  </span>
                 </div>
               </div>
+
               <div className="mt-5 flex flex-wrap justify-end gap-3">
-                <button type="button" className="btn-secondary" disabled={boostBusyId !== null} onClick={() => setBoostTarget(null)}>Cancel</button>
-                <button type="button" className="btn-primary" disabled={boostBusyId !== null || boopsBalance === null || boopsBalance < 1} onClick={() => void activateBoost()}>
-                  {boostBusyId === boostTarget.id ? "Activating…" : <><Sparkles size={15} /> Confirm boost</>}
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  disabled={boostBusyId !== null}
+                  onClick={() => setBoostTarget(null)}
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="button"
+                  className="btn-primary"
+                  disabled={
+                    boostBusyId !== null ||
+                    boopsBalance === null ||
+                    boopsBalance < 1
+                  }
+                  onClick={() => void activateBoost()}
+                >
+                  {boostBusyId === boostTarget.id
+                    ? "Activating…"
+                    : (
+                        <>
+                          <Sparkles size={15} />
+                          Confirm boost
+                        </>
+                      )}
                 </button>
               </div>
             </section>
@@ -1335,60 +1078,36 @@ export function OwnerListingsPage() {
               aria-labelledby="archive-title"
             >
               <p className="eyebrow">
-                {t(
-                  "myListings.archive",
-                )}
+                {t("myListings.archive")}
               </p>
 
               <h2 id="archive-title">
-                {t(
-                  "myListings.archive",
-                )}
+                {t("myListings.archive")}
               </h2>
 
               <p>
-                {t(
-                  "myListings.copy",
-                )}
+                {t("myListings.copy")}
               </p>
 
               <div>
                 <button
                   type="button"
                   className="btn-secondary"
-                  disabled={
-                    actionId !==
-                    null
-                  }
-                  onClick={() =>
-                    setArchiveTarget(
-                      null,
-                    )
-                  }
+                  disabled={actionId !== null}
+                  onClick={() => setArchiveTarget(null)}
                 >
-                  {t(
-                    "common.cancel",
-                  )}
+                  {t("common.cancel")}
                 </button>
 
                 <button
                   type="button"
                   className="owner-archive-action"
-                  disabled={
-                    actionId !==
-                    null
-                  }
-                  onClick={
-                    archive
-                  }
+                  disabled={actionId !== null}
+                  onClick={archive}
                 >
                   {actionId
-                    ? t(
-                        "common.loading",
-                      )
-                    : t(
-                        "myListings.archive",
-                      )}
+                    ? t("common.loading")
+                    : t("myListings.archive")}
                 </button>
               </div>
             </section>

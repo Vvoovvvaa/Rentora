@@ -16,10 +16,12 @@ import { PropertyPriceHistory } from '@app/common-rentora/database/entity/price-
 import { UserSubscription } from '@app/common-rentora/database/entity/subscription-plan';
 import { SubscriptionConfig } from '@app/common-rentora/database/entity/subscription-config';
 import { SubscriptionModule } from '../subscription/subscription.module';
+import { BoopsExpirationService } from './crons/boops-expiration.service';
+import { ListingExpirationserivce } from './crons/listing-expiration.service';
 
 @Module({
   controllers: [PropertiesController],
-  providers: [PropertiesService],
+  providers: [PropertiesService, BoopsExpirationService, ListingExpirationserivce],
   imports: [
     TypeOrmModule.forFeature([
       User,

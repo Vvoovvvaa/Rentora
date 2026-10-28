@@ -64,8 +64,11 @@ export function PropertyCard({
 
   const image = property.images?.[0]?.url;
   const selected = isSelected(property.id);
-  const boosted = Boolean(property.boops);
-
+const boosted = Boolean(
+  property.boops &&
+  property.status === 'active' &&
+  property.publishing === 'ACTIVE',
+);
   const pricePerSquareMeter =
     property.area > 0
       ? Math.round(

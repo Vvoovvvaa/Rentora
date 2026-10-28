@@ -35,7 +35,7 @@ import { JwtPayload } from '@app/common-rentora/interfaces';
 @Injectable()
 export class AuthService {
   private jwtconfig: IJwtconfig;
-
+  
   constructor(
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,

@@ -395,6 +395,7 @@ export const publishingLabels = localizedRecord(
   getPublishingLabel,
 );
 export const isPublicProperty = (property: Property) =>
+  property.status === 'active' &&
   property.publishing === 'ACTIVE';
 export const getCurrencySymbol = (value: Currency) =>
   currencySymbols[value] || '';

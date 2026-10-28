@@ -610,65 +610,74 @@ export class PropertiesService {
       );
     }
   }
-async activateBoops(userId: number, propertyId: number) {
-  return this.dataSource.transaction(async (manager) => {
-    const propertyRepo = manager.getRepository(Property);
-    const userRepo = manager.getRepository(User);
+  async activateBoops(userId: number, propertyId: number) {
+    return this.dataSource.transaction(async (manager) => {
+      const propertyRepo = manager.getRepository(Property);
+      const userRepo = manager.getRepository(User);
 
-    const property = await propertyRepo.findOne({
-      where: {
-        id: propertyId,
-        owner: { id: userId },
-      },
-      lock: { mode: 'pessimistic_write' },
+      // 1. Find the property and lock it
+      const property = await propertyRepo.findOne({
+        where: {
+          id: propertyId,
+          owner: { id: userId },
+        },
+        lock: { mode: 'pessimistic_write' },
+      });
+
+      if (!property) {
+        throw new NotFoundException(
+          'Property not found or does not belong to you',
+        );
+      }
+
+      // 2. Check whether Boops are still active
+      if (
+        property.boops &&
+        property.boopsExpiredAt &&
+        property.boopsExpiredAt > new Date()
+      ) {
+        throw new BadRequestException(
+          'Boops are already activated for this property',
+        );
+      }
+
+      // 3. Lock and find the user
+      const user = await userRepo.findOne({
+        where: { id: userId },
+        lock: { mode: 'pessimistic_write' },
+      });
+
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
+      // 4. Check the Boops balance
+      if (user.boopsCount <= 0) {
+        throw new BadRequestException(
+          'You have no boops. Upgrade your plan or buy more boops.',
+        );
+      }
+
+      // 5. Activate Boops for 3 days
+      const startedAt = new Date();
+      const expiresAt = new Date(startedAt);
+      expiresAt.setDate(expiresAt.getDate() + 3);
+
+      user.boopsCount -= 1;
+
+      property.boops = true;
+      property.boopsExpiredAt = expiresAt;
+
+      // 6. Save both changes in the transaction
+      await userRepo.save(user);
+      await propertyRepo.save(property);
+
+      return {
+        message: 'Boops activated successfully',
+        boopsRemaining: user.boopsCount,
+        propertyId: property.id,
+        expiresAt,
+      };
     });
-
-    if (!property) {
-      throw new NotFoundException(
-        'Property not found or does not belong to you',
-      );
-    }
-
-    if (property.boops) {
-      throw new BadRequestException(
-        'Boops are already activated for this property',
-      );
-    }
-
-    const user = await userRepo.findOne({
-      where: { id: userId },
-      lock: { mode: 'pessimistic_write' },
-    });
-
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-
-    if (user.boopsCount <= 0) {
-      throw new BadRequestException(
-        'You have no boops. Upgrade your plan or buy more boops.',
-      );
-    }
-
-    const startedAt = new Date();
-    const expiresAt = new Date(startedAt);
-
-    expiresAt.setDate(expiresAt.getDate() + 3);
-
-    user.boopsCount -= 1;
-
-    property.boops = true;
-    property.expiredAt = expiresAt;
-
-    await userRepo.save(user);
-    await propertyRepo.save(property);
-
-    return {
-      message: 'Boops activated successfully',
-      boopsRemaining: user.boopsCount,
-      propertyId: property.id,
-      expiresAt,
-    };
-  });
-}
+  }
 }

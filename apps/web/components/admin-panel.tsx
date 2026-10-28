@@ -62,8 +62,8 @@ type ActionTone = "primary" | "warning" | "danger";
 const dateOf = (value?: string) =>
   value
     ? new Intl.DateTimeFormat("en", {
-        dateStyle: "medium",
-      }).format(new Date(value))
+      dateStyle: "medium",
+    }).format(new Date(value))
     : "—";
 
 const propertyImage = (property: Property) =>
@@ -102,9 +102,8 @@ function NoticeMessage({ notice }: { notice: Notice }) {
   return (
     <p
       role="status"
-      className={`admin-notice ${
-        notice.tone === "success" ? "is-success" : "is-error"
-      }`}
+      className={`admin-notice ${notice.tone === "success" ? "is-success" : "is-error"
+        }`}
     >
       {notice.tone === "success" ? (
         <CheckCircle2 size={16} />
@@ -358,16 +357,11 @@ const groups = [
       },
       {
         href: "/admin/properties",
-        label: "Properties",
+        label: "Listings",
         icon: Building2,
         exact: false,
       },
-      {
-        href: "/admin/properties/pending",
-        label: "Pending listings",
-        icon: Clock3,
-        exact: false,
-      },
+
       {
         href: "/admin/agencies",
         label: "Agencies",
@@ -380,6 +374,7 @@ const groups = [
         icon: MessageSquareText,
         exact: false,
       },
+
     ],
   },
   {
@@ -432,7 +427,7 @@ function AdminLayout({
                   const active = exact
                     ? pathname === href
                     : pathname === href ||
-                      pathname.startsWith(`${href}/`);
+                    pathname.startsWith(`${href}/`);
 
                   return (
                     <Link
@@ -519,8 +514,10 @@ function Loading() {
 function Dashboard() {
   const [stats, setStats] = useState<{
     users: number;
-    properties: number;
+    active: number;
     pending: number;
+    rejected: number;
+    expired: number;
   }>();
 
   const [notice, setNotice] = useState<Notice>(null);
@@ -531,32 +528,31 @@ function Dashboard() {
 
     Promise.all([
       adminUsersApi.all(),
-      adminPropertiesApi.all(),
+      adminPropertiesApi.active(),
       adminPropertiesApi.pending(),
+      adminPropertiesApi.rejected(),
+      adminPropertiesApi.expired(),
     ])
-      .then(([users, properties, pending]) => {
-        if (mounted) {
-          setStats({
-            users: users.length,
-            properties: properties.length,
-            pending: pending.length,
-          });
-        }
+      .then(([users, active, pending, rejected, expired]) => {
+        setStats({
+          users: users.length,
+          active: active.length,
+          pending: pending.length,
+          rejected: rejected.length,
+          expired: expired.length,
+        });
       })
       .catch((reason) => {
-        if (mounted) {
-          setNotice({
-            tone: "error",
-            text: onFailure(reason),
-          });
-        }
+        setNotice({
+          tone: "error",
+          text: onFailure(reason),
+        });
       });
 
     return () => {
       mounted = false;
     };
   }, []);
-
   const cards = [
     {
       label: "Users",
@@ -566,9 +562,9 @@ function Dashboard() {
       icon: Users,
     },
     {
-      label: "Properties",
-      copy: "Total marketplace inventory",
-      value: stats?.properties,
+      label: "Active listings",
+      copy: "Published properties currently available",
+      value: stats?.active,
       href: "/admin/properties",
       icon: Building2,
     },
@@ -579,8 +575,21 @@ function Dashboard() {
       href: "/admin/properties/pending",
       icon: Clock3,
     },
+    {
+      label: "Rejected listings",
+      copy: "Listings rejected during moderation",
+      value: stats?.rejected,
+      href: "/admin/properties/rejected",
+      icon: Ban,
+    },
+    {
+      label: "Expired listings",
+      copy: "Listings past their publication period",
+      value: stats?.expired,
+      href: "/admin/properties/expired",
+      icon: Clock3,
+    },
   ];
-
   return (
     <>
       <PageHeader
@@ -1249,24 +1258,90 @@ function PropertyCardAdmin({
   );
 }
 
+type PropertyListView =
+  | "active"
+  | "pending"
+  | "rejected"
+  | "expired";
+
 function PropertiesPage({
-  pending = false,
+  view = "active",
 }: {
-  pending?: boolean;
+  view?: PropertyListView;
 }) {
-  const [properties, setProperties] = useState<Property[]>([]);
+  const [properties, setProperties] =
+    useState<Property[]>([]);
+
   const [loading, setLoading] = useState(true);
   const [notice, setNotice] = useState<Notice>(null);
 
   const onFailure = useAdminFailure();
 
+  const viewConfig: Record<
+    PropertyListView,
+    {
+      title: string;
+      eyebrow: string;
+      description: string;
+      emptyTitle: string;
+      emptyCopy: string;
+      load: () => Promise<Property[]>;
+    }
+  > = {
+    active: {
+      title: "Active listings",
+      eyebrow: "Marketplace inventory",
+      description:
+        "Published properties currently available in the marketplace.",
+      emptyTitle: "No active listings",
+      emptyCopy:
+        "There are no active properties returned by the admin API.",
+      load: adminPropertiesApi.active,
+    },
+
+    pending: {
+      title: "Pending listings",
+      eyebrow: "Moderation workflow",
+      description:
+        "Review each listing and make a clear publishing decision.",
+      emptyTitle: "No pending properties",
+      emptyCopy:
+        "The moderation queue is clear for now.",
+      load: adminPropertiesApi.pending,
+    },
+
+    rejected: {
+      title: "Rejected listings",
+      eyebrow: "Moderation records",
+      description:
+        "Listings rejected during review. Inspect their details and moderation state.",
+      emptyTitle: "No rejected listings",
+      emptyCopy:
+        "No rejected properties were returned by the admin API.",
+      load: adminPropertiesApi.rejected,
+    },
+
+    expired: {
+      title: "Expired listings",
+      eyebrow: "Publication lifecycle",
+      description:
+        "Listings whose publication period has ended.",
+      emptyTitle: "No expired listings",
+      emptyCopy:
+        "Listings will appear here after their publication period expires.",
+      load: adminPropertiesApi.expired,
+    },
+
+  };
+
+  const config = viewConfig[view];
+
   const load = () => {
     setLoading(true);
+    setNotice(null);
 
-    (pending
-      ? adminPropertiesApi.pending()
-      : adminPropertiesApi.all()
-    )
+    config
+      .load()
       .then(setProperties)
       .catch((reason) => {
         setNotice({
@@ -1279,12 +1354,15 @@ function PropertiesPage({
 
   useEffect(() => {
     const timer = window.setTimeout(load, 0);
+
     return () => window.clearTimeout(timer);
-  }, [pending]);
+  }, [view]);
 
   const complete = (id: number, text: string) => {
     setProperties((current) =>
-      current.filter((property) => property.id !== id),
+      current.filter(
+        (property) => property.id !== id,
+      ),
     );
 
     setNotice({
@@ -1295,22 +1373,49 @@ function PropertiesPage({
 
   return (
     <>
+      <nav className="admin-listing-tabs">
+        {[
+          { label: "Active", href: "/admin/properties", view: "active" },
+          {
+            label: "Pending",
+            href: "/admin/properties/pending",
+            view: "pending",
+          },
+          {
+            label: "Rejected",
+            href: "/admin/properties/rejected",
+            view: "rejected",
+          },
+          {
+            label: "Expired",
+            href: "/admin/properties/expired",
+            view: "expired",
+          },
+        ].map((tab) => (
+          <Link
+            key={tab.view}
+            href={tab.href}
+            className={
+              view === tab.view
+                ? "admin-listing-tab is-active"
+                : "admin-listing-tab"
+            }
+          >
+            {tab.label}
+          </Link>
+        ))}
+      </nav>
       <PageHeader
-        eyebrow={
-          pending ? "Moderation workflow" : "Marketplace inventory"
-        }
-        title={pending ? "Pending listings" : "Properties"}
-        description={
-          pending
-            ? "Review each listing and make a clear publishing decision."
-            : "All properties, including publication and archive states."
-        }
+        eyebrow={config.eyebrow}
+        title={config.title}
+        description={config.description}
         action={
-          pending ? (
-            <span className="admin-count-pill">
-              {properties.length} to review
-            </span>
-          ) : undefined
+          <span className="admin-count-pill">
+            {properties.length}{" "}
+            {view === "pending"
+              ? "to review"
+              : "listings"}
+          </span>
         }
       />
 
@@ -1318,13 +1423,13 @@ function PropertiesPage({
 
       {loading ? (
         <Loading />
-      ) : properties.length ? (
+      ) : properties.length > 0 ? (
         <div className="admin-property-list">
           {properties.map((property) => (
             <PropertyCardAdmin
               key={property.id}
               property={property}
-              pending={pending}
+              pending={view === "pending"}
               onComplete={complete}
             />
           ))}
@@ -1332,18 +1437,8 @@ function PropertiesPage({
       ) : (
         <div className="admin-empty">
           <Clock3 size={26} />
-
-          <h2>
-            {pending
-              ? "No pending properties"
-              : "No properties found"}
-          </h2>
-
-          <p>
-            {pending
-              ? "The moderation queue is clear for now."
-              : "No properties were returned by the admin API."}
-          </p>
+          <h2>{config.emptyTitle}</h2>
+          <p>{config.emptyCopy}</p>
         </div>
       )}
     </>
@@ -1460,9 +1555,8 @@ function PropertyDetail({ id }: { id: number }) {
       "Floor",
       property.floor == null
         ? "—"
-        : `${property.floor}${
-            property.totalFloors ? ` / ${property.totalFloors}` : ""
-          }`,
+        : `${property.floor}${property.totalFloors ? ` / ${property.totalFloors}` : ""
+        }`,
     ],
     [
       "Condition",
@@ -1945,7 +2039,7 @@ function AdminsPage({ id }: { id?: number }) {
               <time>{dateOf(admin.createdAt)}</time>
 
               {profile?.adminRole === "SUPERADMIN" &&
-              profile.id !== admin.id ? (
+                profile.id !== admin.id ? (
                 <button
                   type="button"
                   onClick={() => setTarget(admin)}
@@ -1981,7 +2075,6 @@ function AdminsPage({ id }: { id?: number }) {
     </>
   );
 }
-
 function AdminRouter() {
   const path = usePathname();
   const parts = path.split("/").filter(Boolean);
@@ -2006,9 +2099,13 @@ function AdminRouter() {
   ) {
     content = <UserDetail id={Number(parts[2])} />;
   } else if (path === "/admin/properties/pending") {
-    content = <PropertiesPage pending />;
+    content = <PropertiesPage view="pending" />;
+  } else if (path === "/admin/properties/rejected") {
+    content = <PropertiesPage view="rejected" />;
+  } else if (path === "/admin/properties/expired") {
+    content = <PropertiesPage view="expired" />;
   } else if (path === "/admin/properties") {
-    content = <PropertiesPage />;
+    content = <PropertiesPage view="active" />;
   } else if (
     parts[1] === "properties" &&
     /^\d+$/.test(parts[2] || "")

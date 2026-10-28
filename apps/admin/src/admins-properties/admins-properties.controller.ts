@@ -13,11 +13,21 @@ import { AuthUser } from '@app/common-rentora/decorators';
 @Controller('admins-properties')
 @UseGuards(AdminAuthGuard)
 export class AdminsPropertiesController {
-  constructor(private readonly adminspropservice: AdminsPropertiesService) {}
+  constructor(private readonly adminspropservice: AdminsPropertiesService) { }
 
-  @Get()
-  viewAllproperties() {
-    return this.adminspropservice.viewProperties();
+  @Get('active')
+  viewActiveproperties() {
+    return this.adminspropservice.viewActiveProperties();
+  }
+
+  @Get('rejected')
+  viewRejectedproperties() {
+    return this.adminspropservice.viewRejectedProperties();
+  }
+
+  @Get('expired')
+  viewExpiredproperties() {
+    return this.adminspropservice.viewExpiredProperties();
   }
 
   @Post(':id')

@@ -380,7 +380,10 @@
     "noListings": "You have not created any listings yet.",
     "myMapTitle": "My listings on the map",
     "myMapCopy": "See every listing you own with a saved location, including pending, rejected and archived homes.",
-    "backToListings": "Back to my listings"
+    "backToListings": "Back to my listings",
+    "expired": "Expired",
+    "noExpiredListings": "No expired listings",
+    "expiredCopy": "Listings whose publication period has ended will appear here."
   },
   "profile": {
     "eyebrow": "My account",
@@ -682,7 +685,8 @@
     "BLOCKED": "Blocked",
     "TEMPORARY_BLOCK": "Temporarily blocked",
     "PERMANETLY_BLOCK": "Permanently blocked",
-    "PUBLISHED": "Published"
+    "PUBLISHED": "Published",
+    "EXPIRED": "Expired"
   },
   "errors": {
     "network": "We couldn’t reach Rentora. Check that the API is running.",

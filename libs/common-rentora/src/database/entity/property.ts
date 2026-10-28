@@ -136,6 +136,9 @@ export class Property extends Base {
   @Column({default: false})
   boops: boolean
 
+  @Column({name: "boops_expired_at", type: "timestamp", nullable: true})
+  boopsExpiredAt: Date | null
+
   @Column({
     type: 'double precision',
     nullable: true,

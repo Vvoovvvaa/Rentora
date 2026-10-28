@@ -9,6 +9,9 @@ const styleFor = (value?: string | null, kind?: StatusBadgeProps["kind"]) => {
   if (value === "REJECTED" || value === "PERMANETLY_BLOCK") return "status-badge is-danger";
   if (value === "archived" || value === "SOLD" || value === "RENTED") return "status-badge is-muted";
   if (kind === "role" && value === "SUPERADMIN") return "status-badge is-role";
+  if (value === 'EXPIRED' || value === 'expired') {
+    return 'status-badge is-warning';
+  }
   return "status-badge";
 };
 
@@ -17,5 +20,5 @@ const humanize = (value?: string | null) => value ? value.toLowerCase().replaceA
 export function StatusBadge({ value, label, kind }: StatusBadgeProps) {
   const { t } = useI18n();
   const Icon = value === "ACTIVE" || value === "active" || value === "VERIFIED" ? CheckCircle2 : value === "PENDING" || value === "TEMPORARY_BLOCK" || value === "NOT_VERIFIED" ? Clock3 : value === "REJECTED" || value === "PERMANETLY_BLOCK" ? ShieldAlert : undefined;
-  return <span className={styleFor(value, kind)}>{Icon && <Icon size={13}/>} {label || (value ? t(`status.${value.toUpperCase()}`) || humanize(value) : "—")}</span>;
+  return <span className={styleFor(value, kind)}>{Icon && <Icon size={13} />} {label || (value ? t(`status.${value.toUpperCase()}`) || humanize(value) : "—")}</span>;
 }

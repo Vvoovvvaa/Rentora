@@ -12,7 +12,12 @@ export type Currency = 'dollar' | 'rubli' | 'euro' | 'dram';
 
 export type PropertyListing = 'SALE' | 'RENT_LONG_TERM' | 'RENT_SHORT_TERM';
 
-export type PropertyStatus = 'active' | 'sold' | 'rented' | 'archived';
+export type PropertyStatus =
+  | "active"
+  | "sold"
+  | "rented"
+  | "archived"
+  | "expired";
 
 export type PropertyPublishing = 'ACTIVE' | 'REJECTED' | 'PENDING';
 

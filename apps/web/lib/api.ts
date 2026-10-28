@@ -610,14 +610,15 @@ export const adminUsersApi = {
  */
 
 export const adminPropertiesApi = {
-  all: () =>
+  active: () =>
     adminApiClient
-      .get<Property[]>('/admins-properties')
+      .get<Property[]>('/admins-properties/active')
       .then((response) => response.data),
 
-  one: (id: number) =>
+  // Compatibility alias for existing callers.
+  all: () =>
     adminApiClient
-      .post<Property>(`/admins-properties/${id}`)
+      .get<Property[]>('/admins-properties/active')
       .then((response) => response.data),
 
   pending: () =>
@@ -625,32 +626,56 @@ export const adminPropertiesApi = {
       .get<Property[]>('/admins-properties/pending')
       .then((response) => response.data),
 
+  rejected: () =>
+    adminApiClient
+      .get<Property[]>('/admins-properties/rejected')
+      .then((response) => response.data),
+
+  expired: () =>
+    adminApiClient
+      .get<Property[]>('/admins-properties/expired')
+      .then((response) => response.data),
+
+  one: (id: number) =>
+    adminApiClient
+      .post<Property>(`/admins-properties/${id}`)
+      .then((response) => response.data),
+
   accept: (id: number) =>
     adminApiClient
-      .post<MessageResponse>(`/admins-properties/accept/${id}`)
+      .post<MessageResponse>(
+        `/admins-properties/accept/${id}`,
+      )
       .then((response) => response.data),
 
   reject: (id: number) =>
     adminApiClient
-      .post<MessageResponse>(`/admins-properties/reject/${id}`)
+      .post<MessageResponse>(
+        `/admins-properties/reject/${id}`,
+      )
       .then((response) => response.data),
 
   archive: (id: number) =>
     adminApiClient
-      .post<MessageResponse>(`/admins-properties/archive/${id}`)
+      .post<MessageResponse>(
+        `/admins-properties/archive/${id}`,
+      )
       .then((response) => response.data),
 
   restore: (id: number) =>
     adminApiClient
-      .post<MessageResponse>(`/admins-properties/resotre/${id}`)
+      .post<MessageResponse>(
+        `/admins-properties/resotre/${id}`,
+      )
       .then((response) => response.data),
 
   delete: (id: number) =>
     adminApiClient
-      .delete<MessageResponse>(`/admins-properties/delete/${id}`)
+      .delete<MessageResponse>(
+        `/admins-properties/delete/${id}`,
+      )
       .then((response) => response.data),
 };
-
 /*
  * ============================================================
  * Admin Support

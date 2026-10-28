@@ -1,5 +1,5 @@
 import { Admin, Property } from '@app/common-rentora/database/entity';
-import { PropertyPublishing, PropertyStatus } from '@app/common-rentora/enums';
+import { accauntSatus, PropertyPublishing, PropertyStatus } from '@app/common-rentora/enums';
 import { SenderService } from '@app/common-rentora/smtp';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -18,7 +18,7 @@ export class AdminsPropertiesService {
     private readonly senderserive: SenderService,
 
     private readonly i18n: I18nService,
-  ) {}
+  ) { }
 
   private t(key: string, args?: Record<string, any>): string {
     return this.i18n.t(key, {
@@ -27,8 +27,23 @@ export class AdminsPropertiesService {
     });
   }
 
-  async viewProperties() {
+  async viewActiveProperties() {
     return this.propertyrepo.find({
+      where: {status :PropertyStatus.ACTIVE, publishing: PropertyPublishing.ACTIVE},
+      relations: { owner: true, images: true, agency: { image: true } },
+    });
+  }
+
+  async viewRejectedProperties() {
+    return this.propertyrepo.find({
+      where: {publishing: PropertyPublishing.REJECTED},
+      relations: { owner: true, images: true, agency: { image: true } },
+    });
+  }
+
+    async viewExpiredProperties() {
+    return this.propertyrepo.find({
+      where: {publishing: PropertyPublishing.EXPIRED},
       relations: { owner: true, images: true, agency: { image: true } },
     });
   }
