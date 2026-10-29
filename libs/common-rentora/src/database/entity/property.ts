@@ -133,10 +133,10 @@ export class Property extends Base {
   @Column({ default: 0 })
   view: number;
 
-  @Column({default: false})
+  @Column({ default: false })
   boops: boolean
 
-  @Column({name: "boops_expired_at", type: "timestamp", nullable: true})
+  @Column({ name: "boops_expired_at", type: "timestamp", nullable: true })
   boopsExpiredAt: Date | null
 
   @Column({

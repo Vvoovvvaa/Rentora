@@ -5,11 +5,11 @@ import { Property } from './property';
 
 @Entity('favorites')
 export class Favorites extends Base {
-  @ManyToOne(() => User, (user) => user.favorites)
+  @ManyToOne(() => User, (user) => user.favorites, {onDelete: 'CASCADE'})
   @JoinColumn()
   user: User;
 
-  @ManyToOne(() => Property, (property) => property.favorites)
+  @ManyToOne(() => Property, (property) => property.favorites, {onDelete: "CASCADE"})
   @JoinColumn()
   property: Property;
 }

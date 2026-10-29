@@ -33,8 +33,8 @@ import { RentoraLogo } from "./rentora-logo";
 const isActive = (path: string, href: string) =>
   href === "/properties"
     ? path === "/properties" ||
-      path.startsWith("/properties/") ||
-      path === "/search"
+    path.startsWith("/properties/") ||
+    path === "/search"
     : path === href || path.startsWith(`${href}/`);
 
 type AgencyMenuState = "checking" | "exists" | "missing" | "error";
@@ -82,9 +82,8 @@ function LanguageSelector({ compact = false }: { compact?: boolean }) {
   return (
     <div
       ref={root}
-      className={`language-selector ${
-        compact ? "language-selector-mobile" : ""
-      }`}
+      className={`language-selector ${compact ? "language-selector-mobile" : ""
+        }`}
     >
       <button
         type="button"
@@ -296,8 +295,8 @@ export function Header() {
 
   const agencyRefreshKey =
     pathname === "/my-agency" ||
-    pathname === "/agency/create" ||
-    pathname === "/profile"
+      pathname === "/agency/create" ||
+      pathname === "/profile"
       ? pathname
       : "";
 
@@ -446,16 +445,15 @@ export function Header() {
               <Link
                 key={link.section}
                 href={link.href}
-                className={`nav-link ${
-                  isActive(
-                    pathname,
-                    link.section === "explore"
-                      ? "/properties"
-                      : link.href,
-                  )
-                    ? "is-active"
-                    : ""
-                }`}
+                className={`nav-link ${isActive(
+                  pathname,
+                  link.section === "explore"
+                    ? "/properties"
+                    : link.href,
+                )
+                  ? "is-active"
+                  : ""
+                  }`}
               >
                 <Icon size={15} />
                 {link.label}
@@ -494,9 +492,8 @@ export function Header() {
                 onClick={() =>
                   setAccountOpen((value) => !value)
                 }
-                className={`account-menu-trigger ${
-                  accountOpen ? "is-open" : ""
-                }`}
+                className={`account-menu-trigger ${accountOpen ? "is-open" : ""
+                  }`}
                 aria-label={
                   user.name || t("navigation.profile")
                 }
@@ -544,7 +541,7 @@ export function Header() {
                     onClick={() => setAccountOpen(false)}
                     aria-current={
                       pathname === "/my-agency" ||
-                      pathname === "/agency/create"
+                        pathname === "/agency/create"
                         ? "page"
                         : undefined
                     }
@@ -672,16 +669,15 @@ export function Header() {
                   key={link.section}
                   href={link.href}
                   onClick={() => setOpen(false)}
-                  className={`nav-link mobile ${
-                    isActive(
-                      pathname,
-                      link.section === "explore"
-                        ? "/properties"
-                        : link.href,
-                    )
-                      ? "is-active"
-                      : ""
-                  }`}
+                  className={`nav-link mobile ${isActive(
+                    pathname,
+                    link.section === "explore"
+                      ? "/properties"
+                      : link.href,
+                  )
+                    ? "is-active"
+                    : ""
+                    }`}
                 >
                   <Icon size={16} />
                   {link.label}
@@ -728,7 +724,7 @@ export function Header() {
                   className="nav-link mobile"
                   aria-current={
                     pathname === "/my-agency" ||
-                    pathname === "/agency/create"
+                      pathname === "/agency/create"
                       ? "page"
                       : undefined
                   }

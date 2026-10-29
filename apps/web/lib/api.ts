@@ -44,6 +44,16 @@ type ApiErrorResponse = {
   message?: string | string[];
 };
 
+export type AdminPropertyDeleteReason =
+  | "VIOLATION_OF_RULES"
+  | "FRAUD"
+  | "FALSE_INFORMATION"
+  | "DUPLICATE"
+  | "INAPPROPRIATE_CONTENT"
+  | "ILLEGAL_LISTING"
+  | "USER_REQUEST"
+  | "OTHER";
+
 type ChatRoomApiResponse = {
   id: number;
   propertyId?: number | null;
@@ -668,13 +678,21 @@ export const adminPropertiesApi = {
         `/admins-properties/resotre/${id}`,
       )
       .then((response) => response.data),
+  delete: async (
+    id: number,
+    dto: {
+      reason: AdminPropertyDeleteReason;
+    },
+  ) => {
+    const response = await adminApiClient.delete<MessageResponse>(
+      `/admins-properties/delete/${id}`,
+      {
+        data: dto,
+      },
+    );
 
-  delete: (id: number) =>
-    adminApiClient
-      .delete<MessageResponse>(
-        `/admins-properties/delete/${id}`,
-      )
-      .then((response) => response.data),
+    return response.data;
+  },
 };
 /*
  * ============================================================

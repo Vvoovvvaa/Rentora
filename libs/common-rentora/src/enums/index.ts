@@ -17,3 +17,4 @@ export * from './support';
 export * from './subscription-plan';
 export * from './subscription-status';
 export * from './agency-verify-reject-reason'
+export * from './property-delete-reason'

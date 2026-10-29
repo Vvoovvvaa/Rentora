@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Delete,
   Get,
@@ -9,6 +10,7 @@ import {
 import { AdminsPropertiesService } from './admins-properties.service';
 import { AdminAuthGuard } from '@app/common-rentora/guard';
 import { AuthUser } from '@app/common-rentora/decorators';
+import { deleteUserPropertyDto } from './dto/delete-user-property.dto';
 
 @Controller('admins-properties')
 @UseGuards(AdminAuthGuard)
@@ -73,7 +75,7 @@ export class AdminsPropertiesController {
   }
 
   @Delete('delete/:id')
-  deleteProperty(@Param('id') propId: number, @AuthUser('id') adminId: number) {
-    return this.adminspropservice.deleteProperty(propId, adminId);
+  deleteProperty(@Param('id') propId: number, @AuthUser('id') adminId: number, @Body() body: deleteUserPropertyDto) {
+    return this.adminspropservice.deleteProperty(propId, adminId, body);
   }
 }

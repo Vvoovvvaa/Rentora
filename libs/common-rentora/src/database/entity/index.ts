@@ -17,3 +17,4 @@ export * from './property-views';
 export * from './analytik';
 export * from './agency'
 export * from './agency-image'
+export * from './deleted-property'

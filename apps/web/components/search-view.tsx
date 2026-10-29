@@ -69,13 +69,13 @@ export function SearchView() {
       <section className="search-hero">
         <div className="search-page-intro"><p className="eyebrow">{t("search.properties")}</p><h1>{t("search.title")}</h1><p>{t("search.subtitle")}</p></div>
         <div className="search-hero-count" aria-live="polite"><strong>{loading ? "—" : items.length}</strong><span>{t("common.listings")}</span></div>
-        <div className="search-hero-filters"><SearchForm compact state={form} onChange={set} onSubmit={navigate}/></div>
+        <div className="search-hero-filters"><SearchForm compact state={form} onChange={set} onSubmit={navigate} /></div>
       </section>
-      {active.length > 0 && <div className="active-filters"><span>{t("search.advancedFilters")}</span>{active.map((key) => <button type="button" key={key} onClick={() => remove(key)}>{labelFor(key, activeState[key])}<X size={14}/></button>)}<button type="button" className="clear-filters" onClick={clear}>{t("common.clearAll")}</button></div>}
+      {active.length > 0 && <div className="active-filters"><span>{t("search.advancedFilters")}</span>{active.map((key) => <button type="button" key={key} onClick={() => remove(key)}>{labelFor(key, activeState[key])}<X size={14} /></button>)}<button type="button" className="clear-filters" onClick={clear}>{t("common.clearAll")}</button></div>}
       <section className="search-results-section">
-        <header className="search-results-header"><div><p className="eyebrow">{t("search.availableHomes")}</p><h2>{loading ? t("common.loading") : t("search.listingsFound", { count: items.length })}</h2></div><label className="search-sort-control"><span><ArrowDownUp size={15}/>{t("search.sortBy")}</span><CustomSelect value={activeState.sort} onChange={updateSort} placeholder={t("search.sortBy")} ariaLabel={t("search.sortBy")} options={getSortOptions()}/></label></header>
-        {error ? <ErrorBlock message={error} retry={() => setRequestVersion((version) => version + 1)}/> : <div className="listing-grid search-results-grid">{loading ? [1, 2, 3, 4, 5, 6].map((item) => <PropertySkeleton key={item}/>) : items.map((property) => <PropertyCard property={property} key={property.id}/>)}</div>}
-        {!loading && !error && !items.length && <div className="search-empty"><Filter size={25}/><Empty label={t("search.noListings")}/><p>{t("search.emptyHint")}</p><button type="button" onClick={clear} className="btn-secondary">{t("search.clearFilters")}</button></div>}
+        <header className="search-results-header"><div><p className="eyebrow">{t("search.availableHomes")}</p><h2>{loading ? t("common.loading") : t("search.listingsFound", { count: items.length })}</h2></div><label className="search-sort-control"><span><ArrowDownUp size={15} />{t("search.sortBy")}</span><CustomSelect value={activeState.sort} onChange={updateSort} placeholder={t("search.sortBy")} ariaLabel={t("search.sortBy")} options={getSortOptions()} /></label></header>
+        {error ? <ErrorBlock message={error} retry={() => setRequestVersion((version) => version + 1)} /> : <div className="listing-grid search-results-grid">{loading ? [1, 2, 3, 4, 5, 6].map((item) => <PropertySkeleton key={item} />) : items.map((property) => <PropertyCard property={property} key={property.id} />)}</div>}
+        {!loading && !error && !items.length && <div className="search-empty"><Filter size={25} /><Empty label={t("search.noListings")} /><p>{t("search.emptyHint")}</p><button type="button" onClick={clear} className="btn-secondary">{t("search.clearFilters")}</button></div>}
       </section>
     </div>
   </main>;

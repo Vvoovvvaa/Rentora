@@ -59,11 +59,59 @@ type Notice = {
 
 type ActionTone = "primary" | "warning" | "danger";
 
+type AdminPropertyDeleteReason =
+  | "VIOLATION_OF_RULES"
+  | "FRAUD"
+  | "FALSE_INFORMATION"
+  | "DUPLICATE"
+  | "INAPPROPRIATE_CONTENT"
+  | "ILLEGAL_LISTING"
+  | "USER_REQUEST"
+  | "OTHER";
+
+const propertyDeleteReasons: Array<{
+  value: AdminPropertyDeleteReason;
+  label: string;
+}> = [
+  {
+    value: "VIOLATION_OF_RULES",
+    label: "Violation of Rentora rules",
+  },
+  {
+    value: "FRAUD",
+    label: "Fraud or suspected scam",
+  },
+  {
+    value: "FALSE_INFORMATION",
+    label: "False or misleading information",
+  },
+  {
+    value: "DUPLICATE",
+    label: "Duplicate listing",
+  },
+  {
+    value: "INAPPROPRIATE_CONTENT",
+    label: "Inappropriate content or photos",
+  },
+  {
+    value: "ILLEGAL_LISTING",
+    label: "Illegal or unauthorized listing",
+  },
+  {
+    value: "USER_REQUEST",
+    label: "Requested by the user",
+  },
+  {
+    value: "OTHER",
+    label: "Other reason",
+  },
+];
+
 const dateOf = (value?: string) =>
   value
     ? new Intl.DateTimeFormat("en", {
-      dateStyle: "medium",
-    }).format(new Date(value))
+        dateStyle: "medium",
+      }).format(new Date(value))
     : "—";
 
 const propertyImage = (property: Property) =>
@@ -102,8 +150,9 @@ function NoticeMessage({ notice }: { notice: Notice }) {
   return (
     <p
       role="status"
-      className={`admin-notice ${notice.tone === "success" ? "is-success" : "is-error"
-        }`}
+      className={`admin-notice ${
+        notice.tone === "success" ? "is-success" : "is-error"
+      }`}
     >
       {notice.tone === "success" ? (
         <CheckCircle2 size={16} />
@@ -124,6 +173,8 @@ function ConfirmDialog({
   busy,
   onCancel,
   onConfirm,
+  children,
+  confirmDisabled = false,
 }: {
   title: string;
   description: string;
@@ -132,6 +183,8 @@ function ConfirmDialog({
   busy: boolean;
   onCancel: () => void;
   onConfirm: () => void;
+  children?: React.ReactNode;
+  confirmDisabled?: boolean;
 }) {
   return (
     <div className="fixed inset-0 z-[80] grid place-items-center bg-stone-950/45 p-4 backdrop-blur-sm">
@@ -144,6 +197,7 @@ function ConfirmDialog({
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="eyebrow">Confirmation</p>
+
             <h2
               id="admin-confirm-title"
               className="mt-2 text-xl font-bold"
@@ -167,6 +221,8 @@ function ConfirmDialog({
           {description}
         </p>
 
+        {children && <div className="mt-5">{children}</div>}
+
         <div className="mt-6 flex justify-end gap-3">
           <button
             type="button"
@@ -180,11 +236,14 @@ function ConfirmDialog({
           <button
             type="button"
             onClick={onConfirm}
-            disabled={busy}
+            disabled={busy || confirmDisabled}
             className={`admin-action ${tone}`}
           >
             {busy && (
-              <LoaderCircle size={16} className="animate-spin" />
+              <LoaderCircle
+                size={16}
+                className="animate-spin"
+              />
             )}
 
             {busy ? "Working…" : confirmLabel}
@@ -233,8 +292,11 @@ function AdminLogin() {
       <div className="admin-login-card">
         <section className="admin-login-brand">
           <RentoraLogo variant="light" size="admin" />
+
           <p>Admin workspace</p>
+
           <h1>Confident administration for every home.</h1>
+
           <span>
             Manage the marketplace with a secure, separate administrator
             session.
@@ -251,6 +313,7 @@ function AdminLogin() {
           <form onSubmit={submit}>
             <label>
               Administrator email
+
               <input
                 className="field"
                 type="email"
@@ -263,6 +326,7 @@ function AdminLogin() {
 
             <label>
               Password
+
               <input
                 className="field"
                 type="password"
@@ -278,7 +342,10 @@ function AdminLogin() {
               className="btn-primary justify-center"
             >
               {busy ? (
-                <LoaderCircle className="animate-spin" size={18} />
+                <LoaderCircle
+                  className="animate-spin"
+                  size={18}
+                />
               ) : (
                 <ShieldCheck size={18} />
               )}
@@ -329,11 +396,6 @@ function AdminGate({
   return <>{children}</>;
 }
 
-/*
- * Sidebar navigation.
- * Agencies is registered here so the section appears in the admin menu.
- */
-
 const groups = [
   {
     label: "Overview",
@@ -361,7 +423,6 @@ const groups = [
         icon: Building2,
         exact: false,
       },
-
       {
         href: "/admin/agencies",
         label: "Agencies",
@@ -374,7 +435,6 @@ const groups = [
         icon: MessageSquareText,
         exact: false,
       },
-
     ],
   },
   {
@@ -427,7 +487,7 @@ function AdminLayout({
                   const active = exact
                     ? pathname === href
                     : pathname === href ||
-                    pathname.startsWith(`${href}/`);
+                      pathname.startsWith(`${href}/`);
 
                   return (
                     <Link
@@ -506,7 +566,10 @@ function Back({
 function Loading() {
   return (
     <div className="admin-loading">
-      <LoaderCircle size={28} className="animate-spin" />
+      <LoaderCircle
+        size={28}
+        className="animate-spin"
+      />
     </div>
   );
 }
@@ -524,8 +587,6 @@ function Dashboard() {
   const onFailure = useAdminFailure();
 
   useEffect(() => {
-    let mounted = true;
-
     Promise.all([
       adminUsersApi.all(),
       adminPropertiesApi.active(),
@@ -548,11 +609,8 @@ function Dashboard() {
           text: onFailure(reason),
         });
       });
-
-    return () => {
-      mounted = false;
-    };
   }, []);
+
   const cards = [
     {
       label: "Users",
@@ -590,6 +648,7 @@ function Dashboard() {
       icon: Clock3,
     },
   ];
+
   return (
     <>
       <PageHeader
@@ -670,11 +729,13 @@ function Dashboard() {
 function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+
   const [query, setQuery] = useState({
     name: "",
     gmail: "",
     phone: "",
   });
+
   const [notice, setNotice] = useState<Notice>(null);
   const onFailure = useAdminFailure();
 
@@ -739,6 +800,7 @@ function UsersPage() {
       <form onSubmit={search} className="admin-search">
         <label>
           <span>Name</span>
+
           <input
             className="field"
             value={query.name}
@@ -751,6 +813,7 @@ function UsersPage() {
 
         <label>
           <span>Email</span>
+
           <input
             className="field"
             type="email"
@@ -764,6 +827,7 @@ function UsersPage() {
 
         <label>
           <span>Phone</span>
+
           <input
             className="field"
             value={query.phone}
@@ -788,6 +852,7 @@ function UsersPage() {
               gmail: "",
               phone: "",
             });
+
             load();
           }}
         >
@@ -910,6 +975,7 @@ function UserDetail({ id }: { id: number }) {
     return (
       <>
         <Back href="/admin/users" label="Back to users" />
+
         <NoticeMessage
           notice={
             notice || {
@@ -989,7 +1055,9 @@ function UserDetail({ id }: { id: number }) {
 
           <section className="admin-section">
             <p className="eyebrow">Listings</p>
-            <h2>{user.properties?.length || 0} listed properties</h2>
+            <h2>
+              {user.properties?.length || 0} listed properties
+            </h2>
 
             {user.properties?.length ? (
               <div className="admin-linked-list">
@@ -1160,6 +1228,7 @@ function PropertyCardAdmin({
               value={property.publishing}
               kind="publishing"
             />
+
             <StatusBadge
               value={property.status}
               kind="property"
@@ -1175,6 +1244,7 @@ function PropertyCardAdmin({
           <div className="admin-property-title">
             <div>
               <h2>{property.title}</h2>
+
               <p>
                 #{property.id} · {getCategoryLabel(property.category)} ·{" "}
                 {cityOf(property.city)}
@@ -1331,7 +1401,6 @@ function PropertiesPage({
         "Listings will appear here after their publication period expires.",
       load: adminPropertiesApi.expired,
     },
-
   };
 
   const config = viewConfig[view];
@@ -1360,9 +1429,7 @@ function PropertiesPage({
 
   const complete = (id: number, text: string) => {
     setProperties((current) =>
-      current.filter(
-        (property) => property.id !== id,
-      ),
+      current.filter((property) => property.id !== id),
     );
 
     setNotice({
@@ -1405,6 +1472,7 @@ function PropertiesPage({
           </Link>
         ))}
       </nav>
+
       <PageHeader
         eyebrow={config.eyebrow}
         title={config.title}
@@ -1412,9 +1480,7 @@ function PropertiesPage({
         action={
           <span className="admin-count-pill">
             {properties.length}{" "}
-            {view === "pending"
-              ? "to review"
-              : "listings"}
+            {view === "pending" ? "to review" : "listings"}
           </span>
         }
       />
@@ -1452,14 +1518,16 @@ function PropertyDetail({ id }: { id: number }) {
   const [loading, setLoading] = useState(true);
   const [notice, setNotice] = useState<Notice>(null);
 
-  const [
-    action,
-    setAction,
-  ] = useState<
+  const [action, setAction] = useState<
     "accept" | "reject" | "archive" | "restore" | "delete" | null
   >(null);
 
   const [busy, setBusy] = useState(false);
+
+  const [deleteReason, setDeleteReason] = useState<
+    AdminPropertyDeleteReason | ""
+  >("");
+
   const onFailure = useAdminFailure();
 
   const load = () => {
@@ -1488,16 +1556,29 @@ function PropertyDetail({ id }: { id: number }) {
     setBusy(true);
 
     try {
-      const result =
-        action === "accept"
-          ? await adminPropertiesApi.accept(id)
-          : action === "reject"
-            ? await adminPropertiesApi.reject(id)
-            : action === "archive"
-              ? await adminPropertiesApi.archive(id)
-              : action === "restore"
-                ? await adminPropertiesApi.restore(id)
-                : await adminPropertiesApi.delete(id);
+      let result: { message: string };
+
+      if (action === "accept") {
+        result = await adminPropertiesApi.accept(id);
+      } else if (action === "reject") {
+        result = await adminPropertiesApi.reject(id);
+      } else if (action === "archive") {
+        result = await adminPropertiesApi.archive(id);
+      } else if (action === "restore") {
+        result = await adminPropertiesApi.restore(id);
+      } else {
+        if (!deleteReason) {
+          setNotice({
+            tone: "error",
+            text: "Select a reason before deleting this property.",
+          });
+          return;
+        }
+
+        result = await adminPropertiesApi.delete(id, {
+          reason: deleteReason,
+        });
+      }
 
       setNotice({
         tone: "success",
@@ -1527,6 +1608,7 @@ function PropertyDetail({ id }: { id: number }) {
     return (
       <>
         <Back href="/admin/properties" label="Back to properties" />
+
         <NoticeMessage
           notice={
             notice || {
@@ -1555,8 +1637,9 @@ function PropertyDetail({ id }: { id: number }) {
       "Floor",
       property.floor == null
         ? "—"
-        : `${property.floor}${property.totalFloors ? ` / ${property.totalFloors}` : ""
-        }`,
+        : `${property.floor}${
+            property.totalFloors ? ` / ${property.totalFloors}` : ""
+          }`,
     ],
     [
       "Condition",
@@ -1590,6 +1673,7 @@ function PropertyDetail({ id }: { id: number }) {
               value={property.publishing}
               kind="publishing"
             />
+
             <StatusBadge
               value={property.status}
               kind="property"
@@ -1731,7 +1815,10 @@ function PropertyDetail({ id }: { id: number }) {
 
             <button
               type="button"
-              onClick={() => setAction("delete")}
+              onClick={() => {
+                setDeleteReason("");
+                setAction("delete");
+              }}
               className="admin-action danger subtle"
             >
               <Trash2 size={16} />
@@ -1783,10 +1870,48 @@ function PropertyDetail({ id }: { id: number }) {
                 ? "warning"
                 : "primary"
           }
+          confirmDisabled={action === "delete" && !deleteReason}
           busy={busy}
           onCancel={() => setAction(null)}
           onConfirm={apply}
-        />
+        >
+          {action === "delete" && (
+            <div className="space-y-2">
+              <label
+                htmlFor="property-delete-reason"
+                className="block text-sm font-semibold text-stone-800"
+              >
+                Reason for deleting this listing{" "}
+                <span className="text-red-600">*</span>
+              </label>
+
+              <select
+                id="property-delete-reason"
+                className="field w-full"
+                value={deleteReason}
+                onChange={(event) =>
+                  setDeleteReason(
+                    event.target.value as AdminPropertyDeleteReason | "",
+                  )
+                }
+                required
+                disabled={busy}
+              >
+                <option value="">Select a reason</option>
+
+                {propertyDeleteReasons.map((reason) => (
+                  <option key={reason.value} value={reason.value}>
+                    {reason.label}
+                  </option>
+                ))}
+              </select>
+
+              <p className="text-xs leading-5 text-stone-500">
+                This reason will be saved in the deletion audit log. The deletion is permanent.
+              </p>
+            </div>
+          )}
+        </ConfirmDialog>
       )}
     </>
   );
@@ -1870,7 +1995,6 @@ function AdminsPage({ id }: { id?: number }) {
   const [busy, setBusy] = useState(false);
 
   const onFailure = useAdminFailure();
-  const router = useRouter();
 
   const load = () => {
     setLoading(true);
@@ -1937,6 +2061,7 @@ function AdminsPage({ id }: { id?: number }) {
       return (
         <>
           <Back href="/admin/admins" label="Back to admins" />
+
           <NoticeMessage
             notice={
               notice || {
@@ -2039,7 +2164,7 @@ function AdminsPage({ id }: { id?: number }) {
               <time>{dateOf(admin.createdAt)}</time>
 
               {profile?.adminRole === "SUPERADMIN" &&
-                profile.id !== admin.id ? (
+              profile.id !== admin.id ? (
                 <button
                   type="button"
                   onClick={() => setTarget(admin)}
@@ -2075,6 +2200,7 @@ function AdminsPage({ id }: { id?: number }) {
     </>
   );
 }
+
 function AdminRouter() {
   const path = usePathname();
   const parts = path.split("/").filter(Boolean);

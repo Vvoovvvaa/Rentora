@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import {
   Admin,
   Property,
+  PropertyDeletionLog,
   PropertyViews,
 } from '@app/common-rentora/database/entity';
 import { EmailModule } from '@app/common-rentora/smtp';
@@ -23,8 +24,9 @@ import { SubscriptionConfig } from '@app/common-rentora/database/entity/subscrip
       PropertyViews,
       UserSubscription,
       SubscriptionConfig,
+      PropertyDeletionLog
     ]),
-    EmailModule,
+    EmailModule
   ],
 })
 export class AdminsPropertiesModule {}

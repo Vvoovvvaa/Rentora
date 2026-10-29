@@ -19,6 +19,6 @@ export class Message extends Base {
   @JoinColumn({ name: 'sneder_id' })
   user: User;
 
-  @ManyToOne(() => ChatRoom, (chatRooms) => chatRooms.message)
+  @ManyToOne(() => ChatRoom, (chatRooms) => chatRooms.message, {onDelete: "CASCADE"})
   chatRomms: ChatRoom;
 }
