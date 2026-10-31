@@ -7,6 +7,7 @@ import { forgetPasswordDto } from './dto/forget.dto';
 import { ChangedPassword } from './dto/acceptchangePassword.dto';
 import { sendVerifyCodeDto } from './dto/sendverifyCode.dto';
 import { AuthGuard } from '@app/common-rentora/guard';
+import { AuthUser } from '@app/common-rentora';
 
 @Controller('auth')
 export class AuthController {
@@ -28,8 +29,8 @@ export class AuthController {
   }
 
   @Post('Verify')
-  async verifyEMail(@Body() body: VerifyEmailDto) {
-    return this.authservice.VerifyEmail(body);
+  async verifyEMail(@Body() body: VerifyEmailDto, @AuthUser('id') userId:number) {
+    return this.authservice.VerifyEmail(body,userId);
   }
 
   @Post('forget')

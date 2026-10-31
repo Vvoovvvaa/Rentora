@@ -248,12 +248,12 @@ export const authApi = {
       .post<AuthResponse>('/auth/register', data)
       .then((response) => response.data),
 
-  sendCode: (email: string) =>
+  sendCode: () =>
     api
-      .post<MessageResponse>('/auth/sendCode', { email })
+      .post<MessageResponse>('/auth/sendCode')
       .then((response) => response.data),
 
-  verify: (data: { gmail: string; code: string }) =>
+  verify: (data: { code: string }) =>
     api
       .post<MessageResponse>('/auth/Verify', data)
       .then((response) => response.data),
@@ -273,7 +273,6 @@ export const authApi = {
       .post<MessageResponse>('/auth/logout')
       .then((response) => response.data),
 };
-
 /*
  * ============================================================
  * Subscriptions

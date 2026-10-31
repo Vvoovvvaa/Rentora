@@ -12,6 +12,7 @@ import {
   ConflictException,
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -36,6 +37,7 @@ import { SubscriptionService } from '../subscription/subscription.service';
 
 @Injectable()
 export class PropertiesService {
+  private readonly logger = new Logger(PropertiesService.name);
   constructor(
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
@@ -75,13 +77,30 @@ export class PropertiesService {
   async createProperty(
     userId: number,
     dto: CreatePropertyDto,
-    files: Express.Multer.File[],
+    files: Express.Multer.File[] = [],
   ) {
-    let agency: Agency | null = null;
+    const safeFiles = files ?? [];
 
+    // 1. Find user
     const user = await this.userRepo.findOne({
       where: { id: userId },
     });
+
+    if (!user) {
+      throw new BadRequestException(
+        this.t('property.USER_NOT_FOUND'),
+      );
+    }
+
+    // 2. Check email verification
+    if (user.gmailStatus !== EmailStatusEnum.VERIFIED) {
+      throw new BadRequestException(
+        this.t('property.VERIFY_EMAIL'),
+      );
+    }
+
+    // 3. Find and validate agency, if provided
+    let agency: Agency | null = null;
 
     if (dto.agencyId !== undefined) {
       agency = await this.agencyRepo.findOne({
@@ -93,83 +112,137 @@ export class PropertiesService {
         throw new NotFoundException('Agency Not Found');
       }
 
-      if (agency.verified === false) {
-        throw new ConflictException("Agency Not verified");
+      if (!agency.verified) {
+        throw new ConflictException('Agency Not verified');
       }
 
-      if (agency.owner.id !== userId) {
+      if (!agency.owner || agency.owner.id !== userId) {
         throw new ForbiddenException(
           'You cannot create a property for this agency',
         );
       }
     }
 
-    if (!user) {
-      throw new BadRequestException(this.t('property.USER_NOT_FOUND'));
-    }
-
-    if (user.gmailStatus !== EmailStatusEnum.VERIFIED) {
-      throw new BadRequestException(this.t('property.VERIFY_EMAIL'));
-    }
-
+    // 4. Check subscription property limit
     await this.checkActivePropertyLimit(userId);
 
+    // 5. Validate ALL files before uploading anything
+    for (const file of safeFiles) {
+      PhotoValidator.validator(file);
+    }
+
+    // 6. Remove agencyId from property columns
     const propertyData = { ...dto };
     delete propertyData.agencyId;
 
-    const property = this.propertyRepo.create({
-      ...propertyData,
-      owner: user,
-      status: PropertyStatus.ACTIVE,
-      agency: agency ?? undefined,
-    });
+    // 7. Upload images with limited concurrency
+    // UploadService handles partial upload failures and cleanup.
+    const uploadedImages = await this.uploadservice.uploadImages(
+      safeFiles,
+    );
 
-    const savedProperty = await this.propertyRepo.save(property);
+    let savedProperty: Property;
 
-    const priceHistory = this.priceHistoryRepo.create({
-      property: savedProperty,
-      price: Number(savedProperty.price),
-      currency: savedProperty.currency,
-    });
+    try {
+      // 8. Save property, price history and images
+      // in one PostgreSQL transaction.
+      savedProperty = await this.dataSource.transaction(
+        async (manager) => {
+          const propertyRepo = manager.getRepository(Property);
 
-    await this.priceHistoryRepo.save(priceHistory);
+          const priceHistoryRepo = manager.getRepository(
+            PropertyPriceHistory,
+          );
 
-    if (files.length) {
-      const images: PropertyImage[] = [];
+          const propertyImageRepo = manager.getRepository(
+            PropertyImage,
+          );
 
-      for (const file of files) {
-        PhotoValidator.validator(file);
+          // Create property
+          const property = propertyRepo.create({
+            ...propertyData,
+            owner: user,
+            status: PropertyStatus.ACTIVE,
+            agency: agency ?? undefined,
+          });
 
-        const uploaded = await this.uploadservice.uploadImage(file);
+          const saved = await propertyRepo.save(property);
 
-        const image = this.propertImageRepo.create({
-          url: uploaded.secure_url,
-          publicId: uploaded.public_id,
-          size: file.size,
-          property: savedProperty,
-        });
+          // Create initial price history
+          const priceHistory = priceHistoryRepo.create({
+            property: saved,
+            price: Number(saved.price),
+            currency: saved.currency,
+          });
 
-        images.push(image);
+          await priceHistoryRepo.save(priceHistory);
+
+          // Save image records
+          if (uploadedImages.length > 0) {
+            const images = uploadedImages.map((uploaded, index) => {
+              const file = safeFiles[index];
+
+              return propertyImageRepo.create({
+                url: uploaded.secure_url,
+                publicId: uploaded.public_id,
+                size: file.size,
+                property: saved,
+              });
+            });
+
+            await propertyImageRepo.save(images);
+          }
+
+          return saved;
+        },
+      );
+    } catch (error: unknown) {
+      // 9. PostgreSQL transaction failed.
+      // Remove images that were already uploaded to Cloudinary.
+      const publicIds = uploadedImages.map(
+        (image) => image.public_id,
+      );
+
+      if (publicIds.length > 0) {
+        this.logger.warn(
+          `Property creation failed. Cleaning up ${publicIds.length} Cloudinary images.`,
+        );
+
+        await this.uploadservice.deleteImages(publicIds);
       }
 
-      await this.propertImageRepo.save(images);
+      // Preserve the original database error
+      throw error;
     }
 
+    // 10. Send email AFTER successful database commit.
+    // Email failure must not cancel property creation.
     if (user.gmail) {
-      void this.senderservice.sendEmail({
-        to: user.gmail,
-        from: process.env.SMTP_FROM || 'no-replyexample.com',
-        subject: 'Property Created',
-        template: 'created-property',
-        context: {
-          name: user.name || user.gmail,
-        },
-      });
+      void this.senderservice
+        .sendEmail({
+          to: user.gmail,
+          from: process.env.SMTP_FROM || 'no-replyexample.com',
+          subject: 'Property Created',
+          template: 'created-property',
+          context: {
+            name: user.name || user.gmail,
+          },
+        })
+        .catch((error: unknown) => {
+          this.logger.error(
+            'Failed to send property-created email',
+            error instanceof Error ? error.stack : String(error),
+          );
+        });
     }
 
+    // 11. Return property with its relations
     return this.propertyRepo.findOne({
       where: { id: savedProperty.id },
-      relations: { images: true, agency: { image: true } },
+      relations: {
+        images: true,
+        agency: { image: true },
+      },
     });
   }
 

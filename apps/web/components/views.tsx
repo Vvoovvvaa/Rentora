@@ -35,8 +35,115 @@ const Notice = ({ error, success }: { error: string; success: string }) => <>{er
 export function AuthView({ mode }: { mode: string }) { return <div className="auth-page"><div className="auth-orb" /><div className="shell relative flex min-h-[calc(100vh-78px)] items-center justify-center py-12"><div className="soft-card auth-card w-full max-w-lg rounded-3xl p-7 sm:p-10"><Link href="/" aria-label="Rentora home" className="auth-logo"><RentoraLogo size="auth" /></Link>{mode === "login" ? <Login /> : mode === "register" ? <Register /> : mode === "verify-email" ? <Verify /> : <Forgot />}</div></div></div>; }
 function Login() { const { signIn, authNotice, dismissAuthNotice } = useAuth(); const { t } = useI18n(); const router = useRouter(); const [gmail, setGmail] = useState(""); const [password, setPassword] = useState(""); const [error, setError] = useState(""); const [busy, setBusy] = useState(false); const notice = authNotice === "session-ended" ? t("errors.sessionEnded") : authNotice === "signed-out" ? t("errors.signedOut") : ""; const submit = async (event: React.FormEvent) => { event.preventDefault(); setBusy(true); setError(""); dismissAuthNotice(); try { await signIn(gmail, password); router.push("/properties"); } catch (reason) { setError(apiMessage(reason)); } finally { setBusy(false); } }; return <><p className="eyebrow">{t("auth.welcomeBack")}</p><h1 className="auth-title">{t("auth.signInCopy")}</h1><form onSubmit={submit} className="mt-8 grid gap-5"><Input label={t("auth.email")} type="email" required value={gmail} onChange={(event) => setGmail(event.target.value)} placeholder="you@example.com" /><Input label={t("auth.password")} type="password" required value={password} onChange={(event) => setPassword(event.target.value)} /><button disabled={busy} className="btn-primary">{busy ? t("auth.signingIn") : t("auth.signIn")}</button></form><Notice error={error} success={notice} /><div className="mt-7 flex justify-between text-sm"><Link className="font-semibold text-indigo-600" href="/forgot-password">{t("auth.forgotPassword")}</Link><Link className="font-semibold text-slate-700" href="/register">{t("auth.createAccount")}</Link></div></>; }
 function Register() { const { signUp } = useAuth(); const { t } = useI18n(); const router = useRouter(); const [data, setData] = useState({ name: "", phone: "+374", age: "", gmail: "", password: "" }); const [error, setError] = useState(""); const [busy, setBusy] = useState(false); const change = (key: keyof typeof data) => (event: React.ChangeEvent<HTMLInputElement>) => setData({ ...data, [key]: event.target.value }); const submit = async (event: React.FormEvent) => { event.preventDefault(); setBusy(true); setError(""); try { await signUp({ ...data, age: Number(data.age) }); router.push("/verify-email"); } catch (reason) { setError(apiMessage(reason)); } finally { setBusy(false); } }; return <><p className="eyebrow">{t("auth.createAccount")}</p><h1 className="auth-title">{t("auth.registerCopy")}</h1><form onSubmit={submit} className="mt-8 grid gap-5 sm:grid-cols-2"><Input label={t("auth.name")} required value={data.name} onChange={change("name")} /><Input label={t("profile.age")} type="number" min="18" max="99" required value={data.age} onChange={change("age")} /><PhoneInput value={data.phone} onChange={(phone) => setData({ ...data, phone })} /><Input label={t("auth.email")} type="email" required value={data.gmail} onChange={change("gmail")} /><div className="sm:col-span-2"><Input label={t("auth.password")} type="password" minLength={8} required value={data.password} onChange={change("password")} /></div><button disabled={busy} className="btn-primary sm:col-span-2">{busy ? t("auth.registering") : t("auth.register")}</button></form><Notice error={error} success="" /><p className="mt-7 text-sm text-slate-500">{t("auth.alreadyAccount")} <Link className="font-semibold text-indigo-600" href="/login">{t("auth.signIn")}</Link></p></>; }
-function Verify() { const { t } = useI18n(); const [email, setEmail] = useState(""); const [code, setCode] = useState(""); const [error, setError] = useState(""); const [success, setSuccess] = useState(""); const send = async () => { try { setError(""); setSuccess((await authApi.sendCode(email)).message || t("auth.verifyCopy")); } catch (reason) { setError(apiMessage(reason)); } }; const verify = async (event: React.FormEvent) => { event.preventDefault(); try { setError(""); setSuccess((await authApi.verify({ gmail: email, code })).message || t("profile.verifiedEmail")); } catch (reason) { setError(apiMessage(reason)); } }; return <><p className="eyebrow">{t("auth.verifyTitle")}</p><h1 className="auth-title">{t("auth.verifyTitle")}</h1><p className="mt-3 text-slate-500">{t("auth.verifyCopy")}</p><form onSubmit={verify} className="mt-8 grid gap-5"><Input label={t("auth.email")} type="email" required value={email} onChange={(event) => setEmail(event.target.value)} /><Input label={t("auth.verificationCode")} required value={code} onChange={(event) => setCode(event.target.value)} /><button className="btn-primary">{t("auth.verify")}</button></form><button onClick={send} className="mt-5 text-sm font-semibold text-indigo-600">{t("auth.sendCode")}</button><Notice error={error} success={success} /></>; }
-function Forgot() { const { t } = useI18n(); const [gmail, setGmail] = useState(""); const [code, setCode] = useState(""); const [password, setPassword] = useState(""); const [error, setError] = useState(""); const [success, setSuccess] = useState(""); const submit = async (event: React.FormEvent) => { event.preventDefault(); try { setError(""); setSuccess(!code ? (await authApi.forgot(gmail)).message || t("auth.forgotCopy") : (await authApi.newPassword({ code, newPassword: password })).message || t("auth.resetPassword")); } catch (reason) { setError(apiMessage(reason)); } }; return <><p className="eyebrow">{t("auth.forgotTitle")}</p><h1 className="auth-title">{t("auth.forgotTitle")}</h1><p className="mt-3 text-sm leading-6 text-slate-500">{t("auth.forgotCopy")}</p><form onSubmit={submit} className="mt-8 grid gap-5"><Input label={t("auth.email")} type="email" required value={gmail} onChange={(event) => setGmail(event.target.value)} /><Input label={t("auth.verificationCode")} value={code} onChange={(event) => setCode(event.target.value)} />{code && <Input label={t("auth.newPassword")} type="password" required value={password} onChange={(event) => setPassword(event.target.value)} />}<button className="btn-primary">{code ? t("auth.resetPassword") : t("auth.sendCode")}</button></form><Notice error={error} success={success} /></>; }
+function Verify() {
+  const { t } = useI18n();
+
+  const [code, setCode] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [sending, setSending] = useState(false);
+
+  const send = async () => {
+    if (sending) return;
+
+    try {
+      setSending(true);
+      setError("");
+      setSuccess("");
+
+      const result = await authApi.sendCode();
+
+      setSuccess(result.message || t("auth.verifyCopy"));
+    } catch (reason) {
+      setError(apiMessage(reason));
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const verify = async (event: React.FormEvent) => {
+    event.preventDefault();
+
+    if (!code.trim() || busy) return;
+
+    try {
+      setBusy(true);
+      setError("");
+      setSuccess("");
+
+      const result = await authApi.verify({
+        code: code.trim(),
+      });
+
+      setSuccess(
+        result.message || t("profile.verifiedEmail"),
+      );
+    } catch (reason) {
+      setError(apiMessage(reason));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <>
+      <p className="eyebrow">
+        {t("auth.verifyTitle")}
+      </p>
+
+      <h1 className="auth-title">
+        {t("auth.verifyTitle")}
+      </h1>
+
+      <p className="mt-3 text-slate-500">
+        {t("auth.verifyCopy")}
+      </p>
+
+      <form
+        onSubmit={verify}
+        className="mt-8 grid gap-5"
+      >
+        <Input
+          label={t("auth.verificationCode")}
+          type="text"
+          inputMode="numeric"
+          autoComplete="one-time-code"
+          required
+          value={code}
+          onChange={(event) => setCode(event.target.value)}
+          placeholder="Enter verification code"
+        />
+
+        <button
+          type="submit"
+          disabled={busy || !code.trim()}
+          className="btn-primary"
+        >
+          {busy
+            ? "Verifying…"
+            : t("auth.verify")}
+        </button>
+      </form>
+
+      <button
+        type="button"
+        onClick={send}
+        disabled={sending || busy}
+        className="mt-5 text-sm font-semibold text-indigo-600 disabled:opacity-50"
+      >
+        {sending
+          ? "Sending…"
+          : t("auth.sendCode")}
+      </button>
+
+      <Notice
+        error={error}
+        success={success}
+      />
+    </>
+  );
+} function Forgot() { const { t } = useI18n(); const [gmail, setGmail] = useState(""); const [code, setCode] = useState(""); const [password, setPassword] = useState(""); const [error, setError] = useState(""); const [success, setSuccess] = useState(""); const submit = async (event: React.FormEvent) => { event.preventDefault(); try { setError(""); setSuccess(!code ? (await authApi.forgot(gmail)).message || t("auth.forgotCopy") : (await authApi.newPassword({ code, newPassword: password })).message || t("auth.resetPassword")); } catch (reason) { setError(apiMessage(reason)); } }; return <><p className="eyebrow">{t("auth.forgotTitle")}</p><h1 className="auth-title">{t("auth.forgotTitle")}</h1><p className="mt-3 text-sm leading-6 text-slate-500">{t("auth.forgotCopy")}</p><form onSubmit={submit} className="mt-8 grid gap-5"><Input label={t("auth.email")} type="email" required value={gmail} onChange={(event) => setGmail(event.target.value)} /><Input label={t("auth.verificationCode")} value={code} onChange={(event) => setCode(event.target.value)} />{code && <Input label={t("auth.newPassword")} type="password" required value={password} onChange={(event) => setPassword(event.target.value)} />}<button className="btn-primary">{code ? t("auth.resetPassword") : t("auth.sendCode")}</button></form><Notice error={error} success={success} /></>; }
 
 export function ListingsView({ kind }: { kind: string }) { return <NeedLogin>{kind === "my-properties" ? <OwnerListingsPage /> : <Listings kind={kind} />}</NeedLogin>; }
 function Listings({ kind }: { kind: string }) {

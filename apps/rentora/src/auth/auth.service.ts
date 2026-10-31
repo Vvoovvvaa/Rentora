@@ -298,9 +298,9 @@ export class AuthService {
     };
   }
 
-  async VerifyEmail(dto: VerifyEmailDto) {
+  async VerifyEmail(dto: VerifyEmailDto, userId:number) {
     const user = await this.userRepo.findOne({
-      where: { gmail: dto.gmail },
+      where: { id: userId },
       relations: { secretCode: true },
     });
 

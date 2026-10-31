@@ -173,9 +173,9 @@ export class AgencyService {
       relations: { image: true },
     });
 
-    if (!agency) {
-      throw new NotFoundException('You dont have agency');
-    }
+    // if (!agency) {
+    //   throw new NotFoundException('You dont have agency');
+    // }
 
     return agency;
   }

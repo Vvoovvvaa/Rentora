@@ -18,7 +18,9 @@ import {
   AdminSecretcode,
   Agency,
   AgencyImage,
+  ChatRoom,
   Favorites,
+  Message,
   Property,
   PropertyAnalytic,
   PropertyImage,
@@ -47,6 +49,9 @@ import { SubscriptionConfig } from '@app/common-rentora/database/entity/subscrip
 import { SubscriptionModule } from './subscription/subscription.module';
 import { AgencyModule } from './agency/agency.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { LoggerModule } from 'nestjs-pino';
+import { randomUUID } from 'crypto';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
@@ -62,8 +67,44 @@ import { ScheduleModule } from '@nestjs/schedule';
     AnalyticModule,
     SubscriptionModule,
     AgencyModule,
+    HealthModule,
 
     ScheduleModule.forRoot(),
+
+    LoggerModule.forRoot({
+      pinoHttp: {
+        level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
+
+        transport:
+          process.env.NODE_ENV !== 'production'
+            ? {
+              target: 'pino-pretty',
+              options: {
+                colorize: true,
+                singleLine: true,
+                translateTime: 'SYS:standard',
+              },
+            }
+            : undefined,
+
+        genReqId: (req, res) => {
+          const requestId = randomUUID();
+
+          res.setHeader('X-Request-ID', requestId);
+
+          return requestId;
+        },
+
+        redact: {
+          paths: [
+            'req.headers.authorization',
+            'req.headers.cookie',
+            'res.headers.set-cookie',
+          ],
+          remove: true,
+        },
+      },
+    }),
 
 
     I18nModule.forRoot({
@@ -114,12 +155,14 @@ import { ScheduleModule } from '@nestjs/schedule';
             UserSubscription,
             SubscriptionConfig,
             Agency,
-            AgencyImage
+            AgencyImage,
+            ChatRoom,
+            Message
           ],
-          autoLoadEntities: true,
           synchronize: true,
           // dropSchema: true,
-        };
+
+        }
       },
     }),
   ],

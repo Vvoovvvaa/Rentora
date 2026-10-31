@@ -52,10 +52,6 @@ export class SupportService {
       where: { user: { id: userId } },
     });
 
-    if (support.length === 0) {
-      throw new BadRequestException(this.t('support.NO_SUPPORTS'));
-    }
-
     return support;
   }
 
