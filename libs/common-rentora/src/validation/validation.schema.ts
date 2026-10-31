@@ -1,3 +1,4 @@
+
 import Joi from 'joi';
 
 export const validationSchema = Joi.object({
@@ -29,8 +30,4 @@ export const validationSchema = Joi.object({
 
   OPENAI_API_KEY: Joi.string().required(),
   OPENAI_MODEL: Joi.string().required(),
-
-  NEXT_PUBLIC_SUPABASE_URL: Joi.string().required(),
-  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: Joi.string().required()
-
 });
